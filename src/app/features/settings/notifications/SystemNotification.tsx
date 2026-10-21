@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, Switch, Button, color, Spinner } from 'folds';
 import { IPusherRequest } from 'matrix-js-sdk';
 import { SequenceCard } from '../../../components/sequence-card';
@@ -10,7 +10,12 @@ import { getNotificationState, usePermissionState } from '../../../hooks/usePerm
 import { useEmailNotifications } from '../../../hooks/useEmailNotifications';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { isDesktopApp } from '../../../utils/desktop';
+import {
+  isDesktopApp,
+  isMobileApp,
+  isNativeApp,
+  nativeNotificationPermission,
+} from '../../../utils/desktop';
 import { NotificationVolume } from './DesktopNotificationSettings';
 
 function EmailNotification() {
@@ -89,7 +94,34 @@ function EmailNotification() {
 export function SystemNotification() {
   const browserPermission = usePermissionState('notifications', getNotificationState());
   // В Cinny Desktop уведомления нативные, разрешение браузера не нужно.
-  const notifPermission = isDesktopApp() ? 'granted' : browserPermission;
+  const [nativePermission, setNativePermission] = useState<'granted' | 'denied' | 'prompt'>(
+    'prompt'
+  );
+  useEffect(() => {
+    if (!isMobileApp()) return undefined;
+    let active = true;
+    const refresh = () => {
+      nativeNotificationPermission()
+        .then((value) => {
+          if (active) setNativePermission(value);
+        })
+        .catch(() => undefined);
+    };
+    refresh();
+    window.addEventListener('focus', refresh);
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refresh);
+    };
+  }, []);
+  let notifPermission = browserPermission;
+  if (isDesktopApp()) notifPermission = 'granted';
+  if (isMobileApp()) notifPermission = nativePermission;
+  let blockedDescription = 'Система не поддерживает уведомления.';
+  if ('Notification' in window)
+    blockedDescription = 'Уведомления заблокированы. Разрешите их в адресной строке браузера.';
+  if (isMobileApp())
+    blockedDescription = 'Уведомления заблокированы. Разрешите их в системных настройках Cinny.';
   const [showNotifications, setShowNotifications] = useSetting(settingsAtom, 'showNotifications');
   const [isNotificationSounds, setIsNotificationSounds] = useSetting(
     settingsAtom,
@@ -102,7 +134,13 @@ export function SystemNotification() {
   );
 
   const requestNotificationPermission = () => {
-    window.Notification.requestPermission();
+    if (isMobileApp()) {
+      nativeNotificationPermission(true)
+        .then(setNativePermission)
+        .catch(() => undefined);
+    } else {
+      window.Notification.requestPermission();
+    }
   };
 
   return (
@@ -119,14 +157,12 @@ export function SystemNotification() {
           description={
             notifPermission === 'denied' ? (
               <Text as="span" style={{ color: color.Critical.Main }} size="T200">
-                {'Notification' in window
-                  ? 'Уведомления заблокированы. Разрешите их в адресной строке браузера.'
-                  : 'Система не поддерживает уведомления.'}
+                {blockedDescription}
               </Text>
             ) : (
               <span>
-                {isDesktopApp()
-                  ? 'Всплывающие уведомления Windows о новых сообщениях. Клик открывает нужный чат или тред.'
+                {isNativeApp()
+                  ? 'Системные уведомления о новых сообщениях. Нажатие открывает нужный чат или тред.'
                   : 'Показывать уведомления о новых сообщениях.'}
               </span>
             )

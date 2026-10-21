@@ -238,7 +238,7 @@ export function DesktopAppSettings() {
           </Text>
         )}
         <SettingTile
-          title="Запускать вместе с Windows"
+          title="Запускать при входе в систему"
           description="Cinny будет открываться при входе в систему."
           after={
             <Switch

@@ -36,7 +36,9 @@ import {
   desktopNotify,
   desktopSetDnd,
   desktopSetUnread,
-  isDesktopApp,
+  isNativeApp,
+  isMobileApp,
+  nativeNotificationPermission,
   onDesktopEvent,
 } from '../../utils/desktop';
 import { dndUntilFromMode, isDndActive, manualDndActive } from '../../utils/dnd';
@@ -97,7 +99,7 @@ const showSystemNotification = async (
   content: NotificationContent,
   onBrowserClick: (target: NotificationTarget) => void
 ) => {
-  if (isDesktopApp()) {
+  if (isNativeApp()) {
     const icon = await getNotificationAvatar(
       mx,
       useAuthentication,
@@ -303,7 +305,7 @@ export function InviteNotifications() {
     const count = invites.length - previousInviteLen;
 
     if (settings.showNotifications) {
-      if (isDesktopApp()) {
+      if (isNativeApp()) {
         desktopNotify({
           title: 'Приглашение',
           body: count > 1 ? `Новых приглашений: ${count}` : 'Вас пригласили в комнату',
@@ -383,6 +385,16 @@ function DesktopDndSync() {
 }
 
 function DesktopEventBridge() {
+  const [showNotifications] = useSetting(settingsAtom, 'showNotifications');
+  useEffect(() => {
+    if (!isMobileApp() || !showNotifications) return;
+    nativeNotificationPermission()
+      .then((permission) => {
+        if (permission === 'prompt') return nativeNotificationPermission(true);
+        return permission;
+      })
+      .catch(() => undefined);
+  }, [showNotifications]);
   const setDndUntil = useSetting(settingsAtom, 'dndUntil')[1];
   const setSettingsModal = useSetAtom(userSettingsModalAtom);
   const openTarget = useOpenNotificationTarget();
@@ -416,7 +428,7 @@ function DesktopEventBridge() {
 }
 
 export function DesktopIntegration() {
-  if (!isDesktopApp()) return null;
+  if (!isNativeApp()) return null;
   return (
     <>
       <DesktopUnreadBadge />

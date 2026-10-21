@@ -7,13 +7,23 @@
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 
-export const isDesktopApp = (): boolean => {
+export const isNativeApp = (): boolean => {
   try {
     return isTauri();
   } catch {
     return false;
   }
 };
+
+/** Android uses native notifications but has no tray or desktop autostart. */
+export const isMobileApp = (): boolean =>
+  isNativeApp() && /Android|iPhone|iPad/i.test(navigator.userAgent);
+export const isDesktopApp = (): boolean => isNativeApp() && !isMobileApp();
+
+export const nativeNotificationPermission = (request = false): Promise<PermissionState> =>
+  isMobileApp()
+    ? invoke<PermissionState>('native_notification_permission', { request })
+    : Promise.resolve('granted');
 
 export type NotificationTarget = {
   roomId: string;
@@ -67,10 +77,40 @@ export const desktopSetSettings = (patch: DesktopSettingsPatch) =>
 
 export const desktopShowWindow = () => invoke<void>('desktop_show_window');
 
-export const onDesktopEvent = <T>(
+export const onDesktopEvent = async <T>(
   event: string,
   handler: (payload: T) => void
-): Promise<UnlistenFn> => listen<T>(event, (e) => handler(e.payload));
+): Promise<UnlistenFn> => {
+  if (!isMobileApp()) return listen<T>(event, (e) => handler(e.payload));
+  if (event !== DesktopEvent.NotificationClick) return () => undefined;
+  let active = true;
+  let pending = false;
+  const consume = async () => {
+    if (!active || pending || document.visibilityState === 'hidden') return;
+    pending = true;
+    try {
+      const target = await invoke<NotificationTarget>('mobile_take_notification_target');
+      if (active && typeof target?.roomId === 'string') handler(target as T);
+    } finally {
+      pending = false;
+    }
+  };
+  const refresh = () => {
+    consume().catch(() => undefined);
+  };
+  // Native Android retains the destination across cold start and sign-in.
+  // Reading it after the authenticated UI mounts avoids losing early tap events.
+  const timer = window.setInterval(refresh, 1000);
+  document.addEventListener('visibilitychange', refresh);
+  window.addEventListener('focus', refresh);
+  refresh();
+  return () => {
+    active = false;
+    window.clearInterval(timer);
+    document.removeEventListener('visibilitychange', refresh);
+    window.removeEventListener('focus', refresh);
+  };
+};
 
 /** Убирает префикс `data:image/png;base64,`. */
 export const stripDataUrl = (dataUrl: string): string => {
