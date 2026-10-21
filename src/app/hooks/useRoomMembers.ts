@@ -17,11 +17,18 @@ export const useRoomMembers = (mx: MatrixClient, roomId: string): RoomMember[] =
 
     if (room) {
       setMembers(room.getMembers());
-      room.loadMembersIfNeeded().then(() => {
-        loadingMembers = false;
-        if (disposed) return;
-        updateMemberList();
-      });
+      room
+        .loadMembersIfNeeded()
+        .then(() => {
+          loadingMembers = false;
+          if (disposed) return;
+          updateMemberList();
+        })
+        .catch(() => {
+          loadingMembers = false;
+          // Keep the cached list available offline; sending group mentions separately
+          // requires a successful full membership load.
+        });
     }
 
     mx.on(RoomMemberEvent.Membership, updateMemberList);

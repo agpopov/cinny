@@ -1,4 +1,5 @@
 import { BaseRange, Editor } from 'slate';
+import { mentionQueryStart } from '../../../utils/mentionQuery';
 
 export enum AutocompletePrefix {
   RoomMention = '#',
@@ -25,7 +26,9 @@ export const getAutocompletePrefix = <TPrefix extends string>(
   validPrefixes: readonly TPrefix[]
 ): TPrefix | undefined => {
   const world = Editor.string(editor, queryRange);
-  return validPrefixes.find((p) => world.startsWith(p));
+  return validPrefixes.find(
+    (p) => world.startsWith(p) && (p !== '@' || mentionQueryStart(world) === 0)
+  );
 };
 
 export const getAutocompleteQueryText = (

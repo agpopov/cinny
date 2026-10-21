@@ -9,6 +9,8 @@ import {
   MentionElement,
 } from './slate';
 
+import { mentionQueryStart } from '../../utils/mentionQuery';
+
 const ALL_MARK_TYPE: MarkType[] = [
   MarkType.Bold,
   MarkType.Code,
@@ -245,6 +247,31 @@ export const getPrevWordRange = (editor: Editor): BaseRange | undefined => {
   const { selection } = editor;
   if (!selection || !Range.isCollapsed(selection)) return undefined;
   const [cursorPoint] = Range.edges(selection);
+  const [leaf] = Editor.leaf(editor, cursorPoint);
+  if (
+    leaf.code ||
+    Editor.above(editor, {
+      at: cursorPoint,
+      match: (node) => Element.isElement(node) && node.type === BlockType.CodeBlock,
+    })
+  )
+    return undefined;
+  const block = Editor.above(editor, {
+    at: cursorPoint,
+    match: (node) => Element.isElement(node) && Editor.isBlock(editor, node),
+  });
+  if (block) {
+    const start = Editor.start(editor, block[1]);
+    const before = Editor.string(editor, Editor.range(editor, start, cursorPoint));
+    const at = mentionQueryStart(before);
+    if (at !== undefined) {
+      const mentionStart = Editor.before(editor, cursorPoint, {
+        unit: 'offset',
+        distance: before.length - at,
+      });
+      if (mentionStart) return Editor.range(editor, mentionStart, cursorPoint);
+    }
+  }
   const wordStartPoint = getPointUntilChar(editor, cursorPoint, {
     reverse: true,
     match: (char) => char === ' ' || char === '',

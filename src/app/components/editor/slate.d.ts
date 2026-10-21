@@ -2,6 +2,7 @@ import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { HistoryEditor } from 'slate-history';
 import { BlockType } from './types';
+import type { GroupMention } from '../../utils/mentionGroups';
 
 export type HeadingLevel = 1 | 2 | 3;
 
@@ -31,6 +32,7 @@ export type MentionElement = {
   id: string;
   eventId?: string;
   viaServers?: string[];
+  group?: GroupMention;
   highlight: boolean;
   name: string;
   children: Text[];

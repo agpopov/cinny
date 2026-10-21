@@ -28,7 +28,13 @@ import {
   config,
   toRem,
 } from 'folds';
+import { mentionsOutsideMarkdownCode } from '../../components/editor/markdownCode';
 
+import {
+  resolveGroupMentions,
+  assertMentionContentSize,
+  freshGroupMentionNodes,
+} from '../../utils/mentionGroups';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import {
   CustomEditor,
@@ -148,6 +154,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const draftKey = draftKeyProp ?? roomId;
     const threadId = threadRootId ?? null;
     const mx = useMatrixClient();
+    const sendingRef = useRef(false);
+    const [sending, setSending] = useState(false);
+    const [sendError, setSendError] = useState('');
     const useAuthentication = useMediaAuthentication();
     const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
     const [isMarkdown] = useSetting(settingsAtom, 'isMarkdown');
@@ -317,90 +326,117 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       contents.forEach((content) => mx.sendMessage(roomId, threadId, content as any));
     };
 
-    const submit = useCallback(() => {
-      uploadBoardHandlers.current?.handleSend();
-
-      const commandName = getBeginCommand(editor);
-      let plainText = toPlainText(editor.children, isMarkdown).trim();
-      let customHtml = trimCustomHtml(
-        toMatrixCustomHTML(editor.children, {
-          allowTextFormatting: true,
-          allowBlockMarkdown: isMarkdown,
-          allowInlineMarkdown: isMarkdown,
-        })
+    const submit = useCallback(async () => {
+      if (sendingRef.current) return;
+      sendingRef.current = true;
+      setSending(true);
+      setSendError('');
+      const original = JSON.stringify(editor.children);
+      const nodes = freshGroupMentionNodes(
+        isMarkdown ? mentionsOutsideMarkdownCode(JSON.parse(original)) : JSON.parse(original)
       );
-      let msgType = MsgType.Text;
+      const sendEditor = { ...editor, children: nodes };
+      try {
+        const groupMentions = await resolveGroupMentions(mx, room, nodes);
+        uploadBoardHandlers.current?.handleSend();
 
-      if (commandName) {
-        plainText = trimCommand(commandName, plainText);
-        customHtml = trimCommand(commandName, customHtml);
-      }
-      if (commandName === Command.Me) {
-        msgType = MsgType.Emote;
-      } else if (commandName === Command.Notice) {
-        msgType = MsgType.Notice;
-      } else if (commandName === Command.Shrug) {
-        plainText = `${SHRUG} ${plainText}`;
-        customHtml = `${SHRUG} ${customHtml}`;
-      } else if (commandName === Command.TableFlip) {
-        plainText = `${TABLEFLIP} ${plainText}`;
-        customHtml = `${TABLEFLIP} ${customHtml}`;
-      } else if (commandName === Command.UnFlip) {
-        plainText = `${UNFLIP} ${plainText}`;
-        customHtml = `${UNFLIP} ${customHtml}`;
-      } else if (commandName) {
-        const commandContent = commands[commandName as Command];
-        if (commandContent) {
-          commandContent.exe(plainText);
+        const commandName = getBeginCommand(editor);
+        let plainText = toPlainText(nodes, isMarkdown, groupMentions).trim();
+        let customHtml = trimCustomHtml(
+          toMatrixCustomHTML(nodes, {
+            groupMentions,
+            allowTextFormatting: true,
+            allowBlockMarkdown: isMarkdown,
+            allowInlineMarkdown: isMarkdown,
+          })
+        );
+        let msgType = MsgType.Text;
+
+        if (commandName) {
+          plainText = trimCommand(commandName, plainText);
+          customHtml = trimCommand(commandName, customHtml);
         }
+        if (commandName === Command.Me) {
+          msgType = MsgType.Emote;
+        } else if (commandName === Command.Notice) {
+          msgType = MsgType.Notice;
+        } else if (commandName === Command.Shrug) {
+          plainText = `${SHRUG} ${plainText}`;
+          customHtml = `${SHRUG} ${customHtml}`;
+        } else if (commandName === Command.TableFlip) {
+          plainText = `${TABLEFLIP} ${plainText}`;
+          customHtml = `${TABLEFLIP} ${customHtml}`;
+        } else if (commandName === Command.UnFlip) {
+          plainText = `${UNFLIP} ${plainText}`;
+          customHtml = `${UNFLIP} ${customHtml}`;
+        } else if (commandName) {
+          const commandContent = commands[commandName as Command];
+          if (commandContent) {
+            commandContent.exe(plainText);
+          }
+          resetEditor(editor);
+          resetEditorHistory(editor);
+          sendTypingStatus(false);
+          return;
+        }
+
+        if (plainText === '') return;
+
+        const body = plainText;
+        const formattedBody = customHtml;
+        const mentionData = getMentions(mx, roomId, sendEditor, groupMentions, customHtml);
+
+        const content: IContent = {
+          msgtype: msgType,
+          body,
+        };
+
+        if (replyDraft && replyDraft.userId !== mx.getUserId()) {
+          mentionData.users.add(replyDraft.userId);
+        }
+
+        const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
+        content['m.mentions'] = mMentions;
+
+        if (replyDraft || !customHtmlEqualsPlainText(formattedBody, body)) {
+          content.format = 'org.matrix.custom.html';
+          content.formatted_body = formattedBody;
+        }
+        if (replyDraft) {
+          content['m.relates_to'] = {
+            'm.in_reply_to': {
+              event_id: replyDraft.eventId,
+            },
+          };
+          if (!threadId && replyDraft.relation?.rel_type === RelationType.Thread) {
+            content['m.relates_to'].event_id = replyDraft.relation.event_id;
+            content['m.relates_to'].rel_type = RelationType.Thread;
+            content['m.relates_to'].is_falling_back = false;
+          }
+        }
+        assertMentionContentSize(
+          content,
+          !!room.currentState.getStateEvents('m.room.encryption', '')
+        );
+        await mx.sendMessage(roomId, threadId, content as any);
+        if (JSON.stringify(editor.children) !== original) return;
         resetEditor(editor);
         resetEditorHistory(editor);
+        setReplyDraft(undefined);
         sendTypingStatus(false);
-        return;
+      } catch (error) {
+        setSendError(
+          error instanceof Error
+            ? error.message
+            : 'Не удалось отправить сообщение. Повторите попытку.'
+        );
+      } finally {
+        sendingRef.current = false;
+        setSending(false);
       }
-
-      if (plainText === '') return;
-
-      const body = plainText;
-      const formattedBody = customHtml;
-      const mentionData = getMentions(mx, roomId, editor);
-
-      const content: IContent = {
-        msgtype: msgType,
-        body,
-      };
-
-      if (replyDraft && replyDraft.userId !== mx.getUserId()) {
-        mentionData.users.add(replyDraft.userId);
-      }
-
-      const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
-      content['m.mentions'] = mMentions;
-
-      if (replyDraft || !customHtmlEqualsPlainText(formattedBody, body)) {
-        content.format = 'org.matrix.custom.html';
-        content.formatted_body = formattedBody;
-      }
-      if (replyDraft) {
-        content['m.relates_to'] = {
-          'm.in_reply_to': {
-            event_id: replyDraft.eventId,
-          },
-        };
-        if (!threadId && replyDraft.relation?.rel_type === RelationType.Thread) {
-          content['m.relates_to'].event_id = replyDraft.relation.event_id;
-          content['m.relates_to'].rel_type = RelationType.Thread;
-          content['m.relates_to'].is_falling_back = false;
-        }
-      }
-      // Для треда SDK сам добавит связь m.thread и ответ-заглушку на последнее сообщение.
-      mx.sendMessage(roomId, threadId, content as any);
-      resetEditor(editor);
-      resetEditorHistory(editor);
-      setReplyDraft(undefined);
-      sendTypingStatus(false);
     }, [
       mx,
+      room,
       roomId,
       threadId,
       editor,
@@ -568,7 +604,19 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             requestClose={handleCloseAutocomplete}
           />
         )}
+        {sendError && (
+          <Text role="alert" size="T300" style={{ padding: config.space.S300 }}>
+            {sendError}
+          </Text>
+        )}
         <CustomEditor
+          readOnly={sending}
+          onChange={() => {
+            const range = getPrevWordRange(editor);
+            setAutocompleteQuery(
+              range ? getAutocompleteQuery(editor, range, AUTOCOMPLETE_PREFIXES) : undefined
+            );
+          }}
           editableName={editableName}
           editor={editor}
           placeholder={placeholder}
@@ -698,7 +746,13 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                   </PopOut>
                 )}
               </UseStateProvider>
-              <IconButton onClick={submit} variant="SurfaceVariant" size="300" radii="300">
+              <IconButton
+                disabled={sending}
+                onClick={submit}
+                variant="SurfaceVariant"
+                size="300"
+                radii="300"
+              >
                 <Icon src={Icons.Send} />
               </IconButton>
             </>

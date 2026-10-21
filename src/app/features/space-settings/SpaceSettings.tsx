@@ -17,6 +17,7 @@ import { Members } from '../common-settings/members';
 import { DeveloperTools } from '../common-settings/developer-tools';
 import { General } from './general';
 import { Permissions } from './permissions';
+import { MentionGroups } from './MentionGroups';
 
 type SpaceSettingsMenuItem = {
   page: SpaceSettingsPage;
@@ -37,6 +38,7 @@ const useSpaceSettingsMenuItems = (): SpaceSettingsMenuItem[] =>
         name: 'Members',
         icon: Icons.User,
       },
+      { page: SpaceSettingsPage.MentionGroupsPage, name: 'Группы упоминаний', icon: Icons.User },
       {
         page: SpaceSettingsPage.PermissionsPage,
         name: 'Permissions',
@@ -164,6 +166,9 @@ export function SpaceSettings({ initialPage, requestClose }: SpaceSettingsProps)
       )}
       {activePage === SpaceSettingsPage.EmojisStickersPage && (
         <EmojisStickers requestClose={handlePageRequestClose} />
+      )}
+      {activePage === SpaceSettingsPage.MentionGroupsPage && (
+        <MentionGroups requestClose={handlePageRequestClose} />
       )}
       {activePage === SpaceSettingsPage.DeveloperToolsPage && (
         <DeveloperTools requestClose={handlePageRequestClose} />
