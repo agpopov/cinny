@@ -19,7 +19,7 @@ import {
   config,
   toRem,
 } from 'folds';
-import { EventType, Room, Thread, ThreadEvent } from 'matrix-js-sdk';
+import { EventType, Room, RoomEvent, Thread, ThreadEvent } from 'matrix-js-sdk';
 import { useAtom, useSetAtom } from 'jotai';
 import classNames from 'classnames';
 import { ReactEditor } from 'slate-react';
@@ -39,6 +39,7 @@ import {
   threadListFilterAtom,
 } from '../../../state/room/threadPanel';
 import {
+  ensureThreadRootFirst,
   formatRelativeTime,
   formatReplyCount,
   getThreadLastActivity,
@@ -62,9 +63,19 @@ type PanelHeaderProps = {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  /** Переключение между боковой панелью и областью комнаты. */
+  expanded?: boolean;
+  onToggleExpanded?: () => void;
   onClose: () => void;
 };
-function PanelHeader({ title, subtitle, onBack, onClose }: PanelHeaderProps) {
+function PanelHeader({
+  title,
+  subtitle,
+  onBack,
+  expanded,
+  onToggleExpanded,
+  onClose,
+}: PanelHeaderProps) {
   return (
     <Header className={css.PanelHeader} variant="Background" size="600">
       <Box grow="Yes" alignItems="Center" gap="200">
@@ -84,6 +95,29 @@ function PanelHeader({ title, subtitle, onBack, onClose }: PanelHeaderProps) {
             </Text>
           )}
         </Box>
+        {onToggleExpanded && (
+          <TooltipProvider
+            position="Bottom"
+            align="End"
+            offset={4}
+            tooltip={
+              <Tooltip>
+                <Text>{expanded ? 'Свернуть в боковую панель' : 'Открыть на всю область'}</Text>
+              </Tooltip>
+            }
+          >
+            {(triggerRef) => (
+              <IconButton
+                ref={triggerRef}
+                variant="Background"
+                onClick={onToggleExpanded}
+                aria-label={expanded ? 'Свернуть в боковую панель' : 'Открыть на всю область'}
+              >
+                <Icon src={expanded ? Icons.ArrowRight : Icons.External} />
+              </IconButton>
+            )}
+          </TooltipProvider>
+        )}
         <TooltipProvider
           position="Bottom"
           align="End"
@@ -289,7 +323,12 @@ const useRoomThread = (room: Room, rootId: string): Thread | undefined => {
     () => room.getThread(rootId) ?? undefined
   );
   useEffect(() => {
-    setThread(room.getThread(rootId) ?? undefined);
+    // SDK сам не заводит тред при первом ответе из UI: эхо ответа не попадёт в его ленту.
+    const rootEvent = room.findEventById(rootId);
+    setThread(
+      room.getThread(rootId) ??
+        (rootEvent ? room.createThread(rootId, rootEvent, [], false) : undefined)
+    );
     const handleNew = (t: Thread) => {
       if (t.id === rootId) setThread(t);
     };
@@ -305,10 +344,21 @@ type ThreadViewProps = {
   room: Room;
   rootId: string;
   eventId?: string;
-  onBack: () => void;
+  /** Тред открыт на всю область комнаты. */
+  main: boolean;
+  onBack?: () => void;
+  onToggleMain: () => void;
   onClose: () => void;
 };
-function ThreadView({ room, rootId, eventId, onBack, onClose }: ThreadViewProps) {
+function ThreadView({
+  room,
+  rootId,
+  eventId,
+  main,
+  onBack,
+  onToggleMain,
+  onClose,
+}: ThreadViewProps) {
   const mx = useMatrixClient();
   const thread = useRoomThread(room, rootId);
   useThreadVersion(room, thread);
@@ -341,10 +391,16 @@ function ThreadView({ room, rootId, eventId, onBack, onClose }: ThreadViewProps)
   }, [editor, rootId]);
 
   const rootSender = rootEvent?.getSender();
-  const subtitle = rootEvent
+  const rootPreview = rootEvent
     ? `${getSenderName(room, rootSender ?? '')}: ${getEventPreviewText(rootEvent)}`
     : undefined;
+  const subtitle = main ? [room.name, rootPreview].filter(Boolean).join(' · ') : rootPreview;
   const ready = !!thread && thread.initialEventsFetched;
+  const rootMoved = ready && !!thread && ensureThreadRootFirst(thread);
+  useEffect(() => {
+    // Лента могла уже отрисоваться со старым порядком — просим перечитать.
+    if (rootMoved && thread) thread.emit(RoomEvent.TimelineReset, room, thread.timelineSet, true);
+  }, [rootMoved, thread, room]);
 
   return (
     <>
@@ -352,6 +408,8 @@ function ThreadView({ room, rootId, eventId, onBack, onClose }: ThreadViewProps)
         title={thread ? `Тред · ${formatReplyCount(thread.length)}` : 'Новый тред'}
         subtitle={subtitle}
         onBack={onBack}
+        expanded={main}
+        onToggleExpanded={onToggleMain}
         onClose={onClose}
       />
       <Box ref={viewRef} grow="Yes" direction="Column" style={{ minHeight: 0 }}>
@@ -449,7 +507,8 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
   const screenSize = useScreenSizeContext();
   const setPanel = useSetAtom(roomIdToThreadPanelAtomFamily(room.roomId));
   const close = useCallback(() => setPanel(undefined), [setPanel]);
-  const mobile = screenSize !== ScreenSize.Desktop;
+  const main = state.view === 'thread' && !!state.main;
+  const mobile = screenSize !== ScreenSize.Desktop || main;
 
   return (
     <Box
@@ -471,7 +530,9 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
           room={room}
           rootId={state.rootId}
           eventId={state.eventId}
-          onBack={() => setPanel({ view: 'list' })}
+          main={main}
+          onBack={main ? undefined : () => setPanel({ view: 'list' })}
+          onToggleMain={() => setPanel({ ...state, main: !main })}
           onClose={close}
         />
       )}

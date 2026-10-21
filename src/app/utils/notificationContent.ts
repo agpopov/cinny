@@ -4,6 +4,7 @@ import { downloadMedia, getMxIdLocalPart, mxcUrlToHttp } from './matrix';
 import { getMemberAvatarMxc, getMemberDisplayName, trimReplyFromBody } from './room';
 import { nameInitials } from './common';
 import { stripDataUrl } from './desktop';
+import { getPollPreviewText } from './poll';
 
 const MAX_BODY = 220;
 
@@ -18,6 +19,8 @@ export const getEventPreviewText = (mEvent: MatrixEvent): string => {
   if (mEvent.getType() === 'm.sticker') return '🖼 Стикер';
 
   const content = mEvent.getContent();
+  const pollPreview = getPollPreviewText(content);
+  if (pollPreview) return truncate(pollPreview, 120);
   const body = typeof content.body === 'string' ? content.body : '';
   switch (content.msgtype) {
     case MsgType.Image:

@@ -11,6 +11,8 @@ export type ThreadPanelState =
       eventId?: string;
       /** Откуда открыли: из списка тредов (показывать «назад») или из ленты. */
       fromList?: boolean;
+      /** Тред занимает всю область комнаты (открыт из списка слева), а не боковую панель. */
+      main?: boolean;
     };
 
 export const roomIdToThreadPanelAtomFamily = atomFamily<

@@ -40,6 +40,9 @@ export interface Settings {
   showHiddenEvents: boolean;
   legacyUsernameColor: boolean;
 
+  /** Показывать активные треды под комнатами в списке слева. */
+  showThreadsInNav: boolean;
+
   showNotifications: boolean;
   isNotificationSounds: boolean;
   /** Показывать текст сообщения в системном уведомлении. */
@@ -93,6 +96,8 @@ const defaultSettings: Settings = {
   encUrlPreview: false,
   showHiddenEvents: false,
   legacyUsernameColor: false,
+
+  showThreadsInNav: true,
 
   showNotifications: true,
   isNotificationSounds: true,

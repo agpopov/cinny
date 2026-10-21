@@ -88,6 +88,8 @@ import {
 import { useSetting } from '../../state/hooks/settings';
 import { MessageLayout, settingsAtom } from '../../state/settings';
 import { useMatrixEventRenderer } from '../../hooks/useMatrixEventRenderer';
+import { PollContent } from './poll';
+import { POLL_START_TYPE, POLL_START_TYPE_STABLE } from '../../utils/poll';
 import { Reactions, Message, Event, EncryptedContent } from './message';
 import { useMemberEventParser } from '../../hooks/useMemberEventParser';
 import * as customHtmlCss from '../../styles/CustomHtml.css';
@@ -1130,6 +1132,69 @@ export function RoomTimeline({
     );
   };
 
+  const renderPoll = (
+    mEventId: string,
+    mEvent: MatrixEvent,
+    item: number,
+    timelineSet: EventTimelineSet,
+    collapse: boolean
+  ) => {
+    const reactionRelations = getEventReactions(timelineSet, mEventId);
+    const reactions = reactionRelations && reactionRelations.getSortedAnnotationsByKey();
+    const hasReactions = reactions && reactions.length > 0;
+    const highlighted = focusItem?.index === item && focusItem.highlight;
+
+    return (
+      <Message
+        key={mEvent.getId()}
+        data-message-item={item}
+        data-message-id={mEventId}
+        room={room}
+        mEvent={mEvent}
+        messageSpacing={messageSpacing}
+        messageLayout={messageLayout}
+        collapse={collapse}
+        highlight={highlighted}
+        canDelete={canRedact || (canDeleteOwn && mEvent.getSender() === mx.getUserId())}
+        canSendReaction={canSendReaction}
+        canPinEvent={canPinEvent}
+        imagePackRooms={imagePackRooms}
+        relations={hasReactions ? reactionRelations : undefined}
+        onUserClick={handleUserClick}
+        onUsernameClick={handleUsernameClick}
+        onReplyClick={handleReplyClick}
+        onReactionToggle={handleReactionToggle}
+        reactions={withThreadSummary(
+          mEventId,
+          mEvent,
+          reactionRelations && (
+            <Reactions
+              style={{ marginTop: config.space.S200 }}
+              room={room}
+              relations={reactionRelations}
+              mEventId={mEventId}
+              canSendReaction={canSendReaction}
+              onReactionToggle={handleReactionToggle}
+            />
+          )
+        )}
+        hideReadReceipts={hideActivity}
+        showDeveloperTools={showDeveloperTools}
+        memberPowerTag={getMemberPowerTag(mEvent.getSender() ?? '')}
+        accessibleTagColors={accessiblePowerTagColors}
+        legacyUsernameColor={legacyUsernameColor || direct}
+        hour24Clock={hour24Clock}
+        dateFormatString={dateFormatString}
+      >
+        {mEvent.isRedacted() ? (
+          <RedactedContent reason={mEvent.getUnsigned().redacted_because?.content.reason} />
+        ) : (
+          <PollContent room={room} mEvent={mEvent} />
+        )}
+      </Message>
+    );
+  };
+
   const renderMatrixEvent = useMatrixEventRenderer<
     [string, MatrixEvent, number, EventTimelineSet, boolean]
   >(
@@ -1350,6 +1415,8 @@ export function RoomTimeline({
           </Message>
         );
       },
+      [POLL_START_TYPE]: renderPoll,
+      [POLL_START_TYPE_STABLE]: renderPoll,
       [MessageEvent.Sticker]: (mEventId, mEvent, item, timelineSet, collapse) => {
         const reactionRelations = getEventReactions(timelineSet, mEventId);
         const reactions = reactionRelations && reactionRelations.getSortedAnnotationsByKey();

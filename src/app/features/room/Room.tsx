@@ -39,7 +39,8 @@ export function Room() {
   const members = useRoomMembers(mx, room.roomId);
   const chat = useAtomValue(callChatAtom);
   const threadPanel = useAtomValue(roomIdToThreadPanelAtomFamily(room.roomId));
-  const mobileThread = !!threadPanel && screenSize !== ScreenSize.Desktop;
+  const mainThread = threadPanel?.view === 'thread' && !!threadPanel.main;
+  const mobileThread = !!threadPanel && (screenSize !== ScreenSize.Desktop || mainThread);
 
   useKeyDown(
     window,

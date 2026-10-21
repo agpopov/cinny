@@ -307,6 +307,7 @@ function Appearance() {
   const [systemTheme, setSystemTheme] = useSetting(settingsAtom, 'useSystemTheme');
   const [monochromeMode, setMonochromeMode] = useSetting(settingsAtom, 'monochromeMode');
   const [twitterEmoji, setTwitterEmoji] = useSetting(settingsAtom, 'twitterEmoji');
+  const [showThreadsInNav, setShowThreadsInNav] = useSetting(settingsAtom, 'showThreadsInNav');
 
   return (
     <Box direction="Column" gap="100">
@@ -349,6 +350,16 @@ function Appearance() {
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile title="Page Zoom" after={<PageZoomInput />} />
+      </SequenceCard>
+
+      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+        <SettingTile
+          title="Треды в списке комнат"
+          description="Показывать под комнатой треды, в которых писали за последнюю неделю."
+          after={
+            <Switch variant="Primary" value={showThreadsInNav} onChange={setShowThreadsInNav} />
+          }
+        />
       </SequenceCard>
     </Box>
   );

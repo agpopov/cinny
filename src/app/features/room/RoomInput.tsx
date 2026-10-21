@@ -101,6 +101,7 @@ import {
 } from './msgContent';
 import { getMemberDisplayName, getMentionContent, trimReplyFromBody } from '../../utils/room';
 import { CommandAutocomplete } from './CommandAutocomplete';
+import { AttachMenu } from './poll/AttachMenu';
 import { Command, SHRUG, TABLEFLIP, UNFLIP, useCommands } from '../../hooks/useCommands';
 import { mobileOrTablet } from '../../utils/user-agent';
 import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
@@ -614,14 +615,11 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             )
           }
           before={
-            <IconButton
-              onClick={() => pickFile('*')}
-              variant="SurfaceVariant"
-              size="300"
-              radii="300"
-            >
-              <Icon src={Icons.PlusCircle} />
-            </IconButton>
+            <AttachMenu
+              roomId={roomId}
+              threadRootId={threadRootId}
+              onPickFile={() => pickFile('*')}
+            />
           }
           after={
             <>

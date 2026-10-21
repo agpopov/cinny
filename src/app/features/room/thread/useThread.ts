@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Direction,
+  FeatureSupport,
   MatrixClient,
   MatrixEvent,
   NotificationCountType,
@@ -144,7 +145,7 @@ export const useRoomThreads = (room: Room): Thread[] => {
     () =>
       room
         .getThreads()
-        .filter((thread) => !!thread.rootEvent)
+        .filter((thread) => !!thread.rootEvent && thread.length > 0)
         .sort((a, b) => getThreadLastActivity(b) - getThreadLastActivity(a)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [room, version]
@@ -211,4 +212,78 @@ export const useFetchRoomThreads = (mx: MatrixClient, room: Room) => {
   }, [load]);
 
   return { state, reload: load, loadMore, canLoadMore };
+};
+
+/** Тред, в котором никто не писал дольше недели, из списка слева пропадает. */
+export const ACTIVE_THREAD_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+export const isActiveThread = (thread: Thread, now = Date.now()) =>
+  now - getThreadLastActivity(thread) <= ACTIVE_THREAD_MAX_AGE;
+
+const THREAD_LOAD_CONCURRENCY = 2;
+const requestedRooms = new WeakSet<Room>();
+const loadQueue: Room[] = [];
+let activeLoads = 0;
+
+const runThreadLoads = () => {
+  const room = activeLoads < THREAD_LOAD_CONCURRENCY ? loadQueue.shift() : undefined;
+  if (!room) return;
+  activeLoads += 1;
+  room
+    .createThreadsTimelineSets()
+    .then(() => room.fetchRoomThreads())
+    .catch(() => requestedRooms.delete(room))
+    .finally(() => {
+      activeLoads -= 1;
+      runThreadLoads();
+    });
+  runThreadLoads();
+};
+
+/**
+ * Синк отдаёт только свежий хвост комнаты, поэтому недавние треды с ответами
+ * вне этого хвоста догружаются с сервера — по одному разу на комнату и по очереди.
+ */
+export const requestRoomThreads = (mx: MatrixClient, room: Room) => {
+  if (requestedRooms.has(room)) return;
+  if (!mx.supportsThreads() || Thread.hasServerSideListSupport === FeatureSupport.None) return;
+  requestedRooms.add(room);
+  loadQueue.push(room);
+  runThreadLoads();
+};
+
+const ACTIVE_THREADS_REFRESH = 5 * 60 * 1000;
+
+/** Недавно обновлённые треды комнаты для списка слева, новые сверху. */
+export const useActiveRoomThreads = (mx: MatrixClient, room: Room): Thread[] => {
+  const threads = useRoomThreads(room);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    requestRoomThreads(mx, room);
+  }, [mx, room]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), ACTIVE_THREADS_REFRESH);
+    return () => clearInterval(timer);
+  }, []);
+
+  return useMemo(
+    () =>
+      threads.filter((thread) => !thread.rootEvent?.isRedacted() && isActiveThread(thread, now)),
+    [threads, now]
+  );
+};
+
+/**
+ * SDK кладёт корень в конец ленты треда, если он загружен позже ответов
+ * (сравнивается время получения, а не отправки). Возвращает true, если порядок исправлен.
+ */
+export const ensureThreadRootFirst = (thread: Thread): boolean => {
+  const events = thread.liveTimeline.getEvents();
+  const index = events.findIndex((e) => e.getId() === thread.id);
+  if (index <= 0) return false;
+  const [root] = events.splice(index, 1);
+  events.unshift(root);
+  return true;
 };
