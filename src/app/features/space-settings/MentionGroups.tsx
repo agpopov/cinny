@@ -12,6 +12,7 @@ import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import {
   MentionGroup,
+  createMentionGroupId,
   MENTION_GROUP_EVENT,
   assertMentionContentSize,
   groupNameKey,
@@ -40,7 +41,7 @@ function GroupForm({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const id = useRef(group?.id ?? crypto.randomUUID()).current;
+  const [id] = useState(() => group?.id ?? createMentionGroupId());
   const version = useRef(
     space.currentState.getStateEvents(MENTION_GROUP_EVENT, id)?.getId()
   ).current;

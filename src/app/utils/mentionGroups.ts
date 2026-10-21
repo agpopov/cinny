@@ -4,6 +4,10 @@ import { Descendant, Text } from 'slate';
 
 export const MENTION_GROUP_EVENT = 'in.cinny.mention_group';
 export const GROUP_MENTION_ATTRIBUTE = 'data-cinny-mention-group';
+export const createMentionGroupId = (): string =>
+  Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+    byte.toString(16).padStart(2, '0')
+  ).join('');
 export type MentionGroup = {
   id: string;
   spaceId: string;

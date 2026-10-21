@@ -17,6 +17,8 @@ import {
   MENTION_GROUP_EVENT,
   assertMentionContentSize,
   decodeGroupMention,
+  createMentionGroupId,
+  freshGroupMentionNodes,
   getResolvedGroup,
   getRoomMentionGroups,
   groupMentionHtml,
@@ -317,5 +319,57 @@ test('Markdown code and formatted inline code never produce hidden pings', async
     const mentions = getMentions(mx, room.roomId, editorFor(nodes), resolved, html);
     assert.equal(mentions.users.size, 0, html);
     assert.equal(mentions.room, false);
+  }
+});
+
+test('new-message copies resolve fresh membership without mutating historical pills', async () => {
+  const { mx, room, group } = fixture();
+  const first = group('qa', 'QA', [bob]);
+  const resolved = await resolveGroupMentions(mx, room, [paragraph([pill(first)])]);
+  const historical = resolved.get(groupMentionKey(first))!;
+  group('qa', 'QA новая', [carol]);
+  const original = [paragraph([pill(historical)])];
+  const copied = freshGroupMentionNodes(original);
+  const current = await resolveGroupMentions(mx, room, copied);
+  assert.deepEqual(
+    getResolvedGroup(first, current).members.map((m) => m.id),
+    [carol]
+  );
+  assert.deepEqual(
+    historical.members.map((m) => m.id),
+    [bob]
+  );
+  assert.deepEqual(
+    getMentions(mx, room.roomId, editorFor(copied), current).users,
+    new Set([carol])
+  );
+});
+
+test('group identifiers are safe opaque random state keys', () => {
+  const ids = Array.from({ length: 100 }, createMentionGroupId);
+  assert.equal(new Set(ids).size, ids.length);
+  ids.forEach((id) => assert.match(id, /^[0-9a-f]{32}$/));
+});
+
+test('unclosed, escaped and unsupported Markdown delimiters do not suppress selected mentions', async () => {
+  const { mx, room, group } = fixture();
+  const g = group('qa', 'QA', [bob]);
+  for (const [before, after] of [
+    ['`', ''],
+    ['\\`', '\\`'],
+    ['~~~\n', '\n~~~'],
+  ]) {
+    const nodes = [paragraph([{ text: before }, pill(g), { text: after }])];
+    const resolved = await resolveGroupMentions(mx, room, nodes);
+    const html = toMatrixCustomHTML(nodes, {
+      groupMentions: resolved,
+      allowBlockMarkdown: true,
+      allowInlineMarkdown: true,
+    });
+    assert.deepEqual(
+      getMentions(mx, room.roomId, editorFor(nodes), resolved, html).users,
+      new Set([bob]),
+      html
+    );
   }
 });

@@ -211,7 +211,8 @@ const serializePlainText = (
   isMarkdown: boolean,
   groups?: GroupMentionMap
 ): string => {
-  if (Array.isArray(node)) return node.map((n) => serializePlainText(n, isMarkdown, groups)).join('');
+  if (Array.isArray(node))
+    return node.map((n) => serializePlainText(n, isMarkdown, groups)).join('');
   if (Text.isText(node))
     return isMarkdown
       ? unescapeMarkdownBlockSequences(node.text, unescapeMarkdownInlineSequences)
@@ -221,9 +222,17 @@ const serializePlainText = (
   return elementToPlainText(node, children, groups);
 };
 
-export const toPlainText = (node: Descendant | Descendant[], isMarkdown: boolean, groups?: GroupMentionMap): string => {
- const nodes = Array.isArray(node) ? node : [node];
- return serializePlainText(isMarkdown ? mentionsOutsideMarkdownCode(nodes, groups) : nodes, isMarkdown, groups);
+export const toPlainText = (
+  node: Descendant | Descendant[],
+  isMarkdown: boolean,
+  groups?: GroupMentionMap
+): string => {
+  const nodes = Array.isArray(node) ? node : [node];
+  return serializePlainText(
+    isMarkdown ? mentionsOutsideMarkdownCode(nodes, groups) : nodes,
+    isMarkdown,
+    groups
+  );
 };
 
 /**
@@ -279,7 +288,8 @@ export const getMentions = (
         return;
       }
       if (
-        node.name === '@room' && !node.eventId &&
+        node.name === '@room' &&
+        !node.eventId &&
         (node.id === roomId || node.id === mx.getRoom(roomId)?.getCanonicalAlias())
       ) {
         mentionData.room = true;

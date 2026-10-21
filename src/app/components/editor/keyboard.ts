@@ -29,6 +29,12 @@ const isHeading3 = isKeyHotkey('mod+3');
  * @return boolean true if shortcut is toggled.
  */
 export const toggleKeyboardShortcut = (editor: Editor, event: KeyboardEvent<Element>): boolean => {
+  // Native Select All is inconsistent around non-editable mention pills in
+  // WebKit. Select this editor's Slate range, including every inline void.
+  if (isKeyHotkey('mod+a', event)) {
+    Transforms.select(editor, Editor.range(editor, []));
+    return true;
+  }
   if (isKeyHotkey('backspace', event) && editor.selection && Range.isCollapsed(editor.selection)) {
     const startPoint = Range.start(editor.selection);
     if (startPoint.offset !== 0) return false;
