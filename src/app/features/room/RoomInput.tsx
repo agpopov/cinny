@@ -333,7 +333,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       setSendError('');
       const original = JSON.stringify(editor.children);
       const nodes = freshGroupMentionNodes(
-        isMarkdown ? mentionsOutsideMarkdownCode(JSON.parse(original)) : JSON.parse(original)
+        mentionsOutsideMarkdownCode(JSON.parse(original), undefined, isMarkdown)
       );
       const sendEditor = { ...editor, children: nodes };
       try {

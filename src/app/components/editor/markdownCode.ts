@@ -12,7 +12,8 @@ import {
 // and unsupported fences must keep their normal mention behavior.
 export function mentionsOutsideMarkdownCode(
   nodes: Descendant[],
-  groups?: GroupMentionMap
+  groups?: GroupMentionMap,
+  markdown = true
 ): Descendant[] {
   const inCode = new Set<Descendant>();
   const inspect = (items: Descendant[], block: boolean) => {
@@ -62,11 +63,20 @@ export function mentionsOutsideMarkdownCode(
       paragraphs = [];
     };
     items.forEach((node) => {
-      if (!Text.isText(node) && node.type === 'paragraph') paragraphs.push(node);
+      if (!Text.isText(node) && node.type === 'paragraph' && markdown) paragraphs.push(node);
       else {
         flush();
-        if (!Text.isText(node) && node.type !== 'code-block') {
-          inspect(node.children, false);
+        if (!Text.isText(node)) {
+          if (node.type === 'code-block') {
+            const protectAll = (child: Descendant) => {
+              if (Text.isText(child)) return;
+              if (child.type === 'mention') inCode.add(child);
+              else child.children.forEach(protectAll);
+            };
+            node.children.forEach(protectAll);
+            return;
+          }
+          if (markdown) inspect(node.children, false);
           scan(node.children);
         }
       }
@@ -75,7 +85,7 @@ export function mentionsOutsideMarkdownCode(
   };
   scan(nodes);
   const visit = (node: Descendant): Descendant => {
-    if (Text.isText(node) || node.type === 'code-block') return node;
+    if (Text.isText(node)) return node;
     if (node.type === 'mention' && inCode.has(node)) {
       return {
         text: node.group

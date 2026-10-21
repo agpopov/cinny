@@ -351,6 +351,30 @@ test('group identifiers are safe opaque random state keys', () => {
   ids.forEach((id) => assert.match(id, /^[0-9a-f]{32}$/));
 });
 
+test('converting a selected group to an explicit code block is inert with Markdown on or off', async () => {
+  const { mx, room, group } = fixture();
+  const g = group('qa', 'QA', [bob]);
+  const nodes = [
+    { type: BlockType.CodeBlock, children: [{ type: BlockType.CodeLine, children: [pill(g)] }] },
+  ] as Descendant[];
+  for (const markdown of [false, true]) {
+    const resolved = await resolveGroupMentions(mx, room, nodes);
+    assert.equal(resolved.size, 0);
+    const html = toMatrixCustomHTML(nodes, {
+      groupMentions: resolved,
+      allowBlockMarkdown: markdown,
+      allowInlineMarkdown: markdown,
+    });
+    assert.ok(html.includes('<pre><code>@QA'));
+    assert.ok(!html.includes('data-cinny'));
+    assert.deepEqual(
+      getMentions(mx, room.roomId, editorFor(nodes), resolved, html).users,
+      new Set()
+    );
+    assert.equal(toPlainText(nodes, markdown, resolved).trim(), '@QA');
+  }
+});
+
 test('unclosed, escaped and unsupported Markdown delimiters do not suppress selected mentions', async () => {
   const { mx, room, group } = fixture();
   const g = group('qa', 'QA', [bob]);

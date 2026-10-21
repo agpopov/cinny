@@ -105,7 +105,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
         const groupMentions = await resolveGroupMentions(
           mx,
           room,
-          isMarkdown ? mentionsOutsideMarkdownCode(editor.children) : editor.children
+          mentionsOutsideMarkdownCode(editor.children, undefined, isMarkdown)
         );
         const plainText = toPlainText(editor.children, isMarkdown, groupMentions).trim();
         const customHtml = trimCustomHtml(

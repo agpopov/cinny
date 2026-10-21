@@ -158,9 +158,11 @@ export const toMatrixCustomHTML = (
 ): string => {
   const nodes = Array.isArray(node) ? node : [node];
   return serializeMatrixCustomHTML(
-    opts.allowBlockMarkdown || opts.allowInlineMarkdown
-      ? mentionsOutsideMarkdownCode(nodes, opts.groupMentions)
-      : nodes,
+    mentionsOutsideMarkdownCode(
+      nodes,
+      opts.groupMentions,
+      !!(opts.allowBlockMarkdown || opts.allowInlineMarkdown)
+    ),
     opts
   );
 };
@@ -229,7 +231,7 @@ export const toPlainText = (
 ): string => {
   const nodes = Array.isArray(node) ? node : [node];
   return serializePlainText(
-    isMarkdown ? mentionsOutsideMarkdownCode(nodes, groups) : nodes,
+    mentionsOutsideMarkdownCode(nodes, groups, isMarkdown),
     isMarkdown,
     groups
   );

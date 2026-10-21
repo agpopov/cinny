@@ -341,7 +341,7 @@ export const getReactCustomHtmlParser = (
               className={css.Mention({
                 highlight: group.members.some((m) => m.id === mx.getUserId()),
               })}
-              style={{ color: group.color }}
+              style={{ color: group.color, overflowWrap: 'anywhere' }}
               data-mention-group={group.id}
               title={
                 group.members.length
