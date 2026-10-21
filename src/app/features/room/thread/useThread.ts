@@ -11,6 +11,7 @@ import {
   ThreadEvent,
 } from 'matrix-js-sdk';
 import { isFollowedThread } from '../../../utils/room';
+import { isThreadUnread } from '../../../utils/notifications';
 import { getEventPreviewText, getSenderName } from '../../../utils/notificationContent';
 
 const pluralRu = (n: number, one: string, few: string, many: string) => {
@@ -48,20 +49,19 @@ export const formatRelativeTime = (ts: number, now = Date.now()): string => {
 export const useThreadVersion = (room: Room, thread: Thread | undefined): number => {
   const [version, setVersion] = useState(0);
   useEffect(() => {
-    if (!thread) return undefined;
     const bump = () => setVersion((v) => v + 1);
     const handleRoomEvent = (_e: unknown, threadId?: string) => {
-      if (threadId === undefined || threadId === thread.id) bump();
+      if (threadId === undefined || threadId === thread?.id) bump();
     };
-    thread.on(ThreadEvent.Update, bump);
-    thread.on(ThreadEvent.NewReply, bump);
-    thread.on(RoomEvent.Timeline, bump);
+    thread?.on(ThreadEvent.Update, bump);
+    thread?.on(ThreadEvent.NewReply, bump);
+    thread?.on(RoomEvent.Timeline, bump);
     room.on(RoomEvent.UnreadNotifications, handleRoomEvent);
     room.on(RoomEvent.Receipt, bump);
     return () => {
-      thread.removeListener(ThreadEvent.Update, bump);
-      thread.removeListener(ThreadEvent.NewReply, bump);
-      thread.removeListener(RoomEvent.Timeline, bump);
+      thread?.removeListener(ThreadEvent.Update, bump);
+      thread?.removeListener(ThreadEvent.NewReply, bump);
+      thread?.removeListener(RoomEvent.Timeline, bump);
       room.removeListener(RoomEvent.UnreadNotifications, handleRoomEvent);
       room.removeListener(RoomEvent.Receipt, bump);
     };
@@ -84,16 +84,11 @@ export const getThreadUnread = (mx: MatrixClient, room: Room, thread: Thread): T
     thread.id,
     NotificationCountType.Highlight
   );
-  const lastReply = thread.replyToEvent;
-  const myUserId = mx.getSafeUserId();
-  const unreadByReceipt =
-    !!lastReply &&
-    lastReply.getSender() !== myUserId &&
-    !thread.hasUserReadEvent(myUserId, lastReply.getId() ?? '');
+  const unread = isThreadUnread(mx, room, thread);
   return {
-    unread: count > 0 || highlightCount > 0 || unreadByReceipt,
-    count: Math.max(count, highlightCount),
-    highlight: highlightCount > 0,
+    unread,
+    count: unread ? Math.max(count, highlightCount) : 0,
+    highlight: unread && highlightCount > 0,
   };
 };
 
@@ -115,7 +110,7 @@ export const getThreadLastReply = (room: Room, thread: Thread): ThreadLastReply 
   return {
     senderId,
     senderName: getSenderName(room, senderId),
-    text: last.isRedacted() ? 'Сообщение удалено' : getEventPreviewText(last),
+    text: last.isRedacted() ? 'Сообщение удалено' : getEventPreviewText(last, room),
     ts: last.getTs(),
   };
 };
@@ -255,13 +250,13 @@ export const requestRoomThreads = (mx: MatrixClient, room: Room) => {
 const ACTIVE_THREADS_REFRESH = 5 * 60 * 1000;
 
 /** Недавно обновлённые треды комнаты для списка слева, новые сверху. */
-export const useActiveRoomThreads = (mx: MatrixClient, room: Room): Thread[] => {
+export const useActiveRoomThreads = (mx: MatrixClient, room: Room, enabled = true): Thread[] => {
   const threads = useRoomThreads(room);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    requestRoomThreads(mx, room);
-  }, [mx, room]);
+    if (enabled) requestRoomThreads(mx, room);
+  }, [mx, room, enabled]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), ACTIVE_THREADS_REFRESH);
@@ -270,8 +265,10 @@ export const useActiveRoomThreads = (mx: MatrixClient, room: Room): Thread[] => 
 
   return useMemo(
     () =>
-      threads.filter((thread) => !thread.rootEvent?.isRedacted() && isActiveThread(thread, now)),
-    [threads, now]
+      (enabled ? threads : [])
+        .filter((thread) => !thread.rootEvent?.isRedacted() && isActiveThread(thread, now))
+        .sort((a, b) => getThreadLastActivity(b) - getThreadLastActivity(a)),
+    [threads, now, enabled]
   );
 };
 

@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
-import { Room } from 'matrix-js-sdk';
+import React, { useCallback, useState } from 'react';
+import { Room, Thread } from 'matrix-js-sdk';
 import { useNavigate } from 'react-router-dom';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { Box, Icon, Icons, Text, config } from 'folds';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { Box, Chip, Icon, Icons, Text, color, config } from 'folds';
 import { NavItem, NavItemContent, NavButton } from '../../components/nav';
 import { UnreadBadge, UnreadBadgeCenter } from '../../components/unread-badge';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
 import { getThreadUnread, useActiveRoomThreads, useThreadVersion } from '../room/thread/useThread';
+import { useClosedNavCategoriesAtom } from '../../state/hooks/closedNavCategories';
+import { makeNavCategoryId } from '../../state/closedNavCategories';
+import { useSetting } from '../../state/hooks/settings';
+import { settingsAtom } from '../../state/settings';
 import { getEventPreviewText } from '../../utils/notificationContent';
 
-const COLLAPSED_LIMIT = 5;
+const COLLAPSED_LIMIT = 3;
 
 function useAtomPanel(roomId: string) {
   const atom = roomIdToThreadPanelAtomFamily(roomId);
@@ -30,7 +34,7 @@ function ThreadNavItem({ room, thread, active, onOpen }: ThreadNavItemProps) {
   if (!root) return null;
 
   const unread = getThreadUnread(mx, room, thread);
-  const title = getEventPreviewText(root);
+  const title = getEventPreviewText(root, room);
 
   return (
     <NavItem variant="Background" radii="400" aria-selected={active}>
@@ -65,27 +69,78 @@ function ThreadNavItem({ room, thread, active, onOpen }: ThreadNavItemProps) {
   );
 }
 
+export const useThreadsNav = (room: Room) => {
+  const mx = useMatrixClient();
+  const [enabled] = useSetting(settingsAtom, 'showThreadsInNav');
+  const threads = useActiveRoomThreads(mx, room, enabled);
+  const [closedCategories, setClosedCategories] = useAtom(useClosedNavCategoriesAtom());
+  const categoryId = makeNavCategoryId('threads', room.roomId);
+  const collapsed = closedCategories.has(categoryId);
+  const toggle = useCallback(
+    () => setClosedCategories({ type: collapsed ? 'DELETE' : 'PUT', categoryId }),
+    [setClosedCategories, collapsed, categoryId]
+  );
+  return { threads, collapsed, toggle };
+};
+
+type ThreadsToggleProps = {
+  room: Room;
+  threads: Thread[];
+  collapsed: boolean;
+  onToggle: () => void;
+};
+/** Компактная кнопка в строке комнаты: сворачивает и разворачивает её треды. */
+export function ThreadsToggle({ room, threads, collapsed, onToggle }: ThreadsToggleProps) {
+  const mx = useMatrixClient();
+  const hasUnread = collapsed && threads.some((t) => getThreadUnread(mx, room, t).unread);
+
+  return (
+    <Box shrink="No" alignItems="Center" style={{ paddingRight: config.space.S100 }}>
+      <Chip
+        variant="Background"
+        radii="Pill"
+        size="400"
+        aria-expanded={!collapsed}
+        aria-label={collapsed ? 'Показать треды' : 'Свернуть треды'}
+        title={collapsed ? 'Показать треды' : 'Свернуть треды'}
+        before={<Icon size="50" src={collapsed ? Icons.ChevronRight : Icons.ChevronBottom} />}
+        onClick={onToggle}
+      >
+        <Text
+          size="T200"
+          priority={hasUnread ? '500' : '300'}
+          style={hasUnread ? { color: color.Primary.Main } : undefined}
+        >
+          {threads.length}
+        </Text>
+      </Chip>
+    </Box>
+  );
+}
+
 type RoomNavThreadsProps = {
   room: Room;
+  threads: Thread[];
+  collapsed: boolean;
   linkPath: string;
   selected: boolean;
 };
-export function RoomNavThreads({ room, linkPath, selected }: RoomNavThreadsProps) {
-  const mx = useMatrixClient();
+export function RoomNavThreads({
+  room,
+  threads,
+  collapsed,
+  linkPath,
+  selected,
+}: RoomNavThreadsProps) {
   const navigate = useNavigate();
-  const threads = useActiveRoomThreads(mx, room);
   const [panel, setPanel] = useAtomPanel(room.roomId);
   const [expanded, setExpanded] = useState(false);
 
-  if (threads.length === 0) return null;
+  if (threads.length === 0 || collapsed) return null;
 
   const activeRootId =
     selected && panel?.view === 'thread' && panel.main ? panel.rootId : undefined;
-  // Открытый тред всегда виден, даже если он за пределами свёрнутого списка.
-  const visible =
-    expanded || threads.length <= COLLAPSED_LIMIT
-      ? threads
-      : threads.filter((t, i) => i < COLLAPSED_LIMIT || t.id === activeRootId);
+  const visible = expanded ? threads : threads.slice(0, COLLAPSED_LIMIT);
   const hidden = threads.length - visible.length;
 
   const handleOpen = (rootId: string) => {
@@ -104,12 +159,12 @@ export function RoomNavThreads({ room, linkPath, selected }: RoomNavThreadsProps
           onOpen={handleOpen}
         />
       ))}
-      {(hidden > 0 || (expanded && threads.length > COLLAPSED_LIMIT)) && (
+      {threads.length > COLLAPSED_LIMIT && (
         <NavItem variant="Background" radii="400">
           <NavButton onClick={() => setExpanded(!expanded)}>
             <NavItemContent>
               <Text as="span" size="T200" priority="300" style={{ paddingLeft: config.space.S500 }}>
-                {expanded ? 'Свернуть' : `Ещё ${hidden}`}
+                {expanded ? 'Свернуть' : `Показать ещё ${hidden}`}
               </Text>
             </NavItemContent>
           </NavButton>

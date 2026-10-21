@@ -41,12 +41,9 @@ function FaviconUpdater() {
   const roomToUnread = useAtomValue(roomToUnreadAtom);
 
   useEffect(() => {
-    let notification = false;
+    const notification = roomToUnread.size > 0;
     let highlight = false;
     roomToUnread.forEach((unread) => {
-      if (unread.total > 0) {
-        notification = true;
-      }
       if (unread.highlight > 0) {
         highlight = true;
       }

@@ -145,12 +145,12 @@ const buildMessageNotification = (
   const senderId = mEvent.getSender() ?? '';
   const senderName = getSenderName(room, senderId);
   const roomName = room.name || 'Без названия';
-  const text = opts.showContent ? getEventPreviewText(mEvent) : 'Новое сообщение';
+  const text = opts.showContent ? getEventPreviewText(mEvent, room) : 'Новое сообщение';
 
   let attribution: string | undefined;
   if (opts.threadRootId) {
     const root = room.findEventById(opts.threadRootId);
-    const rootText = root && opts.showContent ? getEventPreviewText(root) : undefined;
+    const rootText = root && opts.showContent ? getEventPreviewText(root, room) : undefined;
     attribution = rootText ? `В треде: ${rootText.slice(0, 80)}` : 'Ответ в треде';
   }
 
@@ -341,18 +341,20 @@ function DesktopUnreadBadge() {
   useEffect(() => {
     let total = 0;
     let highlight = false;
+    let hasUnread = false;
     roomToUnread.forEach((unread, roomId) => {
       // Пространства агрегируют детей — считаем только сами комнаты.
       if (roomId.startsWith('!') && unread.from === null) {
+        hasUnread = true;
         total += unread.total;
         if (unread.highlight > 0) highlight = true;
       }
     });
-    const key = `${total}:${highlight}`;
+    const key = `${total}:${highlight}:${hasUnread}`;
     if (key === last.current) return;
     last.current = key;
-    const badge = total > 0 ? renderUnreadBadge(total, highlight) : undefined;
-    desktopSetUnread(total, highlight, badge).catch(() => undefined);
+    const badge = hasUnread ? renderUnreadBadge(total, highlight) : undefined;
+    desktopSetUnread(total, highlight, badge, hasUnread).catch(() => undefined);
   }, [roomToUnread]);
 
   return null;

@@ -20,6 +20,7 @@ export function UnreadBadgeCenter({ children }: { children: ReactNode }) {
 export function UnreadBadge({ highlight, count }: UnreadBadgeProps) {
   return (
     <Badge
+      aria-label={count > 0 ? `Unread messages: ${count}` : 'Unread messages'}
       variant={highlight ? 'Success' : 'Secondary'}
       size={count > 0 ? '400' : '200'}
       fill="Solid"

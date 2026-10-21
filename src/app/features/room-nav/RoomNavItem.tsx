@@ -30,7 +30,7 @@ import { useRoomUnread } from '../../state/hooks/unread';
 import { roomToUnreadAtom } from '../../state/room/roomToUnread';
 import { getPowersLevelFromMatrixEvent, usePowerLevels } from '../../hooks/usePowerLevels';
 import { copyToClipboard } from '../../utils/dom';
-import { markAsRead } from '../../utils/notifications';
+import { isThreadUnread, markAsRead } from '../../utils/notifications';
 import { UseStateProvider } from '../../components/UseStateProvider';
 import { LeaveRoomPrompt } from '../../components/leave-room-prompt';
 import { useRoomTypingMember } from '../../hooks/useRoomTypingMembers';
@@ -57,7 +57,7 @@ import { useCallMembers, useCallSession } from '../../hooks/useCall';
 import { useCallEmbed, useCallStart } from '../../hooks/useCallEmbed';
 import { callChatAtom } from '../../state/callEmbed';
 import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
-import { RoomNavThreads } from './RoomNavThreads';
+import { RoomNavThreads, ThreadsToggle, useThreadsNav } from './RoomNavThreads';
 import { useCallPreferencesAtom } from '../../state/hooks/callPreferences';
 import { useAutoDiscoveryInfo } from '../../hooks/useAutoDiscoveryInfo';
 import { livekitSupport } from '../../hooks/useLivekitSupport';
@@ -74,6 +74,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
     const mx = useMatrixClient();
     const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
     const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
+    const threadUnread = room.getThreads().some((thread) => isThreadUnread(mx, room, thread));
     const powerLevels = usePowerLevels(room);
     const creators = useRoomCreators(room);
 
@@ -122,7 +123,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
             size="300"
             after={<Icon size="100" src={Icons.CheckTwice} />}
             radii="300"
-            disabled={!unread}
+            disabled={!unread && !threadUnread}
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
               Mark as Read
@@ -267,7 +268,7 @@ export function RoomNavItem({
   );
 
   const roomName = useRoomName(room);
-  const [showThreads] = useSetting(settingsAtom, 'showThreadsInNav');
+  const threadsNav = useThreadsNav(room);
   const setThreadPanel = useSetAtom(roomIdToThreadPanelAtomFamily(room.roomId));
 
   const handleContextMenu: MouseEventHandler<HTMLElement> = (evt) => {
@@ -448,8 +449,22 @@ export function RoomNavItem({
             </PopOut>
           </NavItemOptions>
         )}
+        {threadsNav.threads.length > 0 && (
+          <ThreadsToggle
+            room={room}
+            threads={threadsNav.threads}
+            collapsed={threadsNav.collapsed}
+            onToggle={threadsNav.toggle}
+          />
+        )}
       </NavItem>
-      {showThreads && <RoomNavThreads room={room} linkPath={linkPath} selected={selected} />}
+      <RoomNavThreads
+        room={room}
+        threads={threadsNav.threads}
+        collapsed={threadsNav.collapsed}
+        linkPath={linkPath}
+        selected={selected}
+      />
     </>
   );
 }

@@ -13,8 +13,24 @@ const truncate = (text: string, max = MAX_BODY) => {
   return flat.length > max ? `${flat.slice(0, max - 1)}…` : flat;
 };
 
-/** Короткое описание сообщения для текста уведомления. */
-export const getEventPreviewText = (mEvent: MatrixEvent): string => {
+const MATRIX_TO_LINK = /https?:\/\/matrix\.to\/#\/([@#!][^\s?/]+)(?:\/\$[^\s?]+)?(?:\?\S*)?/g;
+const USER_ID = /@[^\s:@]+:[\w.-]+(?::\d+)?/g;
+const ROOM_ID = /![^\s:]+:[\w.-]+(?::\d+)?/g;
+
+/** Сырые Matrix-ID и ссылки matrix.to в теле сообщения → имена; без комнаты ID остаются как есть. */
+const resolveMentions = (text: string, room?: Room): string => {
+  if (!room) return text;
+  return text
+    .replace(MATRIX_TO_LINK, '$1')
+    .replace(USER_ID, (id) => `@${getMemberDisplayName(room, id) ?? getMxIdLocalPart(id) ?? id}`)
+    .replace(ROOM_ID, (id) => {
+      const name = room.client.getRoom(id)?.name;
+      return name ? `#${name}` : 'ссылка на комнату';
+    });
+};
+
+/** Короткое описание сообщения для текста уведомления; с `room` упоминания читаемы. */
+export const getEventPreviewText = (mEvent: MatrixEvent, room?: Room): string => {
   if (mEvent.isDecryptionFailure()) return 'Зашифрованное сообщение';
   if (mEvent.getType() === 'm.sticker') return '🖼 Стикер';
 
@@ -34,14 +50,14 @@ export const getEventPreviewText = (mEvent: MatrixEvent): string => {
     case MsgType.Location:
       return '📍 Местоположение';
     case MsgType.Emote:
-      return `* ${truncate(trimReplyFromBody(body))}`;
+      return `* ${truncate(resolveMentions(trimReplyFromBody(body), room))}`;
     default:
       break;
   }
   if (content.msgtype === undefined && mEvent.getType() === 'm.room.encrypted') {
     return 'Зашифрованное сообщение';
   }
-  const text = truncate(trimReplyFromBody(body));
+  const text = truncate(resolveMentions(trimReplyFromBody(body), room));
   return text || 'Новое сообщение';
 };
 
@@ -154,7 +170,7 @@ export const renderUnreadBadge = (count: number, highlight: boolean): string | u
   ctx.font = `700 ${fontSize}px "Segoe UI", Inter, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, size / 2, size / 2 + 1);
+  if (count > 0) ctx.fillText(label, size / 2, size / 2 + 1);
 
   return stripDataUrl(canvas.toDataURL('image/png'));
 };

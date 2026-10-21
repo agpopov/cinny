@@ -84,6 +84,8 @@ import {
   getReactionContent,
   isMembershipChanged,
   reactionOrEditEvent,
+  isThreadUnread,
+  mainTimelineHaveUnread,
 } from '../../utils/room';
 import { useSetting } from '../../state/hooks/settings';
 import { MessageLayout, settingsAtom } from '../../state/settings';
@@ -116,6 +118,7 @@ import { ImageViewer } from '../../components/image-viewer';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { useRoomUnread } from '../../state/hooks/unread';
 import { roomToUnreadAtom } from '../../state/room/roomToUnread';
+import { useThreadVersion } from './thread/useThread';
 import { useMentionClickHandler } from '../../hooks/useMentionClickHandler';
 import { useSpoilerClickHandler } from '../../hooks/useSpoilerClickHandler';
 import { useRoomNavigate } from '../../hooks/useRoomNavigate';
@@ -469,6 +472,10 @@ const getRoomUnreadInfo = (room: Room, thread: Thread | undefined, scrollTo = fa
   const userId = room.client.getUserId() ?? '';
   const readUptoEventId = thread ? thread.getEventReadUpTo(userId) : room.getEventReadUpTo(userId);
   if (!readUptoEventId) return undefined;
+  if (
+    thread ? !isThreadUnread(room.client, room, thread) : !mainTimelineHaveUnread(room.client, room)
+  )
+    return undefined;
   const timelineSet = thread ? thread.timelineSet : room.getUnfilteredTimelineSet();
   const evtTimeline = getSetEventTimeline(timelineSet, readUptoEventId);
   const latestTimeline = evtTimeline && getFirstLinkedTimeline(evtTimeline, Direction.Forward);
@@ -547,6 +554,7 @@ export function RoomTimeline({
 
   const roomToParents = useAtomValue(roomToParentsAtom);
   const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
+  const threadVersion = useThreadVersion(room, thread);
   const { navigateRoom } = useRoomNavigate();
   const mentionClickHandler = useMentionClickHandler(room.roomId);
   const spoilerClickHandler = useSpoilerClickHandler();
@@ -557,9 +565,7 @@ export function RoomTimeline({
 
   const [unreadInfo, setUnreadInfo] = useState(() => getRoomUnreadInfo(room, thread, true));
   const readUptoEventIdRef = useRef<string>();
-  if (unreadInfo) {
-    readUptoEventIdRef.current = unreadInfo.readUptoEventId;
-  }
+  readUptoEventIdRef.current = unreadInfo?.readUptoEventId;
 
   const atBottomAnchorRef = useRef<HTMLElement>(null);
   const [atBottom, setAtBottom] = useState<boolean>(true);
@@ -676,43 +682,37 @@ export function RoomTimeline({
   useLiveEventArrive(
     room,
     viewTimelineSet,
-    useCallback(
-      (mEvt: MatrixEvent) => {
-        // if user is at bottom of timeline
-        // keep paginating timeline and conditionally mark as read
-        // otherwise we update timeline without paginating
-        // so timeline can be updated with evt like: edits, reactions etc
-        if (atBottomRef.current) {
-          if (document.hasFocus() && (!unreadInfo || mEvt.getSender() === mx.getUserId())) {
-            // Check if the document is in focus (user is actively viewing the app),
-            // and either there are no unread messages or the latest message is from the current user.
-            // If either condition is met, trigger the markAsRead function to send a read receipt.
-            requestAnimationFrame(() => markTimelineAsRead(hideActivity));
-          }
-
-          if (!document.hasFocus() && !unreadInfo) {
-            setUnreadInfo(getRoomUnreadInfo(room, thread));
-          }
-
-          scrollToBottomRef.current.count += 1;
-          scrollToBottomRef.current.smooth = true;
-
-          setTimeline((ct) => ({
-            ...ct,
-            range: {
-              start: ct.range.start + 1,
-              end: ct.range.end + 1,
-            },
-          }));
-          return;
+    useCallback(() => {
+      // if user is at bottom of timeline
+      // keep paginating timeline and conditionally mark as read
+      // otherwise we update timeline without paginating
+      // so timeline can be updated with evt like: edits, reactions etc
+      if (atBottomRef.current) {
+        if (document.hasFocus() && liveTimelineLinked) {
+          requestAnimationFrame(() => markTimelineAsRead(hideActivity));
         }
-        setTimeline((ct) => ({ ...ct }));
-        if (!unreadInfo) {
+
+        if (!document.hasFocus() && !unreadInfo) {
           setUnreadInfo(getRoomUnreadInfo(room, thread));
         }
-      },
-      [mx, room, thread, unreadInfo, hideActivity, markTimelineAsRead]
-    )
+
+        scrollToBottomRef.current.count += 1;
+        scrollToBottomRef.current.smooth = true;
+
+        setTimeline((ct) => ({
+          ...ct,
+          range: {
+            start: ct.range.start + 1,
+            end: ct.range.end + 1,
+          },
+        }));
+        return;
+      }
+      setTimeline((ct) => ({ ...ct }));
+      if (!unreadInfo) {
+        setUnreadInfo(getRoomUnreadInfo(room, thread));
+      }
+    }, [room, thread, unreadInfo, hideActivity, markTimelineAsRead, liveTimelineLinked])
   );
 
   // Под корневыми сообщениями показывается сводка треда — перерисуемся,
@@ -790,23 +790,11 @@ export function RoomTimeline({
   );
 
   const tryAutoMarkAsRead = useCallback(() => {
-    if (thread) {
-      // В треде отметка о прочтении может указывать на событие вне его таймлайна —
-      // просто отмечаем последнее сообщение треда (функция сама пропустит лишний запрос).
-      requestAnimationFrame(() => markTimelineAsRead(hideActivity));
-      return;
-    }
-    const readUptoEventId = readUptoEventIdRef.current;
-    if (!readUptoEventId) {
-      requestAnimationFrame(() => markTimelineAsRead(hideActivity));
-      return;
-    }
-    const evtTimeline = getSetEventTimeline(viewTimelineSet, readUptoEventId);
-    const latestTimeline = evtTimeline && getFirstLinkedTimeline(evtTimeline, Direction.Forward);
-    if (latestTimeline === viewTimelineSet.getLiveTimeline()) {
-      requestAnimationFrame(() => markTimelineAsRead(hideActivity));
-    }
-  }, [thread, viewTimelineSet, hideActivity, markTimelineAsRead]);
+    // Reaching the live bottom is sufficient even when the old receipt points
+    // outside the loaded history. An older event timeline must not read the live tail.
+    if (!liveTimelineLinked || !atBottomRef.current) return;
+    requestAnimationFrame(() => markTimelineAsRead(hideActivity));
+  }, [liveTimelineLinked, hideActivity, markTimelineAsRead]);
 
   const debounceSetAtBottom = useDebounce(
     useCallback((entry: IntersectionObserverEntry) => {
@@ -950,10 +938,10 @@ export function RoomTimeline({
 
   // Remove unreadInfo on mark as read
   useEffect(() => {
-    if (!unread) {
+    if (thread ? !isThreadUnread(mx, room, thread) : !mainTimelineHaveUnread(mx, room)) {
       setUnreadInfo(undefined);
     }
-  }, [unread]);
+  }, [mx, room, thread, unread, threadVersion]);
 
   // scroll out of view msg editor in view.
   useEffect(() => {

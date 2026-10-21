@@ -51,8 +51,12 @@ export const DesktopEvent = {
 export const desktopNotify = (payload: DesktopNotifyPayload) =>
   invoke<void>('desktop_notify', { payload });
 
-export const desktopSetUnread = (total: number, highlight: boolean, badge?: string) =>
-  invoke<void>('desktop_set_unread', { payload: { total, highlight, badge } });
+export const desktopSetUnread = (
+  total: number,
+  highlight: boolean,
+  badge?: string,
+  hasUnread = total > 0
+) => invoke<void>('desktop_set_unread', { payload: { total, highlight, badge, hasUnread } });
 
 export const desktopSetDnd = (active: boolean) => invoke<void>('desktop_set_dnd', { active });
 

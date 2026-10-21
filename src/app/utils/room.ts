@@ -14,9 +14,11 @@ import {
   MsgType,
   NotificationCountType,
   RelationType,
+  ReceiptType,
   Room,
   RoomMember,
   Thread,
+  inMainTimelineForReceipt,
 } from 'matrix-js-sdk';
 import { CryptoBackend } from 'matrix-js-sdk/lib/common-crypto/CryptoBackend';
 import { AccountDataEvent } from '../../types/matrix/accountData';
@@ -194,6 +196,8 @@ const NOTIFICATION_EVENT_TYPES = [
   'm.room.encrypted',
   'm.room.member',
   'm.sticker',
+  'm.poll.start',
+  'org.matrix.msc3381.poll.start',
 ];
 export const isNotificationEvent = (mEvent: MatrixEvent) => {
   const eType = mEvent.getType();
@@ -219,6 +223,37 @@ export const isFollowedThread = (room: Room, thread: Thread): boolean => {
   return thread.rootEvent?.getSender() === myUserId;
 };
 
+/** Latest persisted event in this receipt scope, including unloaded bundled replies. */
+export const getLatestReceiptEvent = (room: Room, thread?: Thread): MatrixEvent | undefined => {
+  const events = thread ? thread.liveTimeline.getEvents() : room.getLiveTimeline().getEvents();
+  const candidates = thread?.replyToEvent ? [...events, thread.replyToEvent] : events;
+  return candidates.reduce<MatrixEvent | undefined>((latest, event) => {
+    if (!event.getId() || event.status !== null) return latest;
+    if (thread ? inMainTimelineForReceipt(event) : !inMainTimelineForReceipt(event)) return latest;
+    if (thread && event.threadRootId !== thread.id) return latest;
+    if (!latest) return event;
+    const timelineSet = thread ? thread.timelineSet : room.getUnfilteredTimelineSet();
+    const order = timelineSet.compareEventOrdering(latest.getId()!, event.getId()!);
+    return (order ?? latest.getTs() - event.getTs()) < 0 ? event : latest;
+  }, undefined);
+};
+
+/** A confirmed receipt can arrive before updated counts, especially in encrypted rooms. */
+const hasRealReceiptAtLatest = (room: Room, thread?: Thread): boolean => {
+  const latest = getLatestReceiptEvent(room, thread);
+  const userId = room.client.getUserId();
+  if (!latest || !userId) return false;
+  const context = thread ?? room;
+  return [ReceiptType.Read, ReceiptType.ReadPrivate].some((type) => {
+    const receipt = context.getReadReceiptForUserId(userId, true, type);
+    if (receipt?.eventId === latest.getId()) return true;
+    const unthreaded = room.getReadReceiptForUserId(userId, true, type);
+    if (!unthreaded || unthreaded.data.thread_id) return false;
+    const ordering = room.compareEventOrdering(unthreaded.eventId, latest.getId()!);
+    return ordering !== null && ordering >= 0;
+  });
+};
+
 export type UnreadCountOptions = {
   /** Не учитывать основную ленту (например, сразу после своей отметки о прочтении). */
   ignoreMain?: boolean;
@@ -237,7 +272,7 @@ export const getRoomUnreadCounts = (
   let total = room.getUnreadNotificationCount(NotificationCountType.Total);
   let highlight = room.getUnreadNotificationCount(NotificationCountType.Highlight);
 
-  if (opts.ignoreMain) {
+  if (opts.ignoreMain || hasRealReceiptAtLatest(room)) {
     total -= room.getRoomUnreadNotificationCount(NotificationCountType.Total);
     highlight -= room.getRoomUnreadNotificationCount(NotificationCountType.Highlight);
   }
@@ -249,7 +284,7 @@ export const getRoomUnreadCounts = (
       thread.id,
       NotificationCountType.Highlight
     );
-    if (ignored.has(thread.id)) {
+    if (ignored.has(thread.id) || hasRealReceiptAtLatest(room, thread)) {
       total -= tTotal;
       highlight -= tHighlight;
       return;
@@ -266,24 +301,52 @@ export const roomHaveNotification = (room: Room): boolean => {
   return total > 0 || highlight > 0;
 };
 
-export const roomHaveUnread = (mx: MatrixClient, room: Room) => {
+/** Check actual receipts; Thread.hasUserReadEvent treats all old threads as read on migration. */
+export const isThreadUnread = (mx: MatrixClient, room: Room, thread: Thread): boolean => {
+  if (hasRealReceiptAtLatest(room, thread)) return false;
+  if (
+    room.getThreadUnreadNotificationCount(thread.id, NotificationCountType.Total) > 0 ||
+    room.getThreadUnreadNotificationCount(thread.id, NotificationCountType.Highlight) > 0
+  )
+    return true;
+  const latest = getLatestReceiptEvent(room, thread);
+  if (!latest || latest.getSender() === mx.getUserId()) return false;
+  const userId = mx.getSafeUserId();
+  if (
+    [ReceiptType.Read, ReceiptType.ReadPrivate].some(
+      (type) => thread.getReadReceiptForUserId(userId, false, type)?.eventId === latest.getId()
+    )
+  )
+    return false;
+  // Bundled latest replies may not yet belong to any loaded timeline.
+  const unthreaded = room.getLastUnthreadedReceiptFor(userId);
+  if (unthreaded && unthreaded.ts >= latest.getTs()) return false;
+  return !room.hasUserReadEvent(userId, latest.getId()!);
+};
+
+export const mainTimelineHaveUnread = (mx: MatrixClient, room: Room): boolean => {
   const userId = mx.getUserId();
   if (!userId) return false;
-  const readUpToId = room.getEventReadUpTo(userId);
-  const liveEvents = room.getLiveTimeline().getEvents();
-
-  if (liveEvents[liveEvents.length - 1]?.getSender() === userId) {
-    return false;
+  const events = room.getLiveTimeline().getEvents();
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    const event = events[i];
+    if (inMainTimelineForReceipt(event) && isNotificationEvent(event) && event.status === null) {
+      if (event.getSender() === userId || room.hasUserReadEvent(userId, event.getId()!))
+        return false;
+      // The latest unthreaded receipt may point into an unloaded thread. The SDK
+      // also uses its timestamp for thread read state in this situation.
+      const unthreaded = room.getLastUnthreadedReceiptFor(userId);
+      return !unthreaded || unthreaded.ts < event.getTs();
+    }
   }
-
-  for (let i = liveEvents.length - 1; i >= 0; i -= 1) {
-    const event = liveEvents[i];
-    if (!event) return false;
-    if (event.getId() === readUpToId) return false;
-    if (isNotificationEvent(event)) return true;
-  }
-  return true;
+  return false;
 };
+
+export const roomHaveUnread = (mx: MatrixClient, room: Room): boolean =>
+  mainTimelineHaveUnread(mx, room) ||
+  room
+    .getThreads()
+    .some((thread) => isFollowedThread(room, thread) && isThreadUnread(mx, room, thread));
 
 export const getUnreadInfo = (room: Room, opts?: UnreadCountOptions): UnreadInfo => {
   const { total, highlight } = getRoomUnreadCounts(room, opts);

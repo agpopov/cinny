@@ -189,7 +189,7 @@ function ThreadListItem({ room, thread, onOpen }: ThreadListItemProps) {
             className={css.ListItemRootText}
             style={{ fontWeight: unread.unread ? 600 : undefined }}
           >
-            {root.isRedacted() ? 'Сообщение удалено' : getEventPreviewText(root)}
+            {root.isRedacted() ? 'Сообщение удалено' : getEventPreviewText(root, room)}
           </Text>
           <Box alignItems="Center" gap="200">
             <Icon size="50" src={unread.unread ? Icons.ThreadUnread : Icons.Thread} />
@@ -392,7 +392,7 @@ function ThreadView({
 
   const rootSender = rootEvent?.getSender();
   const rootPreview = rootEvent
-    ? `${getSenderName(room, rootSender ?? '')}: ${getEventPreviewText(rootEvent)}`
+    ? `${getSenderName(room, rootSender ?? '')}: ${getEventPreviewText(rootEvent, room)}`
     : undefined;
   const subtitle = main ? [room.name, rootPreview].filter(Boolean).join(' · ') : rootPreview;
   const ready = !!thread && thread.initialEventsFetched;
@@ -452,7 +452,7 @@ function ThreadView({
                       <b>{getSenderName(room, rootSender ?? '')}</b>
                     </Text>
                     <Text size="T300" style={{ wordBreak: 'break-word' }}>
-                      {getEventPreviewText(rootEvent)}
+                      {getEventPreviewText(rootEvent, room)}
                     </Text>
                   </Box>
                 )}
