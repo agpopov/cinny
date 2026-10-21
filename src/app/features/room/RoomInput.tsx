@@ -123,9 +123,29 @@ interface RoomInputProps {
   fileDropContainerRef: RefObject<HTMLElement>;
   roomId: string;
   room: Room;
+  /** Если задан — сообщения отправляются в этот тред. */
+  threadRootId?: string;
+  /** Ключ черновиков (у треда свой, чтобы не смешивать с полем комнаты). */
+  draftKey?: string;
+  editableName?: string;
+  placeholder?: string;
 }
 export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
-  ({ editor, fileDropContainerRef, roomId, room }, ref) => {
+  (
+    {
+      editor,
+      fileDropContainerRef,
+      roomId,
+      room,
+      threadRootId,
+      draftKey: draftKeyProp,
+      editableName = 'RoomInput',
+      placeholder = 'Send a message...',
+    },
+    ref
+  ) => {
+    const draftKey = draftKeyProp ?? roomId;
+    const threadId = threadRootId ?? null;
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
     const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
@@ -139,8 +159,8 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const powerLevels = usePowerLevelsContext();
     const creators = useRoomCreators(room);
 
-    const [msgDraft, setMsgDraft] = useAtom(roomIdToMsgDraftAtomFamily(roomId));
-    const [replyDraft, setReplyDraft] = useAtom(roomIdToReplyDraftAtomFamily(roomId));
+    const [msgDraft, setMsgDraft] = useAtom(roomIdToMsgDraftAtomFamily(draftKey));
+    const [replyDraft, setReplyDraft] = useAtom(roomIdToReplyDraftAtomFamily(draftKey));
     const replyUserID = replyDraft?.userId;
 
     const powerLevelTags = usePowerLevelTags(room, powerLevels);
@@ -161,7 +181,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       legacyUsernameColor || direct ? colorMXID(replyUserID ?? '') : replyPowerColor;
 
     const [uploadBoard, setUploadBoard] = useState(true);
-    const [selectedFiles, setSelectedFiles] = useAtom(roomIdToUploadItemsAtomFamily(roomId));
+    const [selectedFiles, setSelectedFiles] = useAtom(roomIdToUploadItemsAtomFamily(draftKey));
     const uploadFamilyObserverAtom = createUploadFamilyObserverAtom(
       roomUploadAtomFamily,
       selectedFiles.map((f) => f.file)
@@ -240,7 +260,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         resetEditor(editor);
         resetEditorHistory(editor);
       },
-      [roomId, editor, setMsgDraft]
+      [draftKey, editor, setMsgDraft]
     );
 
     const handleFileMetadata = useCallback(
@@ -293,7 +313,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       });
       handleCancelUpload(uploads);
       const contents = fulfilledPromiseSettledResult(await Promise.allSettled(contentsPromises));
-      contents.forEach((content) => mx.sendMessage(roomId, content as any));
+      contents.forEach((content) => mx.sendMessage(roomId, threadId, content as any));
     };
 
     const submit = useCallback(() => {
@@ -366,18 +386,29 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             event_id: replyDraft.eventId,
           },
         };
-        if (replyDraft.relation?.rel_type === RelationType.Thread) {
+        if (!threadId && replyDraft.relation?.rel_type === RelationType.Thread) {
           content['m.relates_to'].event_id = replyDraft.relation.event_id;
           content['m.relates_to'].rel_type = RelationType.Thread;
           content['m.relates_to'].is_falling_back = false;
         }
       }
-      mx.sendMessage(roomId, content as any);
+      // Для треда SDK сам добавит связь m.thread и ответ-заглушку на последнее сообщение.
+      mx.sendMessage(roomId, threadId, content as any);
       resetEditor(editor);
       resetEditorHistory(editor);
       setReplyDraft(undefined);
       sendTypingStatus(false);
-    }, [mx, roomId, editor, replyDraft, sendTypingStatus, setReplyDraft, isMarkdown, commands]);
+    }, [
+      mx,
+      roomId,
+      threadId,
+      editor,
+      replyDraft,
+      sendTypingStatus,
+      setReplyDraft,
+      isMarkdown,
+      commands,
+    ]);
 
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
@@ -439,7 +470,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         await getImageUrlBlob(stickerUrl)
       );
 
-      mx.sendEvent(roomId, EventType.Sticker, {
+      mx.sendEvent(roomId, threadId, EventType.Sticker, {
         body: label,
         url: mxc,
         info,
@@ -537,9 +568,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           />
         )}
         <CustomEditor
-          editableName="RoomInput"
+          editableName={editableName}
           editor={editor}
-          placeholder="Send a message..."
+          placeholder={placeholder}
           onKeyDown={handleKeyDown}
           onKeyUp={handleKeyUp}
           onPaste={handlePaste}

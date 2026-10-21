@@ -42,6 +42,26 @@ export interface Settings {
 
   showNotifications: boolean;
   isNotificationSounds: boolean;
+  /** Показывать текст сообщения в системном уведомлении. */
+  notificationShowContent: boolean;
+  /** Громкость звука уведомлений, 0–100. */
+  notificationVolume: number;
+  /** Звук только для упоминаний и личных сообщений. */
+  notificationSoundMentionsOnly: boolean;
+  /**
+   * Режим «Не беспокоить»: 0 — выключен, -1 — до ручного выключения,
+   * иначе — отметка времени (мс), до которой режим активен.
+   */
+  dndUntil: number;
+  /** В режиме «Не беспокоить» всё равно уведомлять об упоминаниях. */
+  dndAllowMentions: boolean;
+  /** Тихие часы по расписанию. */
+  quietHoursEnabled: boolean;
+  /** Начало и конец тихих часов, «ЧЧ:ММ». */
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  /** Тихие часы весь день в субботу и воскресенье. */
+  quietHoursWeekends: boolean;
 
   hour24Clock: boolean;
   dateFormatString: string;
@@ -76,6 +96,15 @@ const defaultSettings: Settings = {
 
   showNotifications: true,
   isNotificationSounds: true,
+  notificationShowContent: true,
+  notificationVolume: 70,
+  notificationSoundMentionsOnly: false,
+  dndUntil: 0,
+  dndAllowMentions: false,
+  quietHoursEnabled: false,
+  quietHoursStart: '19:00',
+  quietHoursEnd: '09:00',
+  quietHoursWeekends: false,
 
   hour24Clock: false,
   dateFormatString: 'D MMM YYYY',

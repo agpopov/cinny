@@ -3,6 +3,8 @@ import { Box, Line } from 'folds';
 import { useParams } from 'react-router-dom';
 import { isKeyHotkey } from 'is-hotkey';
 import { useAtomValue } from 'jotai';
+import { ThreadPanel } from './thread/ThreadPanel';
+import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
 import { RoomView } from './RoomView';
 import { MembersDrawer } from './MembersDrawer';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
@@ -36,6 +38,8 @@ export function Room() {
   const powerLevels = usePowerLevels(room);
   const members = useRoomMembers(mx, room.roomId);
   const chat = useAtomValue(callChatAtom);
+  const threadPanel = useAtomValue(roomIdToThreadPanelAtomFamily(room.roomId));
+  const mobileThread = !!threadPanel && screenSize !== ScreenSize.Desktop;
 
   useKeyDown(
     window,
@@ -62,13 +66,19 @@ export function Room() {
             </Box>
           </Box>
         )}
-        {!callView && (
+        {!callView && !mobileThread && (
           <Box grow="Yes" direction="Column">
             <RoomViewHeader />
             <Box grow="Yes">
               <RoomView eventId={eventId} />
             </Box>
           </Box>
+        )}
+        {!callView && threadPanel && (
+          <>
+            {!mobileThread && <Line variant="Background" direction="Vertical" size="300" />}
+            <ThreadPanel key={room.roomId} room={room} state={threadPanel} />
+          </>
         )}
 
         {callView && chat && (
@@ -79,7 +89,7 @@ export function Room() {
             <CallChatView />
           </>
         )}
-        {!callView && screenSize === ScreenSize.Desktop && isDrawer && (
+        {!callView && !threadPanel && screenSize === ScreenSize.Desktop && isDrawer && (
           <>
             <Line variant="Background" direction="Vertical" size="300" />
             <MembersDrawer key={room.roomId} room={room} members={members} />

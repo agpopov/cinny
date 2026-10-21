@@ -16,6 +16,7 @@ import {
   RelationType,
   Room,
   RoomMember,
+  Thread,
 } from 'matrix-js-sdk';
 import { CryptoBackend } from 'matrix-js-sdk/lib/common-crypto/CryptoBackend';
 import { AccountDataEvent } from '../../types/matrix/accountData';
@@ -207,10 +208,61 @@ export const isNotificationEvent = (mEvent: MatrixEvent) => {
   return true;
 };
 
-export const roomHaveNotification = (room: Room): boolean => {
-  const total = room.getUnreadNotificationCount(NotificationCountType.Total);
-  const highlight = room.getUnreadNotificationCount(NotificationCountType.Highlight);
+/**
+ * Тред «отслеживается» пользователем (как в Discord), если он его начал
+ * или писал в нём. Только такие треды подсвечивают комнату без упоминаний.
+ */
+export const isFollowedThread = (room: Room, thread: Thread): boolean => {
+  const myUserId = room.client.getUserId();
+  if (!myUserId) return false;
+  if (thread.hasCurrentUserParticipated) return true;
+  return thread.rootEvent?.getSender() === myUserId;
+};
 
+export type UnreadCountOptions = {
+  /** Не учитывать основную ленту (например, сразу после своей отметки о прочтении). */
+  ignoreMain?: boolean;
+  /** Не учитывать эти треды. */
+  ignoreThreadIds?: string[];
+};
+
+/**
+ * Счётчики непрочитанного с учётом тредов: ответы в чужих тредах без упоминаний
+ * не подсвечивают комнату, упоминания учитываются всегда.
+ */
+export const getRoomUnreadCounts = (
+  room: Room,
+  opts: UnreadCountOptions = {}
+): { total: number; highlight: number } => {
+  let total = room.getUnreadNotificationCount(NotificationCountType.Total);
+  let highlight = room.getUnreadNotificationCount(NotificationCountType.Highlight);
+
+  if (opts.ignoreMain) {
+    total -= room.getRoomUnreadNotificationCount(NotificationCountType.Total);
+    highlight -= room.getRoomUnreadNotificationCount(NotificationCountType.Highlight);
+  }
+
+  const ignored = new Set(opts.ignoreThreadIds ?? []);
+  room.getThreads().forEach((thread) => {
+    const tTotal = room.getThreadUnreadNotificationCount(thread.id, NotificationCountType.Total);
+    const tHighlight = room.getThreadUnreadNotificationCount(
+      thread.id,
+      NotificationCountType.Highlight
+    );
+    if (ignored.has(thread.id)) {
+      total -= tTotal;
+      highlight -= tHighlight;
+      return;
+    }
+    if (tHighlight > 0 || isFollowedThread(room, thread)) return;
+    total -= tTotal;
+  });
+
+  return { total: Math.max(total, 0), highlight: Math.max(highlight, 0) };
+};
+
+export const roomHaveNotification = (room: Room): boolean => {
+  const { total, highlight } = getRoomUnreadCounts(room);
   return total > 0 || highlight > 0;
 };
 
@@ -233,9 +285,8 @@ export const roomHaveUnread = (mx: MatrixClient, room: Room) => {
   return true;
 };
 
-export const getUnreadInfo = (room: Room): UnreadInfo => {
-  const total = room.getUnreadNotificationCount(NotificationCountType.Total);
-  const highlight = room.getUnreadNotificationCount(NotificationCountType.Highlight);
+export const getUnreadInfo = (room: Room, opts?: UnreadCountOptions): UnreadInfo => {
+  const { total, highlight } = getRoomUnreadCounts(room, opts);
   return {
     roomId: room.roomId,
     highlight,

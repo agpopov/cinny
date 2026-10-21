@@ -10,6 +10,8 @@ import { getNotificationState, usePermissionState } from '../../../hooks/usePerm
 import { useEmailNotifications } from '../../../hooks/useEmailNotifications';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
+import { isDesktopApp } from '../../../utils/desktop';
+import { NotificationVolume } from './DesktopNotificationSettings';
 
 function EmailNotification() {
   const mx = useMatrixClient();
@@ -85,11 +87,18 @@ function EmailNotification() {
 }
 
 export function SystemNotification() {
-  const notifPermission = usePermissionState('notifications', getNotificationState());
+  const browserPermission = usePermissionState('notifications', getNotificationState());
+  // В Cinny Desktop уведомления нативные, разрешение браузера не нужно.
+  const notifPermission = isDesktopApp() ? 'granted' : browserPermission;
   const [showNotifications, setShowNotifications] = useSetting(settingsAtom, 'showNotifications');
   const [isNotificationSounds, setIsNotificationSounds] = useSetting(
     settingsAtom,
     'isNotificationSounds'
+  );
+  const [showContent, setShowContent] = useSetting(settingsAtom, 'notificationShowContent');
+  const [soundMentionsOnly, setSoundMentionsOnly] = useSetting(
+    settingsAtom,
+    'notificationSoundMentionsOnly'
   );
 
   const requestNotificationPermission = () => {
@@ -98,7 +107,7 @@ export function SystemNotification() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">System</Text>
+      <Text size="L400">Системные уведомления</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -106,22 +115,26 @@ export function SystemNotification() {
         gap="400"
       >
         <SettingTile
-          title="Desktop Notifications"
+          title="Уведомления на рабочем столе"
           description={
             notifPermission === 'denied' ? (
               <Text as="span" style={{ color: color.Critical.Main }} size="T200">
                 {'Notification' in window
-                  ? 'Notification permission is blocked. Please allow notification permission from browser address bar.'
-                  : 'Notifications are not supported by the system.'}
+                  ? 'Уведомления заблокированы. Разрешите их в адресной строке браузера.'
+                  : 'Система не поддерживает уведомления.'}
               </Text>
             ) : (
-              <span>Show desktop notifications when message arrive.</span>
+              <span>
+                {isDesktopApp()
+                  ? 'Всплывающие уведомления Windows о новых сообщениях. Клик открывает нужный чат или тред.'
+                  : 'Показывать уведомления о новых сообщениях.'}
+              </span>
             )
           }
           after={
             notifPermission === 'prompt' ? (
               <Button size="300" radii="300" onClick={requestNotificationPermission}>
-                <Text size="B300">Enable</Text>
+                <Text size="B300">Включить</Text>
               </Button>
             ) : (
               <Switch
@@ -140,9 +153,35 @@ export function SystemNotification() {
         gap="400"
       >
         <SettingTile
-          title="Notification Sound"
-          description="Play sound when new message arrive."
+          title="Показывать текст сообщения"
+          description="Выключите, если на экран могут смотреть посторонние: в уведомлении останется только отправитель."
+          after={
+            <Switch disabled={!showNotifications} value={showContent} onChange={setShowContent} />
+          }
+        />
+      </SequenceCard>
+      <SequenceCard
+        className={SequenceCardStyle}
+        variant="SurfaceVariant"
+        direction="Column"
+        gap="400"
+      >
+        <SettingTile
+          title="Звук уведомлений"
+          description="Проигрывать звук при новом сообщении."
           after={<Switch value={isNotificationSounds} onChange={setIsNotificationSounds} />}
+        />
+        <NotificationVolume />
+        <SettingTile
+          title="Звук только для упоминаний и личных сообщений"
+          description="Остальные сообщения приходят беззвучно."
+          after={
+            <Switch
+              disabled={!isNotificationSounds}
+              value={soundMentionsOnly}
+              onChange={setSoundMentionsOnly}
+            />
+          }
         />
       </SequenceCard>
       <SequenceCard

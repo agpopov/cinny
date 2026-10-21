@@ -4,6 +4,21 @@ import { cryptoCallbacks } from './secretStorageKeys';
 import { clearNavToActivePathStore } from '../app/state/navToActivePath';
 import { pushSessionToSW } from '../sw-session';
 
+// Версия схемы локального кэша синхронизации. При включении поддержки тредов
+// старый кэш нужно один раз сбросить: в нём ответы в тредах лежат в общей ленте.
+const SYNC_STORE_SCHEMA = 'threads-v1';
+const SYNC_STORE_SCHEMA_KEY = 'cinny_sync_store_schema';
+
+const SYNC_STORE_DB_NAME = 'web-sync-store';
+
+const deleteSyncStoreDatabase = () =>
+  new Promise<void>((resolve) => {
+    const req = global.indexedDB.deleteDatabase(`matrix-js-sdk:${SYNC_STORE_DB_NAME}`);
+    req.onsuccess = () => resolve();
+    req.onerror = () => resolve();
+    req.onblocked = () => resolve();
+  });
+
 type Session = {
   baseUrl: string;
   accessToken: string;
@@ -12,10 +27,16 @@ type Session = {
 };
 
 export const initClient = async (session: Session): Promise<MatrixClient> => {
+  if (global.localStorage.getItem(SYNC_STORE_SCHEMA_KEY) !== SYNC_STORE_SCHEMA) {
+    // Только кэш синхронизации: ключи шифрования и сессия не затрагиваются.
+    await deleteSyncStoreDatabase();
+    global.localStorage.setItem(SYNC_STORE_SCHEMA_KEY, SYNC_STORE_SCHEMA);
+  }
+
   const indexedDBStore = new IndexedDBStore({
     indexedDB: global.indexedDB,
     localStorage: global.localStorage,
-    dbName: 'web-sync-store',
+    dbName: SYNC_STORE_DB_NAME,
   });
 
   const legacyCryptoStore = new IndexedDBCryptoStore(global.indexedDB, 'crypto-store');
@@ -43,6 +64,9 @@ export const initClient = async (session: Session): Promise<MatrixClient> => {
 export const startClient = async (mx: MatrixClient) => {
   await mx.startClient({
     lazyLoadMembers: true,
+    // Треды как в Discord: ответы живут в отдельных таймлайнах треда,
+    // а не в общей ленте комнаты.
+    threadSupport: true,
   });
 };
 

@@ -24,7 +24,10 @@ import { CustomElement } from './slate';
 import * as css from './Editor.css';
 import { toggleKeyboardShortcut } from './keyboard';
 
-const initialValue: CustomElement[] = [
+// Новый объект для каждого редактора: slate-react хранит пути узлов в глобальных
+// WeakMap, и два одновременно открытых поля ввода (комната и тред) с общими
+// узлами ломают друг друга («Unable to find the path for Slate node»).
+const createInitialValue = (): CustomElement[] => [
   {
     type: BlockType.Paragraph,
     children: [{ text: '' }],
@@ -90,6 +93,7 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
     },
     ref
   ) => {
+    const [initialValue] = useState(createInitialValue);
     const renderElement = useCallback(
       (props: RenderElementProps) => <RenderElement {...props} />,
       []

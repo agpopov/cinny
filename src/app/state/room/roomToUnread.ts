@@ -1,6 +1,7 @@
 import produce from 'immer';
 import { atom, useSetAtom } from 'jotai';
 import {
+  ClientEvent,
   IRoomTimelineData,
   MatrixClient,
   MatrixEvent,
@@ -24,6 +25,7 @@ import {
   getUnreadInfo,
   getUnreadInfos,
   isNotificationEvent,
+  roomHaveUnread,
 } from '../../utils/room';
 import { roomToParentsAtom } from './roomToParents';
 import { useStateEventCallback } from '../../hooks/useStateEventCallback';
@@ -213,7 +215,11 @@ export const useBindRoomToUnreadAtom = (mx: MatrixClient, unreadAtom: typeof roo
       }
 
       if (mEvent.getSender() === mx.getUserId()) return;
-      setUnreadAtom({ type: 'PUT', unreadInfo: getUnreadInfo(room) });
+      const unreadInfo = getUnreadInfo(room);
+      const isThreadReply = !!mEvent.threadRootId && !mEvent.isThreadRoot;
+      // Ответ в чужом треде без упоминания не делает комнату непрочитанной.
+      if (isThreadReply && unreadInfo.total === 0 && unreadInfo.highlight === 0) return;
+      setUnreadAtom({ type: 'PUT', unreadInfo });
     };
     mx.on(RoomEvent.Timeline, handleTimelineEvent);
     return () => {
@@ -228,13 +234,36 @@ export const useBindRoomToUnreadAtom = (mx: MatrixClient, unreadAtom: typeof roo
       if (room.isSpaceRoom()) return;
       const content = mEvent.getContent<ReceiptContent>();
 
-      const isMyReceipt = Object.keys(content).find((eventId) =>
-        (Object.keys(content[eventId]) as ReceiptType[]).find(
-          (receiptType) => content[eventId][receiptType][myUserId]
-        )
-      );
-      if (isMyReceipt) {
+      // Собираем треды, к которым относятся мои отметки о прочтении:
+      // 'main' — основная лента, undefined — отметка без треда (читает всё).
+      let myReceipt = false;
+      let unthreaded = false;
+      let mainRead = false;
+      const readThreads: string[] = [];
+      Object.keys(content).forEach((eventId) => {
+        (Object.keys(content[eventId]) as ReceiptType[]).forEach((receiptType) => {
+          const receipt = content[eventId][receiptType][myUserId];
+          if (!receipt) return;
+          myReceipt = true;
+          const threadId = receipt.thread_id;
+          if (!threadId) unthreaded = true;
+          else if (threadId === 'main') mainRead = true;
+          else readThreads.push(threadId);
+        });
+      });
+      if (!myReceipt) return;
+      if (unthreaded) {
         setUnreadAtom({ type: 'DELETE', roomId: room.roomId });
+        return;
+      }
+      const unreadInfo = getUnreadInfo(room, {
+        ignoreMain: mainRead,
+        ignoreThreadIds: readThreads,
+      });
+      if (unreadInfo.total === 0 && unreadInfo.highlight === 0) {
+        setUnreadAtom({ type: 'DELETE', roomId: room.roomId });
+      } else {
+        setUnreadAtom({ type: 'PUT', unreadInfo });
       }
     };
     mx.on(RoomEvent.Receipt, handleReceipt);
@@ -249,6 +278,43 @@ export const useBindRoomToUnreadAtom = (mx: MatrixClient, unreadAtom: typeof roo
       unreadInfos: getUnreadInfos(mx),
     });
   }, [mx, setUnreadAtom, roomsNotificationPreferences]);
+
+  // Сервер присылает обновлённые счётчики (в том числе по тредам) отдельно
+  // от событий ленты — пересчитываем комнату.
+  useEffect(() => {
+    const handleUnreadNotifications = (
+      unreadNotifications: unknown,
+      threadId: string | undefined,
+      room: Room
+    ) => {
+      if (!room || room.isSpaceRoom() || room.getMyMembership() !== Membership.Join) return;
+      if (getNotificationType(mx, room.roomId) === NotificationType.Mute) return;
+      const unreadInfo = getUnreadInfo(room);
+      if (unreadInfo.total > 0 || unreadInfo.highlight > 0) {
+        setUnreadAtom({ type: 'PUT', unreadInfo });
+      } else if (!roomHaveUnread(mx, room)) {
+        setUnreadAtom({ type: 'DELETE', roomId: room.roomId });
+      }
+    };
+    const rooms = mx.getRooms();
+    const listeners = rooms.map((room) => {
+      const listener = (u: unknown, threadId?: string) =>
+        handleUnreadNotifications(u, threadId, room);
+      room.on(RoomEvent.UnreadNotifications, listener);
+      return () => room.removeListener(RoomEvent.UnreadNotifications, listener);
+    });
+    const handleNewRoom = (room: Room) => {
+      const listener = (u: unknown, threadId?: string) =>
+        handleUnreadNotifications(u, threadId, room);
+      room.on(RoomEvent.UnreadNotifications, listener);
+      listeners.push(() => room.removeListener(RoomEvent.UnreadNotifications, listener));
+    };
+    mx.on(ClientEvent.Room, handleNewRoom);
+    return () => {
+      mx.removeListener(ClientEvent.Room, handleNewRoom);
+      listeners.forEach((unlisten) => unlisten());
+    };
+  }, [mx, setUnreadAtom]);
 
   useEffect(() => {
     const handleMembershipChange = (room: Room, membership: string) => {

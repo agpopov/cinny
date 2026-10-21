@@ -25,6 +25,7 @@ import {
 } from 'folds';
 import { useNavigate } from 'react-router-dom';
 import { Room } from 'matrix-js-sdk';
+import { useAtom } from 'jotai';
 import { useStateEvent } from '../../hooks/useStateEvent';
 import { PageHeader } from '../../components/page';
 import { RoomAvatar, RoomIcon } from '../../components/room-avatar';
@@ -72,6 +73,8 @@ import { RoomSettingsPage } from '../../state/roomSettings';
 import { useCallEmbed, useCallStart } from '../../hooks/useCallEmbed';
 import { useLivekitSupport } from '../../hooks/useLivekitSupport';
 import { webRTCSupported } from '../../utils/rtc';
+import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
+import { useUnreadFollowedThreads } from './thread/useThread';
 
 type RoomMenuProps = {
   room: Room;
@@ -416,6 +419,11 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
     : undefined;
 
   const [peopleDrawer, setPeopleDrawer] = useSetting(settingsAtom, 'isPeopleDrawer');
+  const [threadPanel, setThreadPanel] = useAtom(roomIdToThreadPanelAtomFamily(room.roomId));
+  const threadsUnread = useUnreadFollowedThreads(mx, room);
+  const handleThreadsToggle = () => {
+    setThreadPanel(threadPanel ? undefined : { view: 'list' });
+  };
 
   const handleSearchClick = () => {
     const searchParams: _SearchPathSearchParams = {
@@ -594,6 +602,50 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               </FocusTrap>
             }
           />
+          {!callView && (
+            <TooltipProvider
+              position="Bottom"
+              offset={4}
+              tooltip={
+                <Tooltip>
+                  <Text>{threadPanel ? 'Скрыть треды' : 'Треды'}</Text>
+                </Tooltip>
+              }
+            >
+              {(triggerRef) => (
+                <IconButton
+                  fill="None"
+                  ref={triggerRef}
+                  style={{ position: 'relative' }}
+                  onClick={handleThreadsToggle}
+                  aria-pressed={!!threadPanel}
+                >
+                  {threadsUnread.unread > 0 && (
+                    <Badge
+                      style={{
+                        position: 'absolute',
+                        left: toRem(3),
+                        top: toRem(3),
+                      }}
+                      variant={threadsUnread.highlight ? 'Critical' : 'Primary'}
+                      size="400"
+                      fill="Solid"
+                      radii="Pill"
+                    >
+                      <Text as="span" size="L400">
+                        {threadsUnread.unread}
+                      </Text>
+                    </Badge>
+                  )}
+                  <Icon
+                    size="400"
+                    src={threadsUnread.unread > 0 ? Icons.ThreadUnread : Icons.Thread}
+                    filled={!!threadPanel}
+                  />
+                </IconButton>
+              )}
+            </TooltipProvider>
+          )}
           {!room.isCallRoom() && livekitSupported && rtcSupported && hasCallPermission && (
             <CallButton />
           )}

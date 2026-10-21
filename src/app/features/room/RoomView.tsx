@@ -1,6 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import { Box, Text, config } from 'folds';
 import { EventType } from 'matrix-js-sdk';
+import { useSetAtom } from 'jotai';
 import { ReactEditor } from 'slate-react';
 import { isKeyHotkey } from 'is-hotkey';
 import { useStateEvent } from '../../hooks/useStateEvent';
@@ -22,6 +23,7 @@ import { useSetting } from '../../state/hooks/settings';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoom } from '../../hooks/useRoom';
+import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
 
 const FN_KEYS_REGEX = /^F\d+$/;
 const shouldFocusMessageField = (evt: KeyboardEvent): boolean => {
@@ -65,6 +67,12 @@ export function RoomView({ eventId }: { eventId?: string }) {
   const editor = useEditor();
 
   const mx = useMatrixClient();
+  const setThreadPanel = useSetAtom(roomIdToThreadPanelAtomFamily(roomId));
+  const handleOpenThread = useCallback(
+    (rootId: string, threadEventId?: string) =>
+      setThreadPanel({ view: 'thread', rootId, eventId: threadEventId }),
+    [setThreadPanel]
+  );
 
   const tombstoneEvent = useStateEvent(room, StateEvent.RoomTombstone);
   const powerLevels = usePowerLevelsContext();
@@ -99,6 +107,7 @@ export function RoomView({ eventId }: { eventId?: string }) {
           eventId={eventId}
           roomInputRef={roomInputRef}
           editor={editor}
+          onOpenThread={handleOpenThread}
         />
         <RoomViewTyping room={room} />
       </Box>
