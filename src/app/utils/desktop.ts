@@ -20,10 +20,14 @@ export const isMobileApp = (): boolean =>
   isNativeApp() && /Android|iPhone|iPad/i.test(navigator.userAgent);
 export const isDesktopApp = (): boolean => isNativeApp() && !isMobileApp();
 
-export const nativeNotificationPermission = (request = false): Promise<PermissionState> =>
-  isMobileApp()
-    ? invoke<PermissionState>('native_notification_permission', { request })
-    : Promise.resolve('granted');
+export const nativeNotificationPermission = async (request = false): Promise<PermissionState> => {
+  if (!isMobileApp()) return 'granted';
+  const permission = await invoke<PermissionState | 'prompt-with-rationale'>(
+    'native_notification_permission',
+    { request }
+  );
+  return permission === 'prompt-with-rationale' ? 'prompt' : permission;
+};
 
 export type NotificationTarget = {
   roomId: string;

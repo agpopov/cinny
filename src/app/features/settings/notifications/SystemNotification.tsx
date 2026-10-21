@@ -146,6 +146,12 @@ export function SystemNotification() {
   return (
     <Box direction="Column" gap="100">
       <Text size="L400">Системные уведомления</Text>
+      {isMobileApp() && (
+        <Text size="T200" priority="300">
+          В этой предварительной Android-сборке уведомления приходят, пока приложение работает.
+          Доставка при закрытом приложении ещё не подключена.
+        </Text>
+      )}
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"

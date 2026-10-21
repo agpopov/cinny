@@ -33,7 +33,12 @@ export function SettingsTab() {
     <SidebarItem active={settings}>
       <SidebarItemTooltip tooltip="User Settings">
         {(triggerRef) => (
-          <SidebarAvatar as="button" ref={triggerRef} onClick={openSettings}>
+          <SidebarAvatar
+            as="button"
+            aria-label="User Settings"
+            ref={triggerRef}
+            onClick={openSettings}
+          >
             <UserAvatar
               userId={userId}
               src={avatarUrl}
