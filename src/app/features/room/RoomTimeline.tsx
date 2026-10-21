@@ -569,6 +569,7 @@ export function RoomTimeline({
 
   const atBottomAnchorRef = useRef<HTMLElement>(null);
   const [atBottom, setAtBottom] = useState<boolean>(true);
+  const bottomVisibleRef = useRef(false);
   const atBottomRef = useRef(atBottom);
   atBottomRef.current = atBottom;
 
@@ -687,9 +688,18 @@ export function RoomTimeline({
       // keep paginating timeline and conditionally mark as read
       // otherwise we update timeline without paginating
       // so timeline can be updated with evt like: edits, reactions etc
-      if (atBottomRef.current) {
-        if (document.hasFocus() && liveTimelineLinked) {
-          requestAnimationFrame(() => markTimelineAsRead(hideActivity));
+      if (atBottomRef.current && atLiveEndRef.current) {
+        if (document.hasFocus()) {
+          requestAnimationFrame(() => {
+            if (
+              alive() &&
+              document.hasFocus() &&
+              bottomVisibleRef.current &&
+              atLiveEndRef.current
+            ) {
+              markTimelineAsRead(hideActivity);
+            }
+          });
         }
 
         if (!document.hasFocus() && !unreadInfo) {
@@ -712,7 +722,7 @@ export function RoomTimeline({
       if (!unreadInfo) {
         setUnreadInfo(getRoomUnreadInfo(room, thread));
       }
-    }, [room, thread, unreadInfo, hideActivity, markTimelineAsRead, liveTimelineLinked])
+    }, [room, thread, unreadInfo, hideActivity, markTimelineAsRead, alive])
   );
 
   // Под корневыми сообщениями показывается сводка треда — перерисуемся,
@@ -790,11 +800,14 @@ export function RoomTimeline({
   );
 
   const tryAutoMarkAsRead = useCallback(() => {
-    // Reaching the live bottom is sufficient even when the old receipt points
-    // outside the loaded history. An older event timeline must not read the live tail.
-    if (!liveTimelineLinked || !atBottomRef.current) return;
-    requestAnimationFrame(() => markTimelineAsRead(hideActivity));
-  }, [liveTimelineLinked, hideActivity, markTimelineAsRead]);
+    // Recheck the visible live end when the frame runs: focus, navigation and
+    // pagination can change after the callback was scheduled.
+    requestAnimationFrame(() => {
+      if (alive() && document.hasFocus() && bottomVisibleRef.current && atLiveEndRef.current) {
+        markTimelineAsRead(hideActivity);
+      }
+    });
+  }, [hideActivity, markTimelineAsRead, alive]);
 
   const debounceSetAtBottom = useDebounce(
     useCallback((entry: IntersectionObserverEntry) => {
@@ -808,6 +821,7 @@ export function RoomTimeline({
         const target = atBottomAnchorRef.current;
         if (!target) return;
         const targetEntry = getIntersectionObserverEntry(target, entries);
+        if (targetEntry) bottomVisibleRef.current = targetEntry.isIntersecting;
         if (targetEntry) debounceSetAtBottom(targetEntry);
         if (targetEntry?.isIntersecting && atLiveEndRef.current) {
           setAtBottom(true);
@@ -828,9 +842,21 @@ export function RoomTimeline({
     useCallback(() => atBottomAnchorRef.current, [])
   );
 
+  // Counts and pagination can change without moving the bottom anchor.
+  useEffect(() => {
+    const scopeUnread = thread
+      ? isThreadUnread(mx, room, thread)
+      : mainTimelineHaveUnread(mx, room);
+    if (liveTimelineLinked && rangeAtEnd && scopeUnread) tryAutoMarkAsRead();
+  }, [mx, room, thread, liveTimelineLinked, rangeAtEnd, unread, threadVersion, tryAutoMarkAsRead]);
+
   useDocumentFocusChange(
     useCallback(
       (inFocus) => {
+        if (inFocus && bottomVisibleRef.current && atLiveEndRef.current) {
+          tryAutoMarkAsRead();
+          return;
+        }
         if (inFocus && atBottomRef.current) {
           if (unreadInfo?.inLiveTimeline) {
             handleOpenEvent(unreadInfo.readUptoEventId, false, (scrolled) => {

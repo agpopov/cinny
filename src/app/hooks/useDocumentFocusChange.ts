@@ -17,9 +17,15 @@ export const useDocumentFocusChange = (onChange: (focus: boolean) => void) => {
 
     document.addEventListener('focusin', handleFocus);
     document.addEventListener('focusout', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleFocus);
     return () => {
       document.removeEventListener('focusin', handleFocus);
       document.removeEventListener('focusout', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleFocus);
     };
   }, [onChange]);
 };
