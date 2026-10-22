@@ -207,7 +207,7 @@ with sync_playwright() as playwright:
                     if tag == 'img':
                         page.wait_for_function('(el) => el.complete && el.naturalWidth === 2', arg=media.element_handle())
                     else:
-                        check(label + ' inline video controls ' + suffix, media.evaluate('(el) => el.controls && el.playsInline'))
+                        check(label + ' inline video controls ' + suffix, media.evaluate('(el) => el.controls && el.hasAttribute("playsinline")'))
                         media.evaluate('(el) => el.play().catch(() => {})')
                         page.wait_for_function('(el) => el.readyState >= 2 && el.videoWidth === 160', arg=media.element_handle())
                         media.evaluate('(el) => el.pause()')
