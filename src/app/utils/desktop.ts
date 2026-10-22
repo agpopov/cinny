@@ -5,7 +5,7 @@
  * Команды реализованы в `src-tauri/src/desktop.rs` репозитория cinny-desktop.
  */
 import { invoke, isTauri } from '@tauri-apps/api/core';
-import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 export const isNativeApp = (): boolean => {
   try {

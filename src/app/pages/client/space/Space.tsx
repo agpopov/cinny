@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   MouseEventHandler,
   forwardRef,
@@ -158,7 +159,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
           disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            {t('Mark as Read')}
           </Text>
         </MenuItem>
       </Box>
@@ -185,7 +186,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
           radii="300"
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Copy Link
+            {t('Copy Link')}
           </Text>
         </MenuItem>
         <MenuItem
@@ -273,7 +274,12 @@ function SpaceHeader() {
             {joinRules?.join_rule !== JoinRule.Public && <Icon src={Icons.Lock} size="50" />}
           </Box>
           <Box shrink="No">
-            <IconButton aria-pressed={!!menuAnchor} variant="Background" onClick={handleOpenMenu}>
+            <IconButton
+              aria-label="Действия"
+              aria-pressed={!!menuAnchor}
+              variant="Background"
+              onClick={handleOpenMenu}
+            >
               <Icon src={Icons.VerticalDots} size="200" />
             </IconButton>
           </Box>
@@ -476,7 +482,7 @@ export function Space() {
                     </Avatar>
                     <Box as="span" grow="Yes">
                       <Text as="span" size="Inherit" truncate>
-                        Message Search
+                        {t('Message Search')}
                       </Text>
                     </Box>
                   </Box>
@@ -511,7 +517,7 @@ export function Space() {
                           onClick={handleCategoryClick}
                           closed={closedCategories.has(categoryId)}
                         >
-                          {roomId === space.roomId ? 'Rooms' : room?.name}
+                          {roomId === space.roomId ? t('Rooms') : room?.name}
                         </RoomNavCategoryButton>
                       </NavCategoryHeader>
                     </div>

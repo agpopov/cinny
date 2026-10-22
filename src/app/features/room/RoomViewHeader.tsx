@@ -1,3 +1,5 @@
+import classNames from 'classnames';
+import { t } from 'i18next';
 import React, { MouseEventHandler, forwardRef, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
 import {
@@ -138,7 +140,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            {t('Mark as Read')}
           </Text>
         </MenuItem>
         <RoomNotificationModeSwitcher roomId={room.roomId} value={notificationMode}>
@@ -157,7 +159,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
               onClick={handleOpen}
             >
               <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                Notifications
+                {t('Notifications')}
               </Text>
             </MenuItem>
           )}
@@ -186,7 +188,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           radii="300"
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Copy Link
+            {t('Copy Link')}
           </Text>
         </MenuItem>
         <MenuItem
@@ -196,7 +198,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           radii="300"
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Room Settings
+            {t('Room Settings')}
           </Text>
         </MenuItem>
         <UseStateProvider initial={false}>
@@ -330,7 +332,9 @@ function CallButton() {
         tooltip={
           <Tooltip>
             {inAnotherCall ? (
-              <Text size="L400">Already in another call — End the current call to join!</Text>
+              <Text size="L400">
+                {t('Already in another call — End the current call to join!')}
+              </Text>
             ) : (
               <Text>Call</Text>
             )}
@@ -455,7 +459,10 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
 
   return (
     <PageHeader
-      className={ContainerColor({ variant: 'Surface' })}
+      className={classNames(
+        ContainerColor({ variant: 'Surface' }),
+        screenSize === ScreenSize.Mobile && css.MobileHeader
+      )}
       balance={screenSize === ScreenSize.Mobile}
     >
       <Box grow="Yes" gap="300">
@@ -463,7 +470,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
           <BackRouteHandler>
             {(onBack) => (
               <Box shrink="No" alignItems="Center">
-                <IconButton fill="None" onClick={onBack}>
+                <IconButton aria-label="Назад" fill="None" onClick={onBack}>
                   <Icon src={Icons.ArrowLeft} />
                 </IconButton>
               </Box>
@@ -534,12 +541,17 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               offset={4}
               tooltip={
                 <Tooltip>
-                  <Text>Search</Text>
+                  <Text>{t('Search')}</Text>
                 </Tooltip>
               }
             >
               {(triggerRef) => (
-                <IconButton fill="None" ref={triggerRef} onClick={handleSearchClick}>
+                <IconButton
+                  aria-label="Поиск"
+                  fill="None"
+                  ref={triggerRef}
+                  onClick={handleSearchClick}
+                >
                   <Icon size="400" src={Icons.Search} />
                 </IconButton>
               )}
@@ -550,7 +562,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             offset={4}
             tooltip={
               <Tooltip>
-                <Text>Pinned Messages</Text>
+                <Text>{t('Pinned Messages')}</Text>
               </Tooltip>
             }
           >
@@ -664,7 +676,12 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               }
             >
               {(triggerRef) => (
-                <IconButton fill="None" ref={triggerRef} onClick={handleMemberToggle}>
+                <IconButton
+                  aria-label="Профиль участника"
+                  fill="None"
+                  ref={triggerRef}
+                  onClick={handleMemberToggle}
+                >
                   <Icon size="400" src={Icons.User} />
                 </IconButton>
               )}
@@ -683,6 +700,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
           >
             {(triggerRef) => (
               <IconButton
+                aria-label="Действия"
                 fill="None"
                 onClick={handleOpenMenu}
                 ref={triggerRef}

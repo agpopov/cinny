@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useMemo, useState } from 'react';
 import {
   Avatar,
@@ -15,6 +16,7 @@ import {
   Text,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
+import { useBackDismiss } from '../../hooks/useBackDismiss';
 import { General } from './general';
 import { PageNav, PageNavContent, PageNavHeader, PageRoot } from '../../components/page';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
@@ -55,37 +57,37 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
     () => [
       {
         page: SettingsPages.GeneralPage,
-        name: 'General',
+        name: t('General'),
         icon: Icons.Setting,
       },
       {
         page: SettingsPages.AccountPage,
-        name: 'Account',
+        name: t('Account'),
         icon: Icons.User,
       },
       {
         page: SettingsPages.NotificationPage,
-        name: 'Notifications',
+        name: t('Notifications'),
         icon: Icons.Bell,
       },
       {
         page: SettingsPages.DevicesPage,
-        name: 'Devices',
+        name: t('Devices'),
         icon: Icons.Monitor,
       },
       {
         page: SettingsPages.EmojisStickersPage,
-        name: 'Emojis & Stickers',
+        name: t('Emojis & Stickers'),
         icon: Icons.Smile,
       },
       {
         page: SettingsPages.DeveloperToolsPage,
-        name: 'Developer Tools',
+        name: t('Developer Tools'),
         icon: Icons.Terminal,
       },
       {
         page: SettingsPages.AboutPage,
-        name: 'About',
+        name: t('About'),
         icon: Icons.Info,
       },
     ],
@@ -97,6 +99,7 @@ type SettingsProps = {
   requestClose: () => void;
 };
 export function Settings({ initialPage, requestClose }: SettingsProps) {
+  useBackDismiss(true, requestClose, 50);
   const mx = useMatrixClient();
   const useAuthentication = useMediaAuthentication();
   const userId = mx.getUserId()!;
@@ -136,12 +139,12 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
                   />
                 </Avatar>
                 <Text size="H4" truncate>
-                  Settings
+                  {t('Settings')}
                 </Text>
               </Box>
               <Box shrink="No">
                 {screenSize === ScreenSize.Mobile && (
-                  <IconButton onClick={requestClose} variant="Background">
+                  <IconButton aria-label="Закрыть" onClick={requestClose} variant="Background">
                     <Icon src={Icons.Cross} />
                   </IconButton>
                 )}
@@ -184,7 +187,7 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
                         before={<Icon src={Icons.Power} size="100" />}
                         onClick={() => setLogout(true)}
                       >
-                        <Text size="B400">Logout</Text>
+                        <Text size="B400">{t('Logout')}</Text>
                       </Button>
                       {logout && (
                         <Overlay open backdrop={<OverlayBackdrop />}>

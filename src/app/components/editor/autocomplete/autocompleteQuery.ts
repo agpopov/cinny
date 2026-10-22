@@ -1,12 +1,13 @@
-import { BaseRange, Editor } from 'slate';
+import { type BaseRange, Editor } from 'slate';
 import { mentionQueryStart } from '../../../utils/mentionQuery';
 
-export enum AutocompletePrefix {
-  RoomMention = '#',
-  UserMention = '@',
-  Emoticon = ':',
-  Command = '/',
-}
+export const AutocompletePrefix = {
+  RoomMention: '#',
+  UserMention: '@',
+  Emoticon: ':',
+  Command: '/',
+} as const;
+export type AutocompletePrefix = typeof AutocompletePrefix[keyof typeof AutocompletePrefix];
 export const AUTOCOMPLETE_PREFIXES: readonly AutocompletePrefix[] = [
   AutocompletePrefix.RoomMention,
   AutocompletePrefix.UserMention,

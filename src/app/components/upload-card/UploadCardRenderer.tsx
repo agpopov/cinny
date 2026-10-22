@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ReactNode, useEffect } from 'react';
 import { Box, Chip, Icon, IconButton, Icons, Text, color, config, toRem } from 'folds';
 import { UploadCard, UploadCardError, UploadCardProgress } from './UploadCard';
@@ -94,7 +95,7 @@ function MediaPreview({ fileItem, onSpoiler, children }: MediaPreviewProps) {
           before={<Icon src={Icons.EyeBlind} size="50" />}
           onClick={() => onSpoiler(!metadata.markedAsSpoiler)}
         >
-          <Text size="B300">Spoiler</Text>
+          <Text size="B300">{t('Spoiler')}</Text>
         </Chip>
       </Box>
     </Box>
@@ -125,9 +126,10 @@ export function UploadCardRenderer({
   const { file } = upload;
   const fileSizeExceeded = file.size > allowSize;
 
-  if (upload.status === UploadStatus.Idle && !fileSizeExceeded) {
-    startUpload();
-  }
+  useEffect(() => {
+    if (upload.status === UploadStatus.Idle && !fileSizeExceeded)
+      startUpload().catch(() => undefined);
+  }, [upload.status, fileSizeExceeded, startUpload]);
 
   const handleSpoiler = (marked: boolean) => {
     setMetadata(fileItem, { ...metadata, markedAsSpoiler: marked });
@@ -154,17 +156,17 @@ export function UploadCardRenderer({
             <Chip
               as="button"
               onClick={startUpload}
-              aria-label="Retry Upload"
+              aria-label={t('Retry Upload')}
               variant="Critical"
               radii="Pill"
               outlined
             >
-              <Text size="B300">Retry</Text>
+              <Text size="B300">{t('Retry')}</Text>
             </Chip>
           )}
           <IconButton
             onClick={removeUpload}
-            aria-label="Cancel Upload"
+            aria-label={t('Cancel Upload')}
             variant="SurfaceVariant"
             radii="Pill"
             size="300"
@@ -199,9 +201,9 @@ export function UploadCardRenderer({
           {upload.status === UploadStatus.Idle && fileSizeExceeded && (
             <UploadCardError>
               <Text size="T200">
-                The file size exceeds the limit. Maximum allowed size is{' '}
-                <b>{bytesToSize(allowSize)}</b>, but the uploaded file is{' '}
-                <b>{bytesToSize(file.size)}</b>.
+                {t('The file size exceeds the limit. Maximum allowed size is')}{' '}
+                <b>{bytesToSize(allowSize)}</b>
+                {t(', but the uploaded file is')} <b>{bytesToSize(file.size)}</b>.
               </Text>
             </UploadCardError>
           )}

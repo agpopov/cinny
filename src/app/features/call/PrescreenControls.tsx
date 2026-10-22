@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { Box, Button, Icon, Icons, Spinner, Text } from 'folds';
+import { callDeviceError, checkCallDevices } from '../../utils/callDevices';
 import { SequenceCard } from '../../components/sequence-card';
 import * as css from './styles.css';
 import { ChatButton, ControlDivider, MicrophoneButton, SoundButton, VideoButton } from './Controls';
@@ -11,6 +12,9 @@ type PrescreenControlsProps = {
   canJoin?: boolean;
 };
 export function PrescreenControls({ canJoin }: PrescreenControlsProps) {
+  const [deviceError, setDeviceError] = useState('');
+  const [checking, setChecking] = useState(false);
+  const checkingRef = useRef(false);
   const room = useRoom();
   const callEmbed = useCallEmbed();
   const callJoined = useCallJoined(callEmbed);
@@ -25,7 +29,6 @@ export function PrescreenControls({ canJoin }: PrescreenControlsProps) {
 
   const { microphone, video, sound, toggleMicrophone, toggleVideo, toggleSound } =
     useCallPreferences();
-
 
   const handleMicrophoneToggle = useCallback(async () => toggleMicrophone(), [toggleMicrophone]);
   const handleVideoToggle = useCallback(async () => toggleVideo(), [toggleVideo]);
@@ -53,8 +56,22 @@ export function PrescreenControls({ canJoin }: PrescreenControlsProps) {
         <Button
           variant={disabled ? 'Secondary' : 'Success'}
           fill={disabled ? 'Soft' : 'Solid'}
-          onClick={() => startCall(room, { microphone, video, sound })}
-          disabled={disabled || joining}
+          onClick={async () => {
+            if (checkingRef.current) return;
+            checkingRef.current = true;
+            setChecking(true);
+            setDeviceError('');
+            try {
+              await checkCallDevices(microphone, video);
+              startCall(room, { microphone, video, sound });
+            } catch (cause) {
+              setDeviceError(callDeviceError(cause));
+            } finally {
+              checkingRef.current = false;
+              setChecking(false);
+            }
+          }}
+          disabled={disabled || joining || checking}
           before={
             joining ? (
               <Spinner variant="Success" fill="Solid" size="200" />
@@ -63,9 +80,14 @@ export function PrescreenControls({ canJoin }: PrescreenControlsProps) {
             )
           }
         >
-          <Text size="B400">Join</Text>
+          <Text size="B400">{checking ? 'Проверка устройств…' : 'Войти'}</Text>
         </Button>
       </Box>
+      {deviceError && (
+        <Text role="alert" size="T200">
+          {deviceError}
+        </Text>
+      )}
     </SequenceCard>
   );
 }

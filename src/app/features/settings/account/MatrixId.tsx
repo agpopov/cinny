@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Text, Chip } from 'folds';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
@@ -23,7 +24,7 @@ export function MatrixId() {
           title={userId}
           after={
             <Chip variant="Secondary" radii="Pill" onClick={() => copyToClipboard(userId)}>
-              <Text size="T200">Copy</Text>
+              <Text size="T200">{t('Copy')}</Text>
             </Chip>
           }
         />

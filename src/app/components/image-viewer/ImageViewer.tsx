@@ -3,6 +3,7 @@ import React from 'react';
 import FileSaver from 'file-saver';
 import classNames from 'classnames';
 import { Box, Chip, Header, Icon, IconButton, Icons, Text, as } from 'folds';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import * as css from './ImageViewer.css';
 import { useZoom } from '../../hooks/useZoom';
 import { usePan } from '../../hooks/usePan';
@@ -33,7 +34,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
       >
         <Header className={css.ImageViewerHeader} size="400">
           <Box grow="Yes" alignItems="Center" gap="200">
-            <IconButton size="300" radii="300" onClick={requestClose}>
+            <IconButton aria-label="Назад" size="300" radii="300" onClick={requestClose}>
               <Icon size="50" src={Icons.ArrowLeft} />
             </IconButton>
             <Text size="T300" truncate>
@@ -80,7 +81,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
           justifyContent="Center"
           alignItems="Center"
         >
-          <img
+          <AuthenticatedImage
             className={css.ImageViewerImg}
             style={{
               cursor,

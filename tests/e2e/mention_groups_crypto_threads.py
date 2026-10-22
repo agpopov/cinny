@@ -48,15 +48,15 @@ def open_page(browser,session,room):
     page.wait_for_timeout(4500);page.keyboard.press('Escape')
     return context,page,errors
 def group(page,editor,marker):
-    editor.focus();page.keyboard.insert_text(marker+' @QA Team')
+    editor.focus();page.keyboard.type(marker+' @QA Team',delay=10)
     page.get_by_role('button').filter(has=page.get_by_text('@QA Team',exact=True)).last.wait_for(timeout=15000)
     page.keyboard.press('Tab');page.wait_for_timeout(150)
 def edit(page,row,suffix):
-    page.mouse.move(0,0);row.hover();row.get_by_role('button',name='Edit Message',exact=True).click()
+    page.mouse.move(0,0);row.hover();row.get_by_role('button',name='Изменить сообщение',exact=True).click()
     editor=row.locator('[data-slate-editor="true"]');page.wait_for_function('(el)=>el.textContent.includes("GROUP")',arg=editor.element_handle())
     page.wait_for_timeout(200);editor.focus();page.keyboard.press('Control+End');page.keyboard.insert_text(suffix)
     page.wait_for_function('(args)=>args.el.textContent.includes(args.suffix)',arg={'el':editor.element_handle(),'suffix':suffix})
-    row.get_by_role('button',name='Save',exact=True).click()
+    row.get_by_role('button',name='Сохранить',exact=True).click()
 
 with sync_playwright() as p:
   for engine in os.environ.get('BROWSERS','chromium').split(','):
@@ -109,9 +109,19 @@ with sync_playwright() as p:
         pages[1].get_by_text('ENCRYPTED EDIT',exact=False).last.wait_for(timeout=30000)
         pages[1].reload();pages[1].get_by_text('ENCRYPTED EDIT',exact=False).last.wait_for(timeout=40000)
         check('encrypted edited history retains compact group after reload',pages[1].locator('[data-mention-group]').count()==1)
+        receiver=pages[1];search_requests=[]
+        receiver.on('request',lambda request:search_requests.append(request.url) if request.url.endswith('/search') or '/search?' in request.url else None)
+        receiver.goto(APP+'/home/search/?global=true')
+        search_input=receiver.get_by_placeholder('Поиск по тексту',exact=True)
+        search_input.fill(marker);search_input.press('Enter')
+        receiver.get_by_text('ENCRYPTED EDIT',exact=False).last.wait_for(timeout=20000)
+        check('production local search finds decrypted edited E2EE history without server query',not search_requests and 'ENCRYPTED' not in receiver.url)
+        receiver.get_by_role('button',name='Открыть',exact=True).last.click()
+        receiver.locator('[data-message-id]').filter(has_text='ENCRYPTED EDIT').last.wait_for(timeout=20000)
+        check('encrypted search result navigates to the original room and event',encrypted in receiver.url)
         check('encrypted two-device exchange has no runtime errors',not any(error_lists))
       except Exception:
-        print('CRYPTO BODY',pages[0].locator('body').inner_text()[-5000:],flush=True);print('ERRORS',error_lists,flush=True);pages[0].screenshot(path=str(OUT/'crypto-failure.png'));raise
+        print('CRYPTO BODY',pages[-1].locator('body').inner_text()[-5000:],flush=True);print('ERRORS',error_lists,flush=True);pages[-1].screenshot(path=str(OUT/'crypto-failure.png'));raise
       finally:
         for ctx in contexts:ctx.close()
     browser.close()

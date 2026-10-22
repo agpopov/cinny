@@ -165,7 +165,7 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
             <Box shrink="No">
               <BackRouteHandler>
                 {(onBack) => (
-                  <IconButton fill="None" onClick={onBack}>
+                  <IconButton aria-label="Назад" fill="None" onClick={onBack}>
                     <Icon src={Icons.ArrowLeft} />
                   </IconButton>
                 )}
@@ -219,6 +219,7 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
             >
               {(triggerRef) => (
                 <IconButton
+                  aria-label="Профиль участника"
                   fill="None"
                   ref={triggerRef}
                   onClick={() => setPeopleDrawer((drawer) => !drawer)}
@@ -240,6 +241,7 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
           >
             {(triggerRef) => (
               <IconButton
+                aria-label="Действия"
                 fill="None"
                 onClick={handleOpenMenu}
                 ref={triggerRef}

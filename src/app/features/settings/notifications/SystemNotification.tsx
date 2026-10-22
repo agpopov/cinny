@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Text, Switch, Button, color, Spinner } from 'folds';
 import { IPusherRequest } from 'matrix-js-sdk';
@@ -60,18 +61,23 @@ function EmailNotification() {
 
   return (
     <SettingTile
-      title="Email Notification"
+      title={t('Email Notification')}
       description={
         <>
           {result && !result.email && (
             <Text as="span" style={{ color: color.Critical.Main }} size="T200">
-              Your account does not have any email attached.
+              {t('Your account does not have any email attached.')}
             </Text>
           )}
-          {result && result.email && <>Send notification to your email. {`("${result.email}")`}</>}
+          {result && result.email && (
+            <>
+              {t('Send notification to your email.')}
+              {`("${result.email}")`}
+            </>
+          )}
           {result === null && (
             <Text as="span" style={{ color: color.Critical.Main }} size="T200">
-              Unexpected Error!
+              {t('Unexpected Error!')}
             </Text>
           )}
           {result === undefined && 'Send notification to your email.'}
@@ -93,6 +99,12 @@ function EmailNotification() {
 
 export function SystemNotification() {
   const browserPermission = usePermissionState('notifications', getNotificationState());
+  const [requestedBrowserPermission, setRequestedBrowserPermission] = useState<
+    'granted' | 'denied' | 'prompt'
+  >();
+  useEffect(() => {
+    setRequestedBrowserPermission(undefined);
+  }, [browserPermission]);
   // В Cinny Desktop уведомления нативные, разрешение браузера не нужно.
   const [nativePermission, setNativePermission] = useState<'granted' | 'denied' | 'prompt'>(
     'prompt'
@@ -114,7 +126,7 @@ export function SystemNotification() {
       window.removeEventListener('focus', refresh);
     };
   }, []);
-  let notifPermission = browserPermission;
+  let notifPermission = requestedBrowserPermission ?? browserPermission;
   if (isDesktopApp()) notifPermission = 'granted';
   if (isMobileApp()) notifPermission = nativePermission;
   let blockedDescription = 'Система не поддерживает уведомления.';
@@ -139,7 +151,9 @@ export function SystemNotification() {
         .then(setNativePermission)
         .catch(() => undefined);
     } else {
-      window.Notification.requestPermission();
+      window.Notification.requestPermission()
+        .then(() => setRequestedBrowserPermission(getNotificationState()))
+        .catch(() => undefined);
     }
   };
 

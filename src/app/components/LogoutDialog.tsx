@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { forwardRef, useCallback } from 'react';
 import { Dialog, Header, config, Box, Text, Button, Spinner, color } from 'folds';
 import { AsyncStatus, useAsyncCallback } from '../hooks/useAsyncCallback';
@@ -43,7 +44,7 @@ export const LogoutDialog = forwardRef<HTMLDivElement, LogoutDialogProps>(
           size="500"
         >
           <Box grow="Yes">
-            <Text size="H4">Logout</Text>
+            <Text size="H4">{t('Logout')}</Text>
           </Box>
         </Header>
         <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
@@ -52,21 +53,26 @@ export const LogoutDialog = forwardRef<HTMLDivElement, LogoutDialogProps>(
               verificationStatus === VerificationStatus.Unverified && (
                 <InfoCard
                   variant="Critical"
-                  title="Unverified Device"
-                  description="Verify your device before logging out to save your encrypted messages."
+                  title={t('Unverified Device')}
+                  description={t(
+                    'Verify your device before logging out to save your encrypted messages.'
+                  )}
                 />
               )
             ) : (
               <InfoCard
                 variant="Critical"
-                title="Alert"
-                description="Enable device verification or export your encrypted data from settings to avoid losing access to your messages."
+                title={t('Alert')}
+                description={t(
+                  'Enable device verification or export your encrypted data from settings to avoid losing access to your messages.'
+                )}
               />
             ))}
-          <Text priority="400">You’re about to log out. Are you sure?</Text>
+          <Text priority="400">{t('You’re about to log out. Are you sure?')}</Text>
           {logoutState.status === AsyncStatus.Error && (
             <Text style={{ color: color.Critical.Main }} size="T300">
-              Failed to logout! {logoutState.error.message}
+              {t('Failed to logout!')}
+              {logoutState.error.message}
             </Text>
           )}
           <Box direction="Column" gap="200">
@@ -76,10 +82,10 @@ export const LogoutDialog = forwardRef<HTMLDivElement, LogoutDialogProps>(
               disabled={ongoingLogout}
               before={ongoingLogout && <Spinner variant="Critical" fill="Solid" size="200" />}
             >
-              <Text size="B400">Logout</Text>
+              <Text size="B400">{t('Logout')}</Text>
             </Button>
             <Button variant="Secondary" fill="Soft" onClick={handleClose} disabled={ongoingLogout}>
-              <Text size="B400">Cancel</Text>
+              <Text size="B400">{t('Cancel')}</Text>
             </Button>
           </Box>
         </Box>

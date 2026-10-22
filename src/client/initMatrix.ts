@@ -3,6 +3,11 @@ import { createClient, MatrixClient, IndexedDBStore, IndexedDBCryptoStore } from
 import { cryptoCallbacks } from './secretStorageKeys';
 import { clearNavToActivePathStore } from '../app/state/navToActivePath';
 import { pushSessionToSW } from '../sw-session';
+import {
+  clearPrivateStorage,
+  clearPrivateSearchStorage,
+  privateAccountKey,
+} from '../app/utils/privateStorage';
 
 // Версия схемы локального кэша синхронизации. При включении поддержки тредов
 // старый кэш нужно один раз сбросить: в нём ответы в тредах лежат в общей ленте.
@@ -74,6 +79,9 @@ export const clearCacheAndReload = async (mx: MatrixClient) => {
   mx.stopClient();
   clearNavToActivePathStore(mx.getSafeUserId());
   await mx.store.deleteAllData();
+  await clearPrivateSearchStorage(
+    privateAccountKey(mx.baseUrl, mx.getSafeUserId(), mx.getDeviceId() ?? '')
+  );
   window.location.reload();
 };
 
@@ -86,6 +94,7 @@ export const logoutClient = async (mx: MatrixClient) => {
     // ignore if failed to logout
   }
   await mx.clearStores();
+  await clearPrivateStorage();
   window.localStorage.clear();
   window.location.reload();
 };

@@ -21,7 +21,14 @@ export const usePdfDocumentLoader = (pdfJS: typeof PdfJsDist | undefined, src: s
       if (!pdfJS) {
         throw new Error('PdfJS is not loaded');
       }
-      const doc = await pdfJS.getDocument(src).promise;
+      const resourceUrl = `${trimTrailingSlash(import.meta.env.BASE_URL)}/public/pdfjs/`;
+      const doc = await pdfJS.getDocument({
+        url: src,
+        cMapUrl: `${resourceUrl}cmaps/`,
+        cMapPacked: true,
+        standardFontDataUrl: `${resourceUrl}standard_fonts/`,
+        wasmUrl: `${resourceUrl}wasm/`,
+      }).promise;
       return doc;
     }, [pdfJS, src])
   );
@@ -41,10 +48,11 @@ export const createPage = async (
   canvas.width = pageViewport.width;
   canvas.height = pageViewport.height;
 
-  page.render({
+  await page.render({
+    canvas,
     canvasContext: context,
     viewport: pageViewport,
-  });
+  }).promise;
 
   return canvas;
 };

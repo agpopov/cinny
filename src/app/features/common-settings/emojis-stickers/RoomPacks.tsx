@@ -17,6 +17,7 @@ import {
   Menu,
 } from 'folds';
 import { MatrixError } from 'matrix-js-sdk';
+import { AuthenticatedImage } from '../../../components/media/AuthenticatedImage';
 import { SequenceCard } from '../../../components/sequence-card';
 import {
   ImagePack,
@@ -215,6 +216,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
               {canEdit &&
                 (removed ? (
                   <IconButton
+                    aria-label="Добавить"
                     size="300"
                     radii="Pill"
                     variant="Critical"
@@ -225,6 +227,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
                   </IconButton>
                 ) : (
                   <IconButton
+                    aria-label="Закрыть"
                     size="300"
                     radii="Pill"
                     variant="Secondary"
@@ -236,7 +239,11 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
                 ))}
               <Avatar size="300" radii="300">
                 {avatarUrl ? (
-                  <AvatarImage style={{ objectFit: 'contain' }} src={avatarUrl} />
+                  <AvatarImage
+                    as={AuthenticatedImage}
+                    style={{ objectFit: 'contain' }}
+                    src={avatarUrl}
+                  />
                 ) : (
                   <AvatarFallback>
                     <Icon size="400" src={Icons.Sticker} filled />

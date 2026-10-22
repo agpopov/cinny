@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, MouseEventHandler, useCallback, useState } from 'react';
 import {
   Box,
@@ -60,7 +61,7 @@ function UsernameHint({ server }: { server: string }) {
         >
           <Menu>
             <Header size="300" style={{ padding: `0 ${config.space.S200}` }}>
-              <Text size="L400">Hint</Text>
+              <Text size="L400">{t('Hint')}</Text>
             </Header>
             <Box
               style={{ padding: config.space.S200, paddingTop: 0 }}
@@ -70,7 +71,7 @@ function UsernameHint({ server }: { server: string }) {
             >
               <Text size="T300">
                 <Text as="span" size="Inherit" priority="300">
-                  Username:
+                  {t('Username:')}
                 </Text>{' '}
                 user123
               </Text>
@@ -82,7 +83,7 @@ function UsernameHint({ server }: { server: string }) {
               </Text>
               <Text size="T300">
                 <Text as="span" size="Inherit" priority="300">
-                  Email:
+                  {t('Email:')}
                 </Text>
                 {` user123@${server}`}
               </Text>
@@ -92,6 +93,7 @@ function UsernameHint({ server }: { server: string }) {
       }
     >
       <IconButton
+        aria-label="Сведения"
         tabIndex={-1}
         onClick={handleOpenMenu}
         type="button"
@@ -200,7 +202,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
       <Box direction="Column" gap="100">
         <Text as="label" size="L400" priority="300">
-          Username
+          {t('Username')}
         </Text>
         <Input
           defaultValue={defaultUsername ?? defaultEmail}
@@ -225,7 +227,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
       </Box>
       <Box direction="Column" gap="100">
         <Text as="label" size="L400" priority="300">
-          Password
+          {t('Password')}
         </Text>
         <PasswordInput name="passwordInput" variant="Background" size="500" outlined required />
         <Box alignItems="Start" justifyContent="SpaceBetween" gap="200">
@@ -250,14 +252,14 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           )}
           <Box grow="Yes" shrink="No" justifyContent="End">
             <Text as="span" size="T200" priority="400" align="Right">
-              <Link to={getResetPasswordPath(server)}>Forget Password?</Link>
+              <Link to={getResetPasswordPath(server)}>{t('Forget Password?')}</Link>
             </Text>
           </Box>
         </Box>
       </Box>
       <Button type="submit" variant="Primary" size="500">
         <Text as="span" size="B500">
-          Login
+          {t('Login')}
         </Text>
       </Button>
 

@@ -20,9 +20,7 @@ export type TUploadItem = {
 
 export type TUploadListAtom = ReturnType<typeof createListAtom<TUploadItem>>;
 
-export const roomIdToUploadItemsAtomFamily = atomFamily<string, TUploadListAtom>(
-  createListAtom
-);
+export const roomIdToUploadItemsAtomFamily = atomFamily<string, TUploadListAtom>(createListAtom);
 
 export const roomUploadAtomFamily = createUploadAtomFamily();
 
@@ -55,3 +53,16 @@ export type TReplyDraftAtom = ReturnType<typeof createReplyDraftAtom>;
 export const roomIdToReplyDraftAtomFamily = atomFamily<string, TReplyDraftAtom>(() =>
   createReplyDraftAtom()
 );
+
+const uploadKeys = new WeakMap<TUploadContent, string>();
+let nextUploadKey = 0;
+/** Stable React keys prevent a newly prepended file from reusing another upload's lifecycle. */
+export const getUploadKey = (file: TUploadContent): string => {
+  let key = uploadKeys.get(file);
+  if (!key) {
+    nextUploadKey += 1;
+    key = `upload-${nextUploadKey}`;
+    uploadKeys.set(file, key);
+  }
+  return key;
+};

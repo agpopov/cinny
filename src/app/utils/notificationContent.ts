@@ -108,9 +108,13 @@ export const getNotificationAvatar = (
   name: string,
   mxc?: string
 ): Promise<string | undefined> => {
-  const key = mxc ?? `letter:${id}:${name}`;
+  const key = JSON.stringify([mx.baseUrl, mx.getUserId(), mxc, id, name]);
   const cached = avatarCache.get(key);
-  if (cached) return cached;
+  if (cached) {
+    avatarCache.delete(key);
+    avatarCache.set(key, cached);
+    return cached;
+  }
 
   const promise = (async () => {
     const canvas = document.createElement('canvas');
@@ -138,10 +142,15 @@ export const getNotificationAvatar = (
     return stripDataUrl(canvas.toDataURL('image/png'));
   })();
 
+  if (avatarCache.size >= 128) avatarCache.delete(avatarCache.keys().next().value!);
   avatarCache.set(key, promise);
-  promise.then((value) => {
-    if (!value) avatarCache.delete(key);
-  });
+  promise
+    .then((value) => {
+      if (!value && avatarCache.get(key) === promise) avatarCache.delete(key);
+    })
+    .catch(() => {
+      if (avatarCache.get(key) === promise) avatarCache.delete(key);
+    });
   return promise;
 };
 

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FocusTrap from 'focus-trap-react';
@@ -96,7 +97,12 @@ export function AddServer() {
                 <Box grow="Yes">
                   <Text size="H4">Add Server</Text>
                 </Box>
-                <IconButton size="300" onClick={() => setDialog(false)} radii="300">
+                <IconButton
+                  aria-label="Закрыть"
+                  size="300"
+                  onClick={() => setDialog(false)}
+                  radii="300"
+                >
                   <Icon src={Icons.Cross} />
                 </IconButton>
               </Header>
@@ -132,7 +138,7 @@ export function AddServer() {
                   </Button> */}
 
                   <Button type="submit" onClick={handleView} variant="Secondary" fill="Soft">
-                    <Text size="B400">View</Text>
+                    <Text size="B400">{t('View')}</Text>
                   </Button>
                 </Box>
               </Box>

@@ -13,6 +13,7 @@ import {
   Chip,
 } from 'folds';
 import Linkify from 'linkify-react';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import { mxcUrlToHttp } from '../../utils/matrix';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { nameInitials } from '../../utils/common';
@@ -34,7 +35,7 @@ function ImagePackAvatar({ url, name }: ImagePackAvatarProps) {
   return (
     <Avatar size="500" className={ContainerColor({ variant: 'Secondary' })}>
       {url ? (
-        <AvatarImage src={url} alt={name ?? 'Unknown'} />
+        <AvatarImage as={AuthenticatedImage} src={url} alt={name ?? 'Unknown'} />
       ) : (
         <AvatarFallback>
           <Text size="H2">{nameInitials(name ?? 'Unknown')}</Text>

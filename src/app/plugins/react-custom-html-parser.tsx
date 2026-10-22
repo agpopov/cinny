@@ -21,6 +21,7 @@ import { IntermediateRepresentation, Opts as LinkifyOpts, OptFn } from 'linkifyj
 import Linkify from 'linkify-react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ChildNode } from 'domhandler';
+import { AuthenticatedImage } from '../components/media/AuthenticatedImage';
 import * as css from '../styles/CustomHtml.css';
 import {
   getMxIdLocalPart,
@@ -513,12 +514,12 @@ export const getReactCustomHtmlParser = (
             return (
               <span className={css.EmoticonBase}>
                 <span className={css.Emoticon()}>
-                  <img {...props} className={css.EmoticonImg} src={htmlSrc} />
+                  <AuthenticatedImage {...props} className={css.EmoticonImg} src={htmlSrc} />
                 </span>
               </span>
             );
           }
-          if (htmlSrc) return <img {...props} className={css.Img} src={htmlSrc} />;
+          if (htmlSrc) return <AuthenticatedImage {...props} className={css.Img} src={htmlSrc} />;
         }
       }
 

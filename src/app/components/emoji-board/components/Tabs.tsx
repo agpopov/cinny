@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { CSSProperties } from 'react';
 import { Badge, Box, Text } from 'folds';
 import { EmojiBoardTab } from '../types';
@@ -36,7 +37,7 @@ export function EmojiBoardTabs({
         onClick={() => onTabChange(EmojiBoardTab.Emoji)}
       >
         <Text as="span" size="L400">
-          Emoji
+          {t('Emoji')}
         </Text>
       </Badge>
     </Box>

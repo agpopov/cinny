@@ -261,7 +261,7 @@ export function DeviceVerification({ request, onExit }: DeviceVerificationProps)
               <Box grow="Yes">
                 <Text size="H4">Device Verification</Text>
               </Box>
-              <IconButton size="300" radii="300" onClick={handleCancel}>
+              <IconButton aria-label="Закрыть" size="300" radii="300" onClick={handleCancel}>
                 <Icon src={Icons.Cross} />
               </IconButton>
             </Header>

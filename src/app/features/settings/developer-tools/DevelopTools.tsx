@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useState } from 'react';
 import { Box, Text, IconButton, Icon, Icons, Scroll, Switch, Button } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
@@ -47,11 +48,11 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Developer Tools
+              {t('Developer Tools')}
             </Text>
           </Box>
           <Box shrink="No">
-            <IconButton onClick={requestClose} variant="Surface">
+            <IconButton aria-label="Закрыть" onClick={requestClose} variant="Surface">
               <Icon src={Icons.Cross} />
             </IconButton>
           </Box>
@@ -62,7 +63,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
           <PageContent>
             <Box direction="Column" gap="700">
               <Box direction="Column" gap="100">
-                <Text size="L400">Options</Text>
+                <Text size="L400">{t('Options')}</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -70,7 +71,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                   gap="400"
                 >
                   <SettingTile
-                    title="Enable Developer Tools"
+                    title={t('Enable Developer Tools')}
                     after={
                       <Switch
                         variant="Primary"
@@ -88,8 +89,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Access Token"
-                      description="Copy access token to clipboard."
+                      title={t('Access Token')}
+                      description={t('Copy access token to clipboard.')}
                       after={
                         <Button
                           onClick={() =>
@@ -101,7 +102,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           radii="300"
                           outlined
                         >
-                          <Text size="B300">Copy</Text>
+                          <Text size="B300">{t('Copy')}</Text>
                         </Button>
                       }
                     />

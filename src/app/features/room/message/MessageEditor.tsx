@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import type { RoomMessageEventContent } from 'matrix-js-sdk/lib/@types/events';
 import React, {
   KeyboardEventHandler,
@@ -286,7 +287,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
             );
           }}
           editor={editor}
-          placeholder="Edit message..."
+          placeholder={t('Edit message...')}
           onKeyDown={handleKeyDown}
           onKeyUp={handleKeyUp}
           bottom={
@@ -310,10 +311,10 @@ export const MessageEditor = as<'div', MessageEditorProps>(
                       ) : undefined
                     }
                   >
-                    <Text size="B300">Save</Text>
+                    <Text size="B300">{t('Save')}</Text>
                   </Chip>
                   <Chip onClick={onCancel} variant="SurfaceVariant" radii="Pill">
-                    <Text size="B300">Cancel</Text>
+                    <Text size="B300">{t('Cancel')}</Text>
                   </Chip>
                 </Box>
                 <Box gap="Inherit">
@@ -351,6 +352,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
                         }
                       >
                         <IconButton
+                          aria-label="Эмодзи"
                           aria-pressed={anchor !== undefined}
                           onClick={
                             ((evt) =>

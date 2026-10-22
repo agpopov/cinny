@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon, Icons } from 'folds';
@@ -45,7 +46,7 @@ export function InboxTab() {
 
   return (
     <SidebarItem active={inboxSelected}>
-      <SidebarItemTooltip tooltip="Inbox">
+      <SidebarItemTooltip tooltip={t('Inbox')}>
         {(triggerRef) => (
           <SidebarAvatar as="button" ref={triggerRef} outlined onClick={handleInboxClick}>
             <Icon src={Icons.Inbox} filled={inboxSelected} />

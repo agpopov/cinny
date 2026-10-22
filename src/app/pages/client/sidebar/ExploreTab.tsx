@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Icon, Icons } from 'folds';
 import { useNavigate } from 'react-router-dom';
@@ -52,7 +53,7 @@ export function ExploreTab() {
 
   return (
     <SidebarItem active={exploreSelected}>
-      <SidebarItemTooltip tooltip="Explore Community">
+      <SidebarItemTooltip tooltip={t('Explore Community')}>
         {(triggerRef) => (
           <SidebarAvatar as="button" ref={triggerRef} outlined onClick={handleExploreClick}>
             <Icon src={Icons.Explore} filled={exploreSelected} />

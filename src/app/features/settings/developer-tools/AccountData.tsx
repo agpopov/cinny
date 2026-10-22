@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useState } from 'react';
 import { Box, Text, Icon, Icons, Button, MenuItem } from 'folds';
 import { SequenceCard } from '../../../components/sequence-card';
@@ -27,7 +28,7 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Account Data</Text>
+      <Text size="L400">{t('Account Data')}</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -35,8 +36,8 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
         gap="400"
       >
         <SettingTile
-          title="Global"
-          description="Data stored in your global account data."
+          title={t('Global')}
+          description={t('Data stored in your global account data.')}
           after={
             <Button
               onClick={() => onExpandToggle(!expand)}
@@ -49,15 +50,18 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
                 <Icon src={expand ? Icons.ChevronTop : Icons.ChevronBottom} size="100" filled />
               }
             >
-              <Text size="B300">{expand ? 'Collapse' : 'Expand'}</Text>
+              <Text size="B300">{expand ? t('Collapse') : 'Expand'}</Text>
             </Button>
           }
         />
         {expand && (
           <Box direction="Column" gap="100">
             <Box justifyContent="SpaceBetween">
-              <Text size="L400">Events</Text>
-              <Text size="L400">Total: {accountDataTypes.length}</Text>
+              <Text size="L400">{t('Events')}</Text>
+              <Text size="L400">
+                {t('Total:')}
+                {accountDataTypes.length}
+              </Text>
             </Box>
             <CutoutCard>
               <MenuItem
@@ -70,7 +74,7 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
               >
                 <Box grow="Yes">
                   <Text size="T200" truncate>
-                    Add New
+                    {t('Add New')}
                   </Text>
                 </Box>
               </MenuItem>

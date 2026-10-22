@@ -123,7 +123,12 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
                     <Box grow="Yes">
                       <Text size="H4">Enable Encryption</Text>
                     </Box>
-                    <IconButton size="300" onClick={() => setPrompt(false)} radii="300">
+                    <IconButton
+                      aria-label="Закрыть"
+                      size="300"
+                      onClick={() => setPrompt(false)}
+                      radii="300"
+                    >
                       <Icon src={Icons.Cross} />
                     </IconButton>
                   </Header>

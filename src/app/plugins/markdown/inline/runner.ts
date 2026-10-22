@@ -1,5 +1,5 @@
-import { MatchResult, replaceMatch } from '../internal';
-import { InlineMDParser, InlineMDRule } from './type';
+import { type MatchResult, replaceMatch } from '../internal';
+import type { InlineMDParser, InlineMDRule } from './type';
 
 /**
  * Runs a single markdown rule on the provided text.

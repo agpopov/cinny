@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Text, IconButton, Icon, Icons, Scroll } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
@@ -16,11 +17,11 @@ export function Account({ requestClose }: AccountProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Account
+              {t('Account')}
             </Text>
           </Box>
           <Box shrink="No">
-            <IconButton onClick={requestClose} variant="Surface">
+            <IconButton aria-label="Закрыть" onClick={requestClose} variant="Surface">
               <Icon src={Icons.Cross} />
             </IconButton>
           </Box>

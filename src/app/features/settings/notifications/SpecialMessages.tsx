@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useMemo } from 'react';
 import { ConditionKind, IPushRules, PushRuleKind, RuleId } from 'matrix-js-sdk';
 import { Box, Text, Badge } from 'folds';
@@ -124,9 +125,9 @@ export function SpecialMessagesNotifications() {
   return (
     <Box direction="Column" gap="100">
       <Box alignItems="Center" justifyContent="SpaceBetween" gap="200">
-        <Text size="L400">Special Messages</Text>
+        <Text size="L400">{t('Special Messages')}</Text>
         <Box gap="100">
-          <Text size="T200">Badge: </Text>
+          <Text size="T200">{t('Badge:')}</Text>
           <Badge radii="300" variant="Success" fill="Solid">
             <Text size="L400">1</Text>
           </Badge>
@@ -190,7 +191,7 @@ export function SpecialMessagesNotifications() {
         gap="400"
       >
         <SettingTile
-          title="Mention @room"
+          title={t('Mention @room')}
           after={
             <MentionModeSwitcher
               pushRules={pushRules}
@@ -207,7 +208,7 @@ export function SpecialMessagesNotifications() {
         gap="400"
       >
         <SettingTile
-          title="Contains @room"
+          title={t('Contains @room')}
           after={
             <MentionModeSwitcher
               pushRules={pushRules}

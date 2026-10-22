@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, Text } from 'folds';
 import React, { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -24,13 +25,14 @@ export function ResetPassword() {
   return (
     <Box direction="Column" gap="500">
       <Text size="H2" priority="400">
-        Reset Password
+        {t('Reset Password')}
       </Text>
       <PasswordResetForm defaultEmail={resetPasswordSearchParams.email} />
       <span data-spacing-node />
 
       <Text align="Center">
-        Remember your password? <Link to={getLoginPath(server)}>Login</Link>
+        {t('Remember your password?')}
+        <Link to={getLoginPath(server)}>{t('Login')}</Link>
       </Text>
     </Box>
   );

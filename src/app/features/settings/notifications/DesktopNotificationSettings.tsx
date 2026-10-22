@@ -69,6 +69,7 @@ const DND_OPTIONS: { mode: DndMode; label: string }[] = [
 /** Режим «Не беспокоить» и тихие часы. */
 export function DoNotDisturbSettings() {
   const [dndUntil, setDndUntil] = useSetting(settingsAtom, 'dndUntil');
+  const [allowCalls, setAllowCalls] = useSetting(settingsAtom, 'dndAllowCalls');
   const [allowMentions, setAllowMentions] = useSetting(settingsAtom, 'dndAllowMentions');
   const [quietEnabled, setQuietEnabled] = useSetting(settingsAtom, 'quietHoursEnabled');
   const [quietStart, setQuietStart] = useSetting(settingsAtom, 'quietHoursStart');
@@ -140,6 +141,17 @@ export function DoNotDisturbSettings() {
             ))}
           </Box>
         </SettingTile>
+        <SettingTile
+          title="Пропускать входящие звонки"
+          description="Разрешить звонкам обходить «Не беспокоить» и тихие часы. Громкость и отключение звука остаются общими."
+          after={
+            <Switch
+              value={allowCalls}
+              onChange={setAllowCalls}
+              aria-label="Пропускать входящие звонки"
+            />
+          }
+        />
         <SettingTile
           title="Пропускать упоминания и личные сообщения"
           description="В режиме «Не беспокоить» всё равно уведомлять, если вас упомянули или написали в личку."

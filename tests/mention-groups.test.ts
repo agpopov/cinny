@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createEditor, Editor, Descendant, Transforms } from 'slate';
+import { createEditor, Editor, type Descendant, Transforms } from 'slate';
 import parse from 'html-dom-parser';
 import { Element } from 'domhandler';
 import { createClient, MatrixEvent, Room } from 'matrix-js-sdk';
@@ -13,7 +13,7 @@ import {
 } from '../src/app/components/editor/autocomplete/autocompleteQuery';
 import { BlockType } from '../src/app/components/editor/types';
 import {
-  GroupMention,
+  type GroupMention,
   MENTION_GROUP_EVENT,
   assertMentionContentSize,
   decodeGroupMention,

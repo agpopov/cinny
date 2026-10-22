@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ReactNode, useCallback, useState } from 'react';
 import {
   Box,
@@ -36,6 +37,7 @@ import {
 } from '../../../utils/matrix';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { ModalWide } from '../../../styles/Modal.css';
+import { useObjectURL } from '../../../hooks/useObjectURL';
 
 const renderErrorButton = (retry: () => void, text: string) => (
   <TooltipProvider
@@ -183,13 +185,14 @@ export function ReadPdfFile({ body, mimeType, url, encInfo, renderViewer }: Read
         ? await downloadEncryptedMedia(mediaUrl, (encBuf) => decryptFile(encBuf, mimeType, encInfo))
         : await downloadMedia(mediaUrl);
       setPdfViewer(true);
-      return URL.createObjectURL(fileContent);
+      return fileContent;
     }, [mx, url, useAuthentication, mimeType, encInfo])
   );
+  const pdfSrc = useObjectURL(pdfState.status === AsyncStatus.Success ? pdfState.data : undefined);
 
   return (
     <>
-      {pdfState.status === AsyncStatus.Success && (
+      {pdfSrc && (
         <Overlay open={pdfViewer} backdrop={<OverlayBackdrop />}>
           <OverlayCenter>
             <FocusTrap
@@ -207,7 +210,7 @@ export function ReadPdfFile({ body, mimeType, url, encInfo, renderViewer }: Read
               >
                 {renderViewer({
                   name: body,
-                  src: pdfState.data,
+                  src: pdfSrc,
                   requestClose: () => setPdfViewer(false),
                 })}
               </Modal>
@@ -216,7 +219,7 @@ export function ReadPdfFile({ body, mimeType, url, encInfo, renderViewer }: Read
         </Overlay>
       )}
       {pdfState.status === AsyncStatus.Error ? (
-        renderErrorButton(loadPdf, 'Open PDF')
+        renderErrorButton(loadPdf, t('Open PDF'))
       ) : (
         <Button
           variant="Secondary"
@@ -234,7 +237,7 @@ export function ReadPdfFile({ body, mimeType, url, encInfo, renderViewer }: Read
           }
         >
           <Text size="B400" truncate>
-            Open PDF
+            {t('Open PDF')}
           </Text>
         </Button>
       )}
@@ -261,9 +264,8 @@ export function DownloadFile({ body, mimeType, url, info, encInfo }: DownloadFil
         ? await downloadEncryptedMedia(mediaUrl, (encBuf) => decryptFile(encBuf, mimeType, encInfo))
         : await downloadMedia(mediaUrl);
 
-      const fileURL = URL.createObjectURL(fileContent);
-      FileSaver.saveAs(fileURL, body);
-      return fileURL;
+      FileSaver.saveAs(fileContent, body);
+      return fileContent;
     }, [mx, url, useAuthentication, mimeType, encInfo, body])
   );
 

@@ -1,14 +1,23 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, RefObject } from 'react';
 import { Box, Text, Input, Icon, Icons, Spinner, Chip, config } from 'folds';
 
 type SearchProps = {
   active?: boolean;
+  defaultValue?: string;
   loading?: boolean;
   searchInputRef: RefObject<HTMLInputElement>;
   onSearch: (term: string) => void;
   onReset: () => void;
 };
-export function SearchInput({ active, loading, searchInputRef, onSearch, onReset }: SearchProps) {
+export function SearchInput({
+  active,
+  defaultValue,
+  loading,
+  searchInputRef,
+  onSearch,
+  onReset,
+}: SearchProps) {
   const handleSearchSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
     evt.preventDefault();
     const { searchInput } = evt.target as HTMLFormElement & {
@@ -24,15 +33,16 @@ export function SearchInput({ active, loading, searchInputRef, onSearch, onReset
   return (
     <Box as="form" direction="Column" gap="100" onSubmit={handleSearchSubmit}>
       <span data-spacing-node />
-      <Text size="L400">Search</Text>
+      <Text size="L400">{t('Search')}</Text>
       <Input
         ref={searchInputRef}
+        defaultValue={defaultValue}
         style={{ paddingRight: config.space.S300 }}
         name="searchInput"
         autoFocus
         size="500"
         variant="Background"
-        placeholder="Search for keyword"
+        placeholder={t('Search for keyword')}
         autoComplete="off"
         before={
           active && loading ? (

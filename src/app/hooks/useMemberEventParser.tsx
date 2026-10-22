@@ -23,7 +23,7 @@ export const useMemberEventParser = (): MemberEventParser => {
     if (!senderId || !userId)
       return {
         icon: Icons.User,
-        body: 'Broken membership event',
+        body: 'Повреждённое событие участия',
       };
 
     const senderName = getMxIdLocalPart(senderId);
@@ -40,9 +40,9 @@ export const useMemberEventParser = (): MemberEventParser => {
             body: (
               <>
                 <b>{senderName}</b>
-                {' accepted '}
+                {' одобрил(а) заявку пользователя '}
                 <b>{userName}</b>
-                {`'s join request `}
+                {' · '}
                 {reason}
               </>
             ),
@@ -54,7 +54,7 @@ export const useMemberEventParser = (): MemberEventParser => {
           body: (
             <>
               <b>{senderName}</b>
-              {' invited '}
+              {' пригласил(а) '}
               <b>{userName}</b> {reason}
             </>
           ),
@@ -67,7 +67,7 @@ export const useMemberEventParser = (): MemberEventParser => {
           body: (
             <>
               <b>{userName}</b>
-              {' request to join room '}
+              {' запросил(а) вступление в комнату '}
               {reason}
             </>
           ),
@@ -80,7 +80,7 @@ export const useMemberEventParser = (): MemberEventParser => {
           body: (
             <>
               <b>{userName}</b>
-              {' joined the room'}
+              {' присоединился(ась) к комнате'}
             </>
           ),
         };
@@ -94,15 +94,15 @@ export const useMemberEventParser = (): MemberEventParser => {
               senderId === userId ? (
                 <>
                   <b>{userName}</b>
-                  {' rejected the invitation '}
+                  {' отклонил(а) приглашение '}
                   {reason}
                 </>
               ) : (
                 <>
                   <b>{senderName}</b>
-                  {' rejected '}
+                  {' отозвал(а) приглашение пользователя '}
                   <b>{userName}</b>
-                  {`'s join request `}
+                  {' · '}
                   {reason}
                 </>
               ),
@@ -116,15 +116,15 @@ export const useMemberEventParser = (): MemberEventParser => {
               senderId === userId ? (
                 <>
                   <b>{userName}</b>
-                  {' revoked joined request '}
+                  {' отозвал(а) заявку на вступление '}
                   {reason}
                 </>
               ) : (
                 <>
                   <b>{senderName}</b>
-                  {' revoked '}
+                  {' отклонил(а) заявку пользователя '}
                   <b>{userName}</b>
-                  {`'s invite `}
+                  {' · '}
                   {reason}
                 </>
               ),
@@ -137,7 +137,7 @@ export const useMemberEventParser = (): MemberEventParser => {
             body: (
               <>
                 <b>{senderName}</b>
-                {' unbanned '}
+                {' снял(а) блокировку с '}
                 <b>{userName}</b> {reason}
               </>
             ),
@@ -150,13 +150,13 @@ export const useMemberEventParser = (): MemberEventParser => {
             senderId === userId ? (
               <>
                 <b>{userName}</b>
-                {' left the room '}
+                {' покинул(а) комнату '}
                 {reason}
               </>
             ) : (
               <>
                 <b>{senderName}</b>
-                {' kicked '}
+                {' исключил(а) '}
                 <b>{userName}</b> {reason}
               </>
             ),
@@ -169,7 +169,7 @@ export const useMemberEventParser = (): MemberEventParser => {
           body: (
             <>
               <b>{senderName}</b>
-              {' banned '}
+              {' заблокировал(а) '}
               <b>{userName}</b> {reason}
             </>
           ),
@@ -189,13 +189,13 @@ export const useMemberEventParser = (): MemberEventParser => {
           typeof content.displayname === 'string' ? (
             <>
               <b>{prevUserName}</b>
-              {' changed display name to '}
+              {' изменил(а) имя на '}
               <b>{userName}</b>
             </>
           ) : (
             <>
               <b>{prevUserName}</b>
-              {' removed their display name '}
+              {' удалил(а) имя '}
             </>
           ),
       };
@@ -207,12 +207,12 @@ export const useMemberEventParser = (): MemberEventParser => {
           content.avatar_url && typeof content.avatar_url === 'string' ? (
             <>
               <b>{userName}</b>
-              {' changed their avatar'}
+              {' изменил(а) аватар'}
             </>
           ) : (
             <>
               <b>{userName}</b>
-              {' removed their avatar '}
+              {' удалил(а) аватар '}
             </>
           ),
       };
@@ -220,7 +220,7 @@ export const useMemberEventParser = (): MemberEventParser => {
 
     return {
       icon: Icons.User,
-      body: 'Membership event with no changes',
+      body: 'Событие участия без изменений',
     };
   };
 

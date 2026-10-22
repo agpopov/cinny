@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useState } from 'react';
 import { Badge, color, Icon, Icons, Text } from 'folds';
 import {
@@ -49,7 +50,7 @@ function UnverifiedIndicator() {
     <>
       {hasUnverified && (
         <SidebarItem active={settings} className={css.UnverifiedTab}>
-          <SidebarItemTooltip tooltip={unverified ? 'Unverified Device' : 'Unverified Devices'}>
+          <SidebarItemTooltip tooltip={unverified ? t('Unverified Device') : 'Unverified Devices'}>
             {(triggerRef) => (
               <SidebarAvatar
                 className={unverified ? css.UnverifiedAvatar : css.UnverifiedOtherAvatar}

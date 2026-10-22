@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useEffect } from 'react';
 import { Box, Header, Scroll, Spinner, Text, color } from 'folds';
 import {
@@ -141,7 +142,7 @@ export function AuthLayout() {
           <Box className={css.AuthCardContent} direction="Column">
             <Box direction="Column" gap="100">
               <Text as="label" size="L400" priority="300">
-                Homeserver
+                {t('Homeserver')}
               </Text>
               <ServerPicker
                 server={server}

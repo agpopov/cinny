@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { CallMembership } from 'matrix-js-sdk/lib/matrixrtc/CallMembership';
 import React, { useState } from 'react';
 import { Avatar, Box, Icon, Icons, Text } from 'folds';
@@ -98,7 +99,7 @@ export function CallMemberRenderer({
           <Box grow="Yes" gap="300" alignItems="Center">
             {viewMore ? (
               <Text size="L400" truncate>
-                Collapse
+                {t('Collapse')}
               </Text>
             ) : (
               <Text size="L400" truncate>

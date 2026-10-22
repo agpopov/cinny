@@ -11,15 +11,15 @@ export const useMessageLayoutItems = (): MessageLayoutItem[] =>
     () => [
       {
         layout: MessageLayout.Modern,
-        name: 'Modern',
+        name: 'Современный',
       },
       {
         layout: MessageLayout.Compact,
-        name: 'Compact',
+        name: 'Компактный',
       },
       {
         layout: MessageLayout.Bubble,
-        name: 'Bubble',
+        name: 'Пузыри',
       },
     ],
     []

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
@@ -24,6 +25,7 @@ import {
 import FocusTrap from 'focus-trap-react';
 import { useAtomValue } from 'jotai';
 import { Room } from 'matrix-js-sdk';
+import { AuthenticatedImage } from '../../../components/media/AuthenticatedImage';
 import { useGlobalImagePacks, useRoomsImagePacks } from '../../../hooks/useImagePacks';
 import { SequenceCardStyle } from '../styles.css';
 import { SequenceCard } from '../../../components/sequence-card';
@@ -107,7 +109,7 @@ function GlobalPackSelector({
       <Header size="400" variant="Surface" style={{ padding: `0 ${config.space.S300}` }}>
         <Box grow="Yes">
           <Text size="L400" truncate>
-            Room Packs
+            {t('Room Packs')}
           </Text>
         </Box>
         <Box shrink="No">
@@ -117,7 +119,7 @@ function GlobalPackSelector({
             outlined={hasSelected}
             onClick={() => onSelect(selected)}
           >
-            <Text size="B300">{hasSelected ? 'Save' : 'Close'}</Text>
+            <Text size="B300">{hasSelected ? t('Save') : t('Close')}</Text>
           </Chip>
         </Box>
       </Header>
@@ -190,7 +192,11 @@ function GlobalPackSelector({
                             <Box alignItems="Center" gap="300">
                               <Avatar size="300" radii="300">
                                 {avatarUrl ? (
-                                  <AvatarImage style={{ objectFit: 'contain' }} src={avatarUrl} />
+                                  <AvatarImage
+                                    as={AuthenticatedImage}
+                                    style={{ objectFit: 'contain' }}
+                                    src={avatarUrl}
+                                  />
                                 ) : (
                                   <AvatarFallback>
                                     <Icon size="400" src={Icons.Sticker} filled />
@@ -232,10 +238,12 @@ function GlobalPackSelector({
                   }}
                 >
                   <Text size="H5" align="Center">
-                    No Packs
+                    {t('No Packs')}
                   </Text>
                   <Text size="T200" align="Center">
-                    Pack from rooms will appear here. You do not have any room with packs yet.
+                    {t(
+                      'Pack from rooms will appear here. You do not have any room with packs yet.'
+                    )}
                   </Text>
                 </Box>
               </SequenceCard>
@@ -368,6 +376,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
             <Box alignItems="Center" gap="300">
               {removed ? (
                 <IconButton
+                  aria-label="Добавить"
                   size="300"
                   radii="Pill"
                   variant="Critical"
@@ -378,6 +387,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 </IconButton>
               ) : (
                 <IconButton
+                  aria-label="Закрыть"
                   size="300"
                   radii="Pill"
                   variant="Secondary"
@@ -389,7 +399,11 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
               )}
               <Avatar size="300" radii="300">
                 {avatarUrl ? (
-                  <AvatarImage style={{ objectFit: 'contain' }} src={avatarUrl} />
+                  <AvatarImage
+                    as={AuthenticatedImage}
+                    style={{ objectFit: 'contain' }}
+                    src={avatarUrl}
+                  />
                 ) : (
                   <AvatarFallback>
                     <Icon size="400" src={Icons.Sticker} filled />
@@ -408,7 +422,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 outlined
                 onClick={() => onViewPack(pack)}
               >
-                <Text size="B300">View</Text>
+                <Text size="B300">{t('View')}</Text>
               </Button>
             )
           }
@@ -420,7 +434,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
   return (
     <>
       <Box direction="Column" gap="100">
-        <Text size="L400">Favorite Packs</Text>
+        <Text size="L400">{t('Favorite Packs')}</Text>
         <SequenceCard
           className={SequenceCardStyle}
           variant="SurfaceVariant"
@@ -428,8 +442,8 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
           gap="400"
         >
           <SettingTile
-            title="Select Pack"
-            description="Pick emojis and stickers pack from rooms to use in all rooms."
+            title={t('Select Pack')}
+            description={t('Pick emojis and stickers pack from rooms to use in all rooms.')}
             after={
               <>
                 <Button
@@ -440,7 +454,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                   radii="300"
                   outlined
                 >
-                  <Text size="B300">Select</Text>
+                  <Text size="B300">{t('Select')}</Text>
                 </Button>
                 <PopOut
                   anchor={menuCords}
@@ -502,11 +516,11 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
             <Box grow="Yes" direction="Column">
               {applyState.status === AsyncStatus.Error ? (
                 <Text size="T200">
-                  <b>Failed to apply changes! Please try again.</b>
+                  <b>{t('Failed to apply changes! Please try again.')}</b>
                 </Text>
               ) : (
                 <Text size="T200">
-                  <b>Changes saved! Apply when ready.</b>
+                  <b>{t('Changes saved! Apply when ready.')}</b>
                 </Text>
               )}
             </Box>
@@ -519,7 +533,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 disabled={applyingChanges}
                 onClick={resetChanges}
               >
-                <Text size="B300">Reset</Text>
+                <Text size="B300">{t('Reset')}</Text>
               </Button>
               <Button
                 size="300"
@@ -529,7 +543,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 before={applyingChanges && <Spinner variant="Success" fill="Solid" size="100" />}
                 onClick={applyChanges}
               >
-                <Text size="B300">Apply Changes</Text>
+                <Text size="B300">{t('Apply Changes')}</Text>
               </Button>
             </Box>
           </Box>

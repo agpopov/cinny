@@ -108,7 +108,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
       <Box className={classNames(css.PdfViewer, className)} direction="Column" {...props} ref={ref}>
         <Header className={css.PdfViewerHeader} size="400">
           <Box grow="Yes" alignItems="Center" gap="200">
-            <IconButton size="300" radii="300" onClick={requestClose}>
+            <IconButton aria-label="Назад" size="300" radii="300" onClick={requestClose}>
               <Icon size="50" src={Icons.ArrowLeft} />
             </IconButton>
             <Text size="T300" truncate>
@@ -122,7 +122,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomOut}
-              aria-label="Zoom Out"
+              aria-label="Уменьшить"
             >
               <Icon size="50" src={Icons.Minus} />
             </IconButton>
@@ -135,7 +135,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomIn}
-              aria-label="Zoom In"
+              aria-label="Увеличить"
             >
               <Icon size="50" src={Icons.Plus} />
             </IconButton>
@@ -145,7 +145,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               radii="300"
               before={<Icon size="50" src={Icons.Download} />}
             >
-              <Text size="B300">Download</Text>
+              <Text size="B300">Скачать</Text>
             </Chip>
           </Box>
         </Header>

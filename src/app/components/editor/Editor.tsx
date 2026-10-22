@@ -33,6 +33,7 @@ import { RenderElement, RenderLeaf } from './Elements';
 import { CustomElement } from './slate';
 import * as css from './Editor.css';
 import { toggleKeyboardShortcut } from './keyboard';
+import { pasteLink } from './links';
 
 // Новый объект для каждого редактора: slate-react хранит пути узлов в глобальных
 // WeakMap, и два одновременно открытых поля ввода (комната и тред) с общими
@@ -106,6 +107,14 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
     ref
   ) => {
     const [initialValue] = useState(createInitialValue);
+    const handlePaste: ClipboardEventHandler = useCallback(
+      (evt) => {
+        onPaste?.(evt);
+        if (readOnly || evt.defaultPrevented || evt.clipboardData.files.length > 0) return;
+        if (pasteLink(editor, evt.clipboardData.getData('text/plain'))) evt.preventDefault();
+      },
+      [editor, onPaste, readOnly]
+    );
     const renderElement = useCallback(
       (props: RenderElementProps) => <RenderElement {...props} />,
       []
@@ -185,7 +194,7 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
                 renderLeaf={renderLeaf}
                 onKeyDown={handleKeydown}
                 onKeyUp={onKeyUp}
-                onPaste={onPaste}
+                onPaste={handlePaste}
               />
             </Scroll>
             {after && (

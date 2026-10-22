@@ -17,8 +17,10 @@ import App from './app/pages/App';
 import './app/i18n';
 import { pushSessionToSW } from './sw-session';
 import { getFallbackSession } from './app/state/sessions';
+import { installMobileLinks } from './app/utils/mobileLinks';
 
 document.body.classList.add(configClass, varsClass);
+installMobileLinks();
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

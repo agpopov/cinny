@@ -12,6 +12,7 @@ import {
   Text,
   config,
 } from 'folds';
+import { useBackDismiss } from '../../../hooks/useBackDismiss';
 import { PollDialog } from './PollDialog';
 import { stopPropagation } from '../../../utils/keyboard';
 
@@ -25,6 +26,8 @@ export function AttachMenu({ roomId, threadRootId, onPickFile }: AttachMenuProps
   const [pollOpen, setPollOpen] = useState(false);
 
   const close = () => setAnchor(undefined);
+  useBackDismiss(!!anchor, close, 25);
+  useBackDismiss(pollOpen, () => setPollOpen(false), 40);
   const handleOpen: MouseEventHandler<HTMLButtonElement> = (evt) =>
     setAnchor(evt.currentTarget.getBoundingClientRect());
 

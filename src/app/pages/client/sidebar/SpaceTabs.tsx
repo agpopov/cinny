@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   MouseEventHandler,
   ReactNode,
@@ -166,7 +167,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(
             disabled={!unread}
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Mark as Read
+              {t('Mark as Read')}
             </Text>
           </MenuItem>
           {onUnpin && (
@@ -205,7 +206,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(
             radii="300"
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Copy Link
+              {t('Copy Link')}
             </Text>
           </MenuItem>
           <MenuItem
@@ -522,7 +523,13 @@ function OpenedSpaceFolder({ folder, onClose, children }: OpenedSpaceFolderProps
     >
       <SidebarFolderDropTarget ref={aboveTargetRef} position="Top" />
       <SidebarAvatar size="300">
-        <IconButton data-id={folder.id} size="300" variant="Background" onClick={onClose}>
+        <IconButton
+          aria-label="Свернуть"
+          data-id={folder.id}
+          size="300"
+          variant="Background"
+          onClick={onClose}
+        >
           <Icon size="400" src={Icons.ChevronTop} filled />
         </IconButton>
       </SidebarAvatar>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useMemo } from 'react';
 import { Box, Text, color } from 'folds';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -36,21 +37,21 @@ export function Register() {
   return (
     <Box direction="Column" gap="500">
       <Text size="H2" priority="400">
-        Register
+        {t('Register')}
       </Text>
       {registerFlows.status === RegisterFlowStatus.RegistrationDisabled && !sso && (
         <Text style={{ color: color.Critical.Main }} size="T300">
-          Registration has been disabled on this homeserver.
+          {t('Registration has been disabled on this homeserver.')}
         </Text>
       )}
       {registerFlows.status === RegisterFlowStatus.RateLimited && !sso && (
         <Text style={{ color: color.Critical.Main }} size="T300">
-          You have been rate-limited! Please try after some time.
+          {t('You have been rate-limited! Please try after some time.')}
         </Text>
       )}
       {registerFlows.status === RegisterFlowStatus.InvalidRequest && !sso && (
         <Text style={{ color: color.Critical.Main }} size="T300">
-          Invalid Request! Failed to get any registration options.
+          {t('Invalid Request! Failed to get any registration options.')}
         </Text>
       )}
       {registerFlows.status === RegisterFlowStatus.FlowRequired && (
@@ -62,7 +63,7 @@ export function Register() {
             {(supportedFlows) =>
               supportedFlows.length === 0 ? (
                 <Text style={{ color: color.Critical.Main }} size="T300">
-                  This application does not support registration on this homeserver.
+                  {t('This application does not support registration on this homeserver.')}
                 </Text>
               ) : (
                 <PasswordRegisterForm
@@ -91,7 +92,8 @@ export function Register() {
         </>
       )}
       <Text align="Center">
-        Already have an account? <Link to={getLoginPath(server)}>Login</Link>
+        {t('Already have an account?')}
+        <Link to={getLoginPath(server)}>{t('Login')}</Link>
       </Text>
     </Box>
   );

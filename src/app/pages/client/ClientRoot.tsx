@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import {
 import { HttpApiEvent, HttpApiEventHandlerMap, MatrixClient } from 'matrix-js-sdk';
 import FocusTrap from 'focus-trap-react';
 import React, { MouseEventHandler, ReactNode, useCallback, useEffect, useState } from 'react';
+import { clearPrivateStorage } from '../../utils/privateStorage';
 import {
   clearCacheAndReload,
   clearLoginData,
@@ -61,6 +63,7 @@ function ClientRootOptions({ mx }: { mx?: MatrixClient }) {
 
   return (
     <IconButton
+      aria-label="Действия"
       style={{
         position: 'absolute',
         top: config.space.S100,
@@ -111,7 +114,7 @@ function ClientRootOptions({ mx }: { mx?: MatrixClient }) {
                   fill="None"
                 >
                   <Text as="span" size="T300" truncate>
-                    Logout
+                    {t('Logout')}
                   </Text>
                 </MenuItem>
               </Box>
@@ -128,6 +131,7 @@ const useLogoutListener = (mx?: MatrixClient) => {
     const handleLogout: HttpApiEventHandlerMap[HttpApiEvent.SessionLoggedOut] = async () => {
       mx?.stopClient();
       await mx?.clearStores();
+      await clearPrivateStorage();
       window.localStorage.clear();
       window.location.reload();
     };
@@ -207,7 +211,7 @@ export function ClientRoot({ children }: ClientRootProps) {
                   )}
                   <Button variant="Critical" onClick={mx ? () => startMatrix(mx) : loadMatrix}>
                     <Text as="span" size="B400">
-                      Retry
+                      {t('Retry')}
                     </Text>
                   </Button>
                 </Box>

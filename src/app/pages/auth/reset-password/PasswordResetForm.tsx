@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
@@ -56,11 +57,11 @@ function ResetPasswordComplete({ email }: { email?: string }) {
           <Dialog>
             <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
               <Text>
-                Password has been reset successfully. Please login with your new password.
+                {t('Password has been reset successfully. Please login with your new password.')}
               </Text>
               <Button variant="Primary" onClick={handleClick}>
                 <Text size="B400" as="span">
-                  Login
+                  {t('Login')}
                 </Text>
               </Button>
             </Box>
@@ -167,11 +168,12 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
       <Text size="T300" priority="400">
-        Homeserver <strong>{server}</strong> will send you an email to let you reset your password.
+        {t('Homeserver')}
+        <strong>{server}</strong> will send you an email to let you reset your password.
       </Text>
       <Box direction="Column" gap="100">
         <Text as="label" size="L400" priority="300">
-          Email
+          {t('Email')}
         </Text>
         <Input
           defaultValue={defaultEmail}
@@ -193,7 +195,7 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
           <>
             <Box direction="Column" gap="100">
               <Text as="label" size="L400" priority="300">
-                New Password
+                {t('New Password')}
               </Text>
               <PasswordInput
                 ref={passRef}
@@ -207,7 +209,7 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
             </Box>
             <Box direction="Column" gap="100">
               <Text as="label" size="L400" priority="300">
-                Confirm Password
+                {t('Confirm Password')}
               </Text>
               <PasswordInput
                 ref={confPassRef}
@@ -233,7 +235,7 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
       <span data-spacing-node />
       <Button type="submit" variant="Primary" size="500">
         <Text as="span" size="B500">
-          Reset Password
+          {t('Reset Password')}
         </Text>
       </Button>
 

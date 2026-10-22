@@ -136,3 +136,29 @@ li p::before {
   content: '';
   display: inline-block;
 }
+
+/* Keyboard focus remains visible in both theme families and at increased font size. */
+:focus-visible {
+  outline: 2px solid var(--tc-link) !important;
+  outline-offset: 3px;
+}
+
+@media (pointer: coarse) {
+  button[data-message-actions] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Keep loading state visible but static for people who reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

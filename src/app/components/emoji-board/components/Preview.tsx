@@ -1,6 +1,7 @@
 import { Box, Text } from 'folds';
 import React from 'react';
 import { Atom, atom, useAtomValue } from 'jotai';
+import { AuthenticatedImage } from '../../media/AuthenticatedImage';
 import * as css from './styles.css';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
@@ -50,7 +51,11 @@ export function Preview({ previewAtom }: PreviewProps) {
           alignItems="Center"
           justifyContent="Center"
         >
-          {imageUrl ? <img className={css.PreviewImg} src={imageUrl} alt={shortcode} /> : key}
+          {imageUrl ? (
+            <AuthenticatedImage className={css.PreviewImg} src={imageUrl} alt={shortcode} />
+          ) : (
+            key
+          )}
         </Box>
       )}
       <Text size="H5" truncate>

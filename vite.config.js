@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { wasm } from '@rollup/plugin-wasm';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { staticAssetsPlugin } from './scripts/static-assets.mjs';
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import inject from '@rollup/plugin-inject';
@@ -10,44 +10,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import fs from 'fs';
 import path from 'path';
 import buildConfig from './build.config';
-
-const copyFiles = {
-  targets: [
-    {
-      src: 'node_modules/@element-hq/element-call-embedded/dist/*',
-      dest: 'public/element-call',
-    },
-    {
-      src: 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
-      dest: '',
-      rename: 'pdf.worker.min.js',
-    },
-    {
-      src: 'netlify.toml',
-      dest: '',
-    },
-    {
-      src: 'config.json',
-      dest: '',
-    },
-    {
-      src: 'public/manifest.json',
-      dest: '',
-    },
-    {
-      src: 'public/res/android',
-      dest: 'public/',
-    },
-    {
-      src: 'public/locales',
-      dest: 'public/',
-    },
-    {
-      src: 'public/res/stickers',
-      dest: 'public/',
-    },
-  ],
-};
+import { contentSecurityPolicyPlugin } from './security/csp.mjs';
 
 function serverMatrixSdkCryptoWasm(wasmFilePath) {
   return {
@@ -91,6 +54,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    contentSecurityPolicyPlugin(),
     serverMatrixSdkCryptoWasm('/node_modules/.vite/deps/pkg/matrix_sdk_crypto_wasm_bg.wasm'),
     topLevelAwait({
       // The export name of top-level await promise for each chunk module
@@ -98,7 +62,7 @@ export default defineConfig({
       // The function to generate import names of top-level await promise in each chunk module
       promiseImportName: (i) => `__tla_${i}`,
     }),
-    viteStaticCopy(copyFiles),
+    staticAssetsPlugin(),
     vanillaExtractPlugin(),
     wasm(),
     react(),
@@ -132,6 +96,9 @@ export default defineConfig({
     },
   },
   build: {
+    // Preserve Chrome/Firefox/Edge targets. Safari 14.1 fixes the destructuring
+    // engine bug that esbuild 0.28 correctly rejects for Safari 14.0.
+    target: ['es2020', 'chrome87', 'edge88', 'firefox78', 'safari14.1'],
     outDir: 'dist',
     sourcemap: true,
     copyPublicDir: false,

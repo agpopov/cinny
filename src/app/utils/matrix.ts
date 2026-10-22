@@ -14,28 +14,21 @@ import {
   UploadResponse,
 } from 'matrix-js-sdk';
 import to from 'await-to-js';
+import { ENCRYPTED_FILE_LIMIT } from './attachmentLimits';
+import { prepareAttachment, transferAttachment } from './taskQueue';
 import { IImageInfo, IThumbnailContent, IVideoInfo } from '../../types/matrix/common';
 import { AccountDataEvent } from '../../types/matrix/accountData';
 import { getStateEvent } from './room';
 import { Membership, StateEvent } from '../../types/matrix/room';
+import { downloadMedia } from './media';
+
+export { downloadMedia } from './media';
 
 const DOMAIN_REGEX = /\b(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}\b/;
 
 export const isServerName = (serverName: string): boolean => DOMAIN_REGEX.test(serverName);
 
-const matchMxId = (id: string): RegExpMatchArray | null => id.match(/^([@$+#])([^\s:]+):(\S+)$/);
-
-const validMxId = (id: string): boolean => !!matchMxId(id);
-
-export const getMxIdServer = (userId: string): string | undefined => matchMxId(userId)?.[3];
-
-export const getMxIdLocalPart = (userId: string): string | undefined => matchMxId(userId)?.[2];
-
-export const isUserId = (id: string): boolean => validMxId(id) && id.startsWith('@');
-
-export const isRoomId = (id: string): boolean => id.startsWith('!');
-
-export const isRoomAlias = (id: string): boolean => validMxId(id) && id.startsWith('#');
+export { getMxIdServer, getMxIdLocalPart, isUserId, isRoomId, isRoomAlias } from './matrixId';
 
 export const getCanonicalAliasRoomId = (mx: MatrixClient, alias: string): string | undefined =>
   mx
@@ -111,16 +104,20 @@ export const encryptFile = async (
   file: File;
   originalFile: File | Blob;
 }> => {
-  const dataBuffer = await file.arrayBuffer();
-  const encryptedAttachment = await encryptAttachment(dataBuffer);
-  const encFile = new File([encryptedAttachment.data], file.name, {
-    type: file.type,
+  if (file.size > ENCRYPTED_FILE_LIMIT)
+    throw new Error('Файл превышает лимит шифрования: 128 МиБ.');
+  return prepareAttachment(async () => {
+    const dataBuffer = await file.arrayBuffer();
+    const encryptedAttachment = await encryptAttachment(dataBuffer);
+    const encFile = new File([encryptedAttachment.data], file.name, {
+      type: file.type,
+    });
+    return {
+      encInfo: encryptedAttachment.info,
+      file: encFile,
+      originalFile: file,
+    };
   });
-  return {
-    encInfo: encryptedAttachment.info,
-    file: encFile,
-    originalFile: file,
-  };
 };
 
 export const decryptFile = async (
@@ -128,9 +125,13 @@ export const decryptFile = async (
   type: string,
   encInfo: EncryptedAttachmentInfo
 ): Promise<Blob> => {
-  const dataArray = await decryptAttachment(dataBuffer, encInfo);
-  const blob = new Blob([dataArray], { type });
-  return blob;
+  if (dataBuffer.byteLength > ENCRYPTED_FILE_LIMIT)
+    throw new Error('Файл превышает лимит расшифровки: 128 МиБ.');
+  return prepareAttachment(async () => {
+    const dataArray = await decryptAttachment(dataBuffer, encInfo);
+    const blob = new Blob([dataArray], { type });
+    return blob;
+  });
 };
 
 export type TUploadContent = File | Blob;
@@ -145,6 +146,13 @@ export type ContentUploadOptions = {
   onError: (error: MatrixError) => void;
 };
 
+const uploadCancellations = new WeakMap<
+  Promise<UploadResponse>,
+  () => boolean | Promise<boolean>
+>();
+export const cancelContentUpload = (mx: MatrixClient, promise: Promise<UploadResponse>) =>
+  uploadCancellations.get(promise)?.() ?? mx.cancelUpload(promise);
+
 export const uploadContent = async (
   mx: MatrixClient,
   file: TUploadContent,
@@ -152,11 +160,21 @@ export const uploadContent = async (
 ) => {
   const { name, fileType, hideFilename, onProgress, onPromise, onSuccess, onError } = options;
 
-  const uploadPromise = mx.uploadContent(file, {
-    name,
-    type: fileType,
-    includeFilename: !hideFilename,
-    progressHandler: onProgress,
+  let actual: Promise<UploadResponse> | undefined;
+  let cancelled = false;
+  const uploadPromise = transferAttachment(async () => {
+    if (cancelled) throw new Error('Загрузка отменена');
+    actual = mx.uploadContent(file, {
+      name,
+      type: fileType,
+      includeFilename: !hideFilename,
+      progressHandler: onProgress,
+    });
+    return actual;
+  });
+  uploadCancellations.set(uploadPromise, () => {
+    cancelled = true;
+    return actual ? mx.cancelUpload(actual) : Promise.resolve(true);
   });
   onPromise?.(uploadPromise);
   try {
@@ -168,6 +186,8 @@ export const uploadContent = async (
     const error = typeof e?.message === 'string' ? e.message : undefined;
     const errcode = typeof e?.name === 'string' ? e.message : undefined;
     onError(new MatrixError({ error, errcode }));
+  } finally {
+    uploadCancellations.delete(uploadPromise);
   }
 };
 
@@ -296,18 +316,11 @@ export const mxcUrlToHttp = (
     useAuthentication
   );
 
-export const downloadMedia = async (src: string): Promise<Blob> => {
-  // this request is authenticated by service worker
-  const res = await fetch(src, { method: 'GET' });
-  const blob = await res.blob();
-  return blob;
-};
-
 export const downloadEncryptedMedia = async (
   src: string,
   decryptContent: (buf: ArrayBuffer) => Promise<Blob>
 ): Promise<Blob> => {
-  const encryptedContent = await downloadMedia(src);
+  const encryptedContent = await downloadMedia(src, undefined, ENCRYPTED_FILE_LIMIT);
   const decryptedContent = await decryptContent(await encryptedContent.arrayBuffer());
 
   return decryptedContent;

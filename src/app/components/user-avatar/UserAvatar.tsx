@@ -1,6 +1,7 @@
 import { AvatarFallback, AvatarImage, color } from 'folds';
 import React, { ReactEventHandler, ReactNode, useState } from 'react';
 import classNames from 'classnames';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import * as css from './UserAvatar.css';
 import colorMXID from '../../../util/colorMXID';
 
@@ -31,6 +32,7 @@ export function UserAvatar({ className, userId, src, alt, renderFallback }: User
 
   return (
     <AvatarImage
+      as={AuthenticatedImage}
       className={classNames(css.UserAvatar, className)}
       src={src}
       alt={alt}

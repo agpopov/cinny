@@ -64,18 +64,20 @@ export const selectFile = <M extends boolean | undefined = undefined>(
     if (accept) input.accept = accept;
     if (multiple) input.multiple = true;
 
-    const changeHandler = () => {
+    const changeHandler = (event: Event) => {
       const fileList = input.files;
-      if (!fileList) {
+      if (event.type === 'cancel' || !fileList) {
         resolve(undefined);
       } else {
         const files: File[] = getFilesFromFileList(fileList);
         resolve((multiple ? files : files[0]) as FilesOrFile<M>);
       }
       input.removeEventListener('change', changeHandler);
+      input.removeEventListener('cancel', changeHandler);
     };
 
     input.addEventListener('change', changeHandler);
+    input.addEventListener('cancel', changeHandler);
     input.click();
   });
 
@@ -219,20 +221,28 @@ export const scrollToBottom = (scrollEl: HTMLElement, behavior?: 'auto' | 'insta
 };
 
 export const copyToClipboard = (text: string) => {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text);
-  } else {
+  const copyFallback = () => {
     const host = document.body;
-    const copyInput = document.createElement('input');
+    const previousFocus = document.activeElement;
+    const copyInput = document.createElement('textarea');
     copyInput.style.position = 'fixed';
     copyInput.style.opacity = '0';
     copyInput.value = text;
     host.append(copyInput);
 
-    copyInput.select();
-    copyInput.setSelectionRange(0, 99999);
-    document.execCommand('Copy');
-    copyInput.remove();
+    try {
+      copyInput.select();
+      copyInput.setSelectionRange(0, text.length);
+      document.execCommand('copy');
+    } finally {
+      copyInput.remove();
+      if (previousFocus instanceof HTMLElement) previousFocus.focus({ preventScroll: true });
+    }
+  };
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(copyFallback);
+  } else {
+    copyFallback();
   }
 };
 

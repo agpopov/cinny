@@ -173,7 +173,7 @@ export function InviteUserPrompt({ room, requestClose }: InviteUserProps) {
                   </Text>
                 </Box>
                 <Box shrink="No">
-                  <IconButton size="300" radii="300" onClick={requestClose}>
+                  <IconButton aria-label="Закрыть" size="300" radii="300" onClick={requestClose}>
                     <Icon src={Icons.Cross} />
                   </IconButton>
                 </Box>

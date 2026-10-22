@@ -45,7 +45,7 @@ export function Permissions({ requestClose }: PermissionsProps) {
             </Text>
           </Box>
           <Box shrink="No">
-            <IconButton onClick={requestClose} variant="Surface">
+            <IconButton aria-label="Закрыть" onClick={requestClose} variant="Surface">
               <Icon src={Icons.Cross} />
             </IconButton>
           </Box>

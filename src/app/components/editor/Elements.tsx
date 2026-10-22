@@ -7,6 +7,7 @@ import {
   useSelected,
   useSlate,
 } from 'slate-react';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 
 import * as css from '../../styles/CustomHtml.css';
 import { CommandElement, EmoticonElement, LinkElement, MentionElement } from './slate';
@@ -93,7 +94,7 @@ function RenderEmoticonElement({
         contentEditable={false}
       >
         {element.key.startsWith('mxc://') ? (
-          <img
+          <AuthenticatedImage
             className={css.EmoticonImg}
             src={mxcUrlToHttp(mx, element.key, useAuthentication) ?? element.key}
             alt={element.shortcode}
@@ -113,7 +114,7 @@ function RenderLinkElement({
   children,
 }: { element: LinkElement } & RenderElementProps) {
   return (
-    <a href={element.href} {...attributes}>
+    <a href={element.href} {...attributes} onClick={(evt) => evt.preventDefault()}>
       <InlineChromiumBugfix />
       {children}
     </a>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useState } from 'react';
 import {
   Badge,
@@ -53,7 +54,7 @@ export function VerificationStatusBadge({
   if (verificationStatus === VerificationStatus.Unverified) {
     return (
       <Badge variant="Critical" fill="Solid" size="500">
-        <Text size="L400">Unverified</Text>
+        <Text size="L400">{t('Unverified')}</Text>
       </Badge>
     );
   }
@@ -61,14 +62,17 @@ export function VerificationStatusBadge({
   if (otherUnverifiedCount > 0) {
     return (
       <Badge variant="Warning" fill="Solid" size="500">
-        <Text size="L400">{otherUnverifiedCount} Unverified</Text>
+        <Text size="L400">
+          {otherUnverifiedCount}
+          {t('Unverified')}
+        </Text>
       </Badge>
     );
   }
 
   return (
     <Badge variant="Success" fill="Solid" size="500">
-      <Text size="L400">Verified</Text>
+      <Text size="L400">{t('Verified')}</Text>
     </Badge>
   );
 }
@@ -76,17 +80,18 @@ export function VerificationStatusBadge({
 function LearnStartVerificationFromOtherDevice() {
   return (
     <Box direction="Column">
-      <Text size="T200">Steps to verify from other device.</Text>
+      <Text size="T200">{t('Steps to verify from other device.')}</Text>
       <Text as="div" size="T200">
         <ul style={{ margin: `${config.space.S100} 0` }}>
-          <li>Open your other verified device.</li>
+          <li>{t('Open your other verified device.')}</li>
           <li>
-            Open <i>Settings</i>.
+            {t('Open')}
+            <i>{t('Settings')}</i>.
           </li>
           <li>
-            Find this device in <i>Devices/Sessions</i> section.
+            Find this device in <i>{t('Devices/Sessions')}</i> section.
           </li>
-          <li>Initiate verification.</li>
+          <li>{t('Initiate verification.')}</li>
         </ul>
       </Text>
       <Text size="T200">
@@ -113,10 +118,10 @@ export function VerifyCurrentDeviceTile({
     <>
       <InfoCard
         variant="Critical"
-        title="Unverified"
+        title={t('Unverified')}
         description={
           <>
-            Start verification from other device or verify manually.{' '}
+            {t('Start verification from other device or verify manually.')}{' '}
             <Text as="a" size="T200" onClick={() => setLearnMore(!learnMore)}>
               <b>{learnMore ? 'View Less' : 'Learn More'}</b>
             </Text>
@@ -133,7 +138,7 @@ export function VerifyCurrentDeviceTile({
               onClick={() => setManualVerification(true)}
             >
               <Text as="span" size="B300">
-                Verify Manually
+                {t('Verify Manually')}
               </Text>
             </Button>
           )
@@ -190,8 +195,8 @@ export function VerifyOtherDeviceTile({ crypto, deviceId }: VerifyOtherDeviceTil
   return (
     <InfoCard
       variant="Warning"
-      title="Unverified"
-      description="Verify device identity and grant access to encrypted messages."
+      title={t('Unverified')}
+      description={t('Verify device identity and grant access to encrypted messages.')}
       after={
         <Button
           size="300"
@@ -202,7 +207,7 @@ export function VerifyOtherDeviceTile({ crypto, deviceId }: VerifyOtherDeviceTil
           disabled={requesting}
         >
           <Text as="span" size="B300">
-            Verify
+            {t('Verify')}
           </Text>
         </Button>
       }
@@ -230,7 +235,7 @@ export function EnableVerification({ visible }: EnableVerificationProps) {
       {visible && (
         <Button size="300" radii="300" onClick={() => setOpen(true)}>
           <Text as="span" size="B300">
-            Enable
+            {t('Enable')}
           </Text>
         </Button>
       )}
@@ -288,6 +293,7 @@ export function DeviceVerificationOptions() {
   return (
     <>
       <IconButton
+        aria-label="Действия"
         aria-pressed={!!menuCords}
         variant="SurfaceVariant"
         size="300"
@@ -324,7 +330,7 @@ export function DeviceVerificationOptions() {
                   fill="None"
                 >
                   <Text as="span" size="T300" truncate>
-                    Reset
+                    {t('Reset')}
                   </Text>
                 </MenuItem>
               </Box>

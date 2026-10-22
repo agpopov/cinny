@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Avatar, AvatarImage, Box, Button, Text } from 'folds';
 import { IIdentityProvider, SSOAction, createClient } from 'matrix-js-sdk';
 import React, { useMemo } from 'react';
@@ -85,7 +86,7 @@ export function SSOLogin({ providers, redirectUrl, action, saveScreenSpace }: SS
           outlined
         >
           <Text align="Center" size="B500" truncate>
-            Continue with SSO
+            {t('Continue with SSO')}
           </Text>
         </Button>
       )}

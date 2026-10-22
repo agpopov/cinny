@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Icon, Icons } from 'folds';
 import { useAtom } from 'jotai';
@@ -11,7 +12,7 @@ export function SearchTab() {
 
   return (
     <SidebarItem active={opened}>
-      <SidebarItemTooltip tooltip="Search">
+      <SidebarItemTooltip tooltip={t('Search')}>
         {(triggerRef) => (
           <SidebarAvatar as="button" ref={triggerRef} outlined onClick={open}>
             <Icon src={Icons.Search} filled={opened} />

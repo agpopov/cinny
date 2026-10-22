@@ -26,7 +26,7 @@ export const RoomTopicViewer = as<
           {name}
         </Text>
       </Box>
-      <IconButton size="300" onClick={requestClose} radii="300">
+      <IconButton aria-label="Закрыть" size="300" onClick={requestClose} radii="300">
         <Icon src={Icons.Cross} />
       </IconButton>
     </Header>

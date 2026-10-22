@@ -1,5 +1,5 @@
-import { Settings } from '../state/settings';
-import { DndMode } from './desktop';
+import type { Settings } from '../state/settings';
+import type { DndMode } from './desktop';
 
 export const DND_FOREVER = -1;
 

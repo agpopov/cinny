@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, forwardRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Icon, Icons, Menu, MenuItem, PopOut, RectCords, Text, config, toRem } from 'folds';
@@ -53,7 +54,7 @@ const HomeMenu = forwardRef<HTMLDivElement, HomeMenuProps>(({ requestClose }, re
           aria-disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            {t('Mark as Read')}
           </Text>
         </MenuItem>
       </Box>
@@ -95,7 +96,7 @@ export function HomeTab() {
 
   return (
     <SidebarItem active={homeSelected}>
-      <SidebarItemTooltip tooltip="Home">
+      <SidebarItemTooltip tooltip={t('Home')}>
         {(triggerRef) => (
           <SidebarAvatar
             as="button"

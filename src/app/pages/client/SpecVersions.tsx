@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ReactNode } from 'react';
 import { Box, Dialog, config, Text, Button, Spinner } from 'folds';
 import { SpecVersionsLoader } from '../../components/SpecVersionsLoader';
@@ -22,11 +23,12 @@ export function SpecVersions({ baseUrl, children }: { baseUrl: string; children:
             <Dialog>
               <Box direction="Column" gap="400" style={{ padding: config.space.S400 }}>
                 <Text>
-                  Unable to connect to the homeserver. The homeserver or your internet connection may be down.
+                  Unable to connect to the homeserver. The homeserver or your internet connection
+                  may be down.
                 </Text>
                 <Button variant="Critical" onClick={retry}>
                   <Text as="span" size="B400">
-                    Retry
+                    {t('Retry')}
                   </Text>
                 </Button>
                 <Button variant="Critical" onClick={ignore} fill="Soft">

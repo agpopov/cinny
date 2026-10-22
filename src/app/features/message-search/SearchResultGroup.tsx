@@ -1,9 +1,12 @@
+import { t } from 'i18next';
+import { useSetAtom } from 'jotai';
 /* eslint-disable react/destructuring-assignment */
 import React, { MouseEventHandler, useMemo } from 'react';
 import { IEventWithRoomId, JoinRule, RelationType, Room } from 'matrix-js-sdk';
 import { HTMLReactParserOptions } from 'html-react-parser';
 import { Avatar, Box, Chip, Header, Icon, Icons, Text, config } from 'folds';
 import { Opts as LinkifyOpts } from 'linkifyjs';
+import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import {
   factoryRenderLinkifyWithMention,
@@ -147,7 +150,7 @@ export function SearchResultGroup({
           />
         );
       },
-      [MessageEvent.Reaction]: (event, displayName, getContent) => {
+      [MessageEvent.Sticker]: (event, displayName, getContent) => {
         if (event.unsigned?.redacted_because) {
           return <RedactedContent reason={event.unsigned?.redacted_because.content.reason} />;
         }
@@ -170,7 +173,8 @@ export function SearchResultGroup({
         return (
           <Box grow="Yes" direction="Column">
             <Text size="T400" priority="300">
-              Room Tombstone. {content.body}
+              {t('Room Tombstone.')}
+              {content.body}
             </Text>
           </Box>
         );
@@ -192,10 +196,22 @@ export function SearchResultGroup({
     }
   );
 
+  const setThreadPanel = useSetAtom(roomIdToThreadPanelAtomFamily(room.roomId));
   const handleOpenClick: MouseEventHandler = (evt) => {
     const eventId = evt.currentTarget.getAttribute('data-event-id');
     if (!eventId) return;
-    onOpen(room.roomId, eventId);
+    const relation = items.find((item) => item.event.event_id === eventId)?.event.content[
+      'm.relates_to'
+    ];
+    const rootId =
+      evt.currentTarget.getAttribute('data-thread-id') ??
+      (relation?.rel_type === 'm.thread' ? relation.event_id : undefined);
+    if (rootId) {
+      setThreadPanel({ view: 'thread', rootId, eventId });
+      onOpen(room.roomId, rootId);
+    } else {
+      onOpen(room.roomId, eventId);
+    }
   };
 
   return (
@@ -304,11 +320,12 @@ export function SearchResultGroup({
                   <Box shrink="No" gap="200" alignItems="Center">
                     <Chip
                       data-event-id={mainEventId}
+                      data-thread-id={threadRootId}
                       onClick={handleOpenClick}
                       variant="Secondary"
                       radii="400"
                     >
-                      <Text size="T200">Open</Text>
+                      <Text size="T200">{t('Open')}</Text>
                     </Chip>
                   </Box>
                 </Box>

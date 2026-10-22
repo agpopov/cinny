@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text, as } from 'folds';
 import classNames from 'classnames';
 import { MatrixClient, MatrixEvent, Room } from 'matrix-js-sdk';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import * as css from './Reaction.css';
 import { getHexcodeForEmoji, getShortcodeFor } from '../../plugins/emoji';
 import { getMemberDisplayName } from '../../utils/room';
@@ -27,10 +28,9 @@ export const Reaction = as<
   >
     <Text className={css.ReactionText} as="span" size="T400">
       {reaction.startsWith('mxc://') ? (
-        <img
+        <AuthenticatedImage
           className={css.ReactionImg}
-          src={mxcUrlToHttp(mx, reaction, useAuthentication) ?? reaction
-          }
+          src={mxcUrlToHttp(mx, reaction, useAuthentication) ?? reaction}
           alt={reaction}
         />
       ) : (

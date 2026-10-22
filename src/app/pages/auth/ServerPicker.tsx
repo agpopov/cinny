@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   ChangeEventHandler,
   KeyboardEventHandler,
@@ -109,7 +110,7 @@ export function ServerPicker({
               >
                 <Menu>
                   <Header size="300" style={{ padding: `0 ${config.space.S200}` }}>
-                    <Text size="L400">Homeserver List</Text>
+                    <Text size="L400">{t('Homeserver List')}</Text>
                   </Header>
                   <div style={{ padding: config.space.S100, paddingTop: 0 }}>
                     {serverList?.map((serverName) => (
@@ -129,6 +130,7 @@ export function ServerPicker({
             }
           >
             <IconButton
+              aria-label="Раскрыть"
               onClick={handleOpenServerMenu}
               variant={allowCustomServer ? 'Background' : 'Surface'}
               size="300"

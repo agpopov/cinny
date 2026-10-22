@@ -34,14 +34,17 @@ const glowPulse = keyframes({
 export const WobbleAnimation = style({
   animation: `${wobble} 2000ms ease-in-out`,
   animationIterationCount: 'infinite',
+  '@media': { '(prefers-reduced-motion: reduce)': { animation: 'none' } },
 });
 
 export const GlowAnimation = style({
   animation: `${glowPulse} 2000ms ease-out`,
   animationIterationCount: 'infinite',
+  '@media': { '(prefers-reduced-motion: reduce)': { animation: 'none' } },
 });
 
 export const CallAvatarAnimation = style({
   animation: `${wobble} 2000ms ease-in-out, ${glowPulse} 2000ms ease-out`,
   animationIterationCount: 'infinite',
+  '@media': { '(prefers-reduced-motion: reduce)': { animation: 'none' } },
 });

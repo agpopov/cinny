@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useEffect } from 'react';
 import { Box, Text, Chip } from 'folds';
 import { SequenceCard } from '../../../components/sequence-card';
@@ -22,14 +23,17 @@ export function ContactInformation() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Contact Information</Text>
+      <Text size="L400">{t('Contact Information')}</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
         direction="Column"
         gap="400"
       >
-        <SettingTile title="Email Address" description="Email address attached to your account.">
+        <SettingTile
+          title={t('Email Address')}
+          description={t('Email address attached to your account.')}
+        >
           <Box>
             {emailIds?.map((email) => (
               <Chip key={email.address} as="span" variant="Secondary" radii="Pill">

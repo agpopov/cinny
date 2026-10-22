@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ChangeEventHandler, FormEventHandler, useCallback, useMemo, useState } from 'react';
 import { IPushRule, IPushRules, PushRuleKind } from 'matrix-js-sdk';
 import { Box, Text, Badge, Button, Input, config, IconButton, Icons, Icon, Spinner } from 'folds';
@@ -75,6 +76,7 @@ function KeywordInput() {
             keyword &&
             !addingKeyword && (
               <IconButton
+                aria-label="Закрыть"
                 type="reset"
                 onClick={handleReset}
                 size="300"
@@ -97,7 +99,7 @@ function KeywordInput() {
         disabled={addingKeyword}
       >
         {addingKeyword && <Spinner variant="Secondary" size="300" />}
-        <Text size="B400">Save</Text>
+        <Text size="B400">{t('Save')}</Text>
       </Button>
     </Box>
   );
@@ -118,7 +120,14 @@ function KeywordCross({ pushRule }: PushRulesProps) {
 
   const removing = removeState.status === AsyncStatus.Loading;
   return (
-    <IconButton onClick={remove} size="300" radii="Pill" variant="Secondary" disabled={removing}>
+    <IconButton
+      aria-label="Закрыть"
+      onClick={remove}
+      size="300"
+      radii="Pill"
+      variant="Secondary"
+      disabled={removing}
+    >
       {removing ? <Spinner size="100" /> : <Icon src={Icons.Cross} size="100" />}
     </IconButton>
   );
@@ -162,9 +171,9 @@ export function KeywordMessagesNotifications() {
   return (
     <Box direction="Column" gap="100">
       <Box alignItems="Center" justifyContent="SpaceBetween" gap="200">
-        <Text size="L400">Keyword Messages</Text>
+        <Text size="L400">{t('Keyword Messages')}</Text>
         <Box gap="100">
-          <Text size="T200">Badge: </Text>
+          <Text size="T200">{t('Badge:')}</Text>
           <Badge radii="300" variant="Success" fill="Solid">
             <Text size="L400">1</Text>
           </Badge>
@@ -177,8 +186,8 @@ export function KeywordMessagesNotifications() {
         gap="400"
       >
         <SettingTile
-          title="Select Keyword"
-          description="Set a notification preference for message containing given keyword."
+          title={t('Select Keyword')}
+          description={t('Set a notification preference for message containing given keyword.')}
         >
           <KeywordInput />
         </SettingTile>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Icon, Icons, Scroll } from 'folds';
 import {
@@ -23,7 +24,7 @@ export function Create() {
                 <Box direction="Column" gap="700">
                   <PageHero
                     icon={<Icon size="600" src={Icons.Space} />}
-                    title="Create Space"
+                    title={t('Create Space')}
                     subTitle="Build a space for your community."
                   />
                   <CreateSpaceForm onCreate={navigateSpace} />

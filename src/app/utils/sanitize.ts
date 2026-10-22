@@ -1,4 +1,4 @@
-import sanitizeHtml, { Transformer } from 'sanitize-html';
+import sanitizeHtml, { type Transformer } from 'sanitize-html';
 
 const MAX_TAG_NESTING = 100;
 
@@ -44,7 +44,7 @@ const permittedHtmlTags = [
   'summary',
 ];
 
-const urlSchemes = ['https', 'http', 'ftp', 'mailto', 'magnet'];
+export const urlSchemes = ['https', 'http', 'ftp', 'mailto', 'magnet'];
 
 const permittedTagToAttributes = {
   font: ['style', 'data-mx-bg-color', 'data-mx-color', 'color'],

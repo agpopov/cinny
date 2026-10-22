@@ -23,6 +23,7 @@ import {
   mxcUrlToHttp,
 } from '../../../utils/matrix';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
+import { useObjectURL } from '../../../hooks/useObjectURL';
 
 const PLAY_TIME_THROTTLE_OPS = {
   wait: 500,
@@ -59,9 +60,10 @@ export function AudioContent({
       const fileContent = encInfo
         ? await downloadEncryptedMedia(mediaUrl, (encBuf) => decryptFile(encBuf, mimeType, encInfo))
         : await downloadMedia(mediaUrl);
-      return URL.createObjectURL(fileContent);
+      return fileContent;
     }, [mx, url, useAuthentication, mimeType, encInfo])
   );
+  const src = useObjectURL(srcState.status === AsyncStatus.Success ? srcState.data : undefined);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -203,7 +205,7 @@ export function AudioContent({
     ),
     children: (
       <audio controls={false} autoPlay ref={audioRef}>
-        {srcState.status === AsyncStatus.Success && <source src={srcState.data} type={mimeType} />}
+        {src && <source src={src} type={mimeType} />}
       </audio>
     ),
   });

@@ -82,7 +82,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
               <Box grow="Yes">
                 <Text size="H4">Join with Address</Text>
               </Box>
-              <IconButton size="300" onClick={onCancel} radii="300">
+              <IconButton aria-label="Закрыть" size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
               </IconButton>
             </Header>

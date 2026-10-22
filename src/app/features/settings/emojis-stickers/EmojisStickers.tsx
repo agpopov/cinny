@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useState } from 'react';
 import { Box, Text, IconButton, Icon, Icons, Scroll } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
@@ -26,11 +27,11 @@ export function EmojisStickers({ requestClose }: EmojisStickersProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Emojis & Stickers
+              {t('Emojis & Stickers')}
             </Text>
           </Box>
           <Box shrink="No">
-            <IconButton onClick={requestClose} variant="Surface">
+            <IconButton aria-label="Закрыть" onClick={requestClose} variant="Surface">
               <Icon src={Icons.Cross} />
             </IconButton>
           </Box>

@@ -78,7 +78,7 @@ type UploadCardErrorProps = {
 
 export function UploadCardError({ children }: UploadCardErrorProps) {
   return (
-    <Box className={css.UploadCardError} alignItems="Center" gap="300">
+    <Box role="alert" className={css.UploadCardError} alignItems="Center" gap="300">
       <Icon src={Icons.Warning} size="50" />
       {children}
     </Box>

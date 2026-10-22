@@ -41,7 +41,12 @@ export function CallChatView() {
               }
             >
               {(triggerRef) => (
-                <IconButton ref={triggerRef} variant="Surface" onClick={handleClose}>
+                <IconButton
+                  aria-label="Закрыть"
+                  ref={triggerRef}
+                  variant="Surface"
+                  onClick={handleClose}
+                >
                   <Icon src={Icons.Cross} />
                 </IconButton>
               )}

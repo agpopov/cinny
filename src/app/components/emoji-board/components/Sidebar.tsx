@@ -13,6 +13,7 @@ import {
   Icons,
 } from 'folds';
 import classNames from 'classnames';
+import { AuthenticatedImage } from '../../media/AuthenticatedImage';
 import * as css from './styles.css';
 
 export function Sidebar({ children }: { children: ReactNode }) {
@@ -121,7 +122,7 @@ export function ImageGroupIcon<T extends string>({
   return (
     <SidebarBtn active={active} id={id} label={label} onClick={onClick}>
       {url ? (
-        <img className={css.SidebarBtnImg} src={url} alt={label} />
+        <AuthenticatedImage className={css.SidebarBtnImg} src={url} alt={label} />
       ) : (
         <Icon src={Icons.Photo} filled={active} />
       )}

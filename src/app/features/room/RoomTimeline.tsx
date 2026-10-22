@@ -34,6 +34,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import {
   Badge,
   Box,
+  Button,
   Chip,
   ContainerColor,
   Icon,
@@ -49,6 +50,7 @@ import {
 import { isKeyHotkey } from 'is-hotkey';
 import { Opts as LinkifyOpts } from 'linkifyjs';
 import { useTranslation } from 'react-i18next';
+import { canPaginateTimeline } from '../../utils/timelinePagination';
 import { eventWithShortcode, factoryEventSentBy, getMxIdLocalPart } from '../../utils/matrix';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useVirtualPaginator, ItemRange } from '../../hooks/useVirtualPaginator';
@@ -303,6 +305,8 @@ const useTimelinePagination = (
   setTimeline: Dispatch<SetStateAction<Timeline>>,
   limit: number
 ) => {
+  const [error, setError] = useState<{ message: string; backwards: boolean }>();
+  const failed = useRef(false);
   const timelineRef = useRef(timeline);
   timelineRef.current = timeline;
   const alive = useAlive();
@@ -339,7 +343,7 @@ const useTimelinePagination = (
     };
 
     return async (backwards: boolean) => {
-      if (fetching) return;
+      if (fetching || failed.current) return;
       const { linkedTimelines: lTimelines } = timelineRef.current;
       const timelinesEventsCount = lTimelines.map(timelineToEventsCount);
 
@@ -358,15 +362,26 @@ const useTimelinePagination = (
         return;
       }
 
+      if (!canPaginateTimeline(timelineToPaginate, backwards)) return;
       fetching = true;
       const [err] = await to(
-        mx.paginateEventTimeline(timelineToPaginate, {
-          backwards,
-          limit,
-        })
+        Promise.resolve().then(() =>
+          mx.paginateEventTimeline(timelineToPaginate, { backwards, limit })
+        )
       );
+      // Ignore requests for a view replaced by a jump, room change or timeline reset.
+      if (timelineRef.current.linkedTimelines !== lTimelines) {
+        fetching = false;
+        return;
+      }
       if (err) {
-        // TODO: handle pagination error.
+        fetching = false;
+        failed.current = true;
+        if (alive())
+          setError({
+            message: 'Не удалось загрузить историю. Проверьте подключение и повторите попытку.',
+            backwards,
+          });
         return;
       }
       const fetchedTimeline =
@@ -387,7 +402,13 @@ const useTimelinePagination = (
       }
     };
   }, [mx, alive, setTimeline, limit]);
-  return handleTimelinePagination;
+  const retry = useCallback(() => {
+    if (!error) return;
+    failed.current = false;
+    setError(undefined);
+    handleTimelinePagination(error.backwards);
+  }, [error, handleTimelinePagination]);
+  return { paginate: handleTimelinePagination, error, retry };
 };
 
 const useLiveEventArrive = (
@@ -624,12 +645,11 @@ export function RoomTimeline({
   const atLiveEndRef = useRef(liveTimelineLinked && rangeAtEnd);
   atLiveEndRef.current = liveTimelineLinked && rangeAtEnd;
 
-  const handleTimelinePagination = useTimelinePagination(
-    mx,
-    timeline,
-    setTimeline,
-    PAGINATION_LIMIT
-  );
+  const {
+    paginate: handleTimelinePagination,
+    error: paginationError,
+    retry: retryPagination,
+  } = useTimelinePagination(mx, timeline, setTimeline, PAGINATION_LIMIT);
 
   const getScrollElement = useCallback(() => scrollRef.current, []);
 
@@ -1917,7 +1937,26 @@ export function RoomTimeline({
   };
 
   return (
-    <Box grow="Yes" style={{ position: 'relative' }}>
+    <Box grow="Yes" direction="Column" style={{ position: 'relative' }}>
+      {paginationError && (
+        <Box
+          role="alert"
+          direction="Column"
+          shrink="No"
+          gap="200"
+          style={{ overflowWrap: 'anywhere' }}
+        >
+          <Text>{paginationError.message}</Text>
+          <Button
+            size="300"
+            variant="Secondary"
+            onClick={retryPagination}
+            style={{ height: 'auto', minHeight: '44px', padding: '8px' }}
+          >
+            <Text>Повторить загрузку истории</Text>
+          </Button>
+        </Box>
+      )}
       {unreadInfo?.readUptoEventId && !unreadInfo?.inLiveTimeline && (
         <TimelineFloat position="Top">
           <Chip
@@ -1937,7 +1976,7 @@ export function RoomTimeline({
             before={<Icon size="50" src={Icons.CheckTwice} />}
             onClick={handleMarkAsRead}
           >
-            <Text size="L400">Mark as Read</Text>
+            <Text size="L400">Отметить прочитанным</Text>
           </Chip>
         </TimelineFloat>
       )}
@@ -2037,7 +2076,7 @@ export function RoomTimeline({
             before={<Icon size="50" src={Icons.ArrowBottom} />}
             onClick={handleJumpToLatest}
           >
-            <Text size="L400">Jump to Latest</Text>
+            <Text size="L400">К последним сообщениям</Text>
           </Chip>
         </TimelineFloat>
       )}

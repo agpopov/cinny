@@ -2,7 +2,9 @@ import React, { useCallback } from 'react';
 import { Box, Line } from 'folds';
 import { useParams } from 'react-router-dom';
 import { isKeyHotkey } from 'is-hotkey';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
+import { useBackDismiss } from '../../hooks/useBackDismiss';
+import { BackRouteHandler } from '../../components/BackRouteHandler';
 import { ThreadPanel } from './thread/ThreadPanel';
 import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
 import { RoomView } from './RoomView';
@@ -23,6 +25,11 @@ import { CallChatView } from './CallChatView';
 import { useCallEmbed } from '../../hooks/useCallEmbed';
 import { useCallMembers, useCallSession } from '../../hooks/useCall';
 
+function RoomBack({ onBack }: { onBack: () => void }) {
+  useBackDismiss(true, onBack, 0);
+  return null;
+}
+
 export function Room() {
   const { eventId } = useParams();
   const room = useRoom();
@@ -38,7 +45,8 @@ export function Room() {
   const powerLevels = usePowerLevels(room);
   const members = useRoomMembers(mx, room.roomId);
   const chat = useAtomValue(callChatAtom);
-  const threadPanel = useAtomValue(roomIdToThreadPanelAtomFamily(room.roomId));
+  const [threadPanel, setThreadPanel] = useAtom(roomIdToThreadPanelAtomFamily(room.roomId));
+  useBackDismiss(!!threadPanel, () => setThreadPanel(undefined), 10);
   const mainThread = threadPanel?.view === 'thread' && !!threadPanel.main;
   const mobileThread = !!threadPanel && (screenSize !== ScreenSize.Desktop || mainThread);
 
@@ -59,6 +67,9 @@ export function Room() {
   return (
     <PowerLevelsContextProvider value={powerLevels}>
       <Box grow="Yes">
+        {screenSize !== ScreenSize.Desktop && (
+          <BackRouteHandler>{(onBack) => <RoomBack onBack={onBack} />}</BackRouteHandler>
+        )}
         {callView && (screenSize === ScreenSize.Desktop || !chat) && (
           <Box grow="Yes" direction="Column">
             <RoomViewHeader callView />

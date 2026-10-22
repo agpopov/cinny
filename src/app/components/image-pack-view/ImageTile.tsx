@@ -1,5 +1,6 @@
 import React, { FormEventHandler, ReactNode, useMemo, useState } from 'react';
 import { Badge, Box, Button, Chip, Icon, Icons, Input, Text } from 'folds';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import { UsageSwitcher, useUsageStr } from './UsageSwitcher';
 import { mxcUrlToHttp } from '../../utils/matrix';
 import * as css from './style.css';
@@ -36,7 +37,7 @@ export function ImageTile({
   return (
     <SettingTile
       before={
-        <img
+        <AuthenticatedImage
           className={css.ImagePackImage}
           src={mxcUrlToHttp(mx, image.url, useAuthentication) ?? ''}
           alt={image.shortcode}
@@ -98,7 +99,9 @@ export function ImageTileUpload({ file, children }: ImageTileUploadProps) {
   const uploadAtom = useMemo(() => createUploadAtom(file), [file]);
 
   return (
-    <SettingTile before={<img className={css.ImagePackImage} src={url} alt={file.name} />}>
+    <SettingTile
+      before={<AuthenticatedImage className={css.ImagePackImage} src={url} alt={file.name} />}
+    >
       {children(uploadAtom)}
     </SettingTile>
   );
@@ -160,7 +163,7 @@ export function ImageTileEdit({
   return (
     <SettingTile
       before={
-        <img
+        <AuthenticatedImage
           className={css.ImagePackImage}
           src={mxcUrlToHttp(mx, image.url, useAuthentication) ?? ''}
           alt={image.shortcode}

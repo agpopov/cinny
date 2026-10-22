@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, forwardRef, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -92,7 +93,7 @@ const HomeMenu = forwardRef<HTMLDivElement, HomeMenuProps>(({ requestClose }, re
           aria-disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            {t('Mark as Read')}
           </Text>
         </MenuItem>
       </Box>
@@ -117,11 +118,16 @@ function HomeHeader() {
         <Box alignItems="Center" grow="Yes" gap="300">
           <Box grow="Yes">
             <Text size="H4" truncate>
-              Home
+              {t('Home')}
             </Text>
           </Box>
           <Box>
-            <IconButton aria-pressed={!!menuAnchor} variant="Background" onClick={handleOpenMenu}>
+            <IconButton
+              aria-label="Действия"
+              aria-pressed={!!menuAnchor}
+              variant="Background"
+              onClick={handleOpenMenu}
+            >
               <Icon src={Icons.VerticalDots} size="200" />
             </IconButton>
           </Box>
@@ -173,7 +179,7 @@ function HomeEmpty() {
           <>
             <Button onClick={() => navigate(getHomeCreatePath())} variant="Secondary" size="300">
               <Text size="B300" truncate>
-                Create Room
+                {t('Create Room')}
               </Text>
             </Button>
             <Button
@@ -250,7 +256,7 @@ export function Home() {
                       </Avatar>
                       <Box as="span" grow="Yes">
                         <Text as="span" size="Inherit" truncate>
-                          Create Room
+                          {t('Create Room')}
                         </Text>
                       </Box>
                     </Box>
@@ -269,7 +275,7 @@ export function Home() {
                             </Avatar>
                             <Box as="span" grow="Yes">
                               <Text as="span" size="Inherit" truncate>
-                                Join with Address
+                                {t('Join with Address')}
                               </Text>
                             </Box>
                           </Box>
@@ -304,7 +310,7 @@ export function Home() {
                       </Avatar>
                       <Box as="span" grow="Yes">
                         <Text as="span" size="Inherit" truncate>
-                          Message Search
+                          {t('Message Search')}
                         </Text>
                       </Box>
                     </Box>
@@ -319,7 +325,7 @@ export function Home() {
                   data-category-id={DEFAULT_CATEGORY_ID}
                   onClick={handleCategoryClick}
                 >
-                  Rooms
+                  {t('Rooms')}
                 </RoomNavCategoryButton>
               </NavCategoryHeader>
               <div

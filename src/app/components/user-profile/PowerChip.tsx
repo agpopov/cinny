@@ -70,7 +70,7 @@ function SelfDemoteAlert({ power, onCancel, onChange }: SelfDemoteAlertProps) {
               <Box grow="Yes">
                 <Text size="H4">Self Demotion</Text>
               </Box>
-              <IconButton size="300" onClick={onCancel} radii="300">
+              <IconButton aria-label="Закрыть" size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
               </IconButton>
             </Header>
@@ -120,7 +120,7 @@ function SharedPowerAlert({ power, onCancel, onChange }: SharedPowerAlertProps) 
               <Box grow="Yes">
                 <Text size="H4">Shared Power</Text>
               </Box>
-              <IconButton size="300" onClick={onCancel} radii="300">
+              <IconButton aria-label="Закрыть" size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
               </IconButton>
             </Header>

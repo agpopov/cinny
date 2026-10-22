@@ -58,6 +58,8 @@ export interface Settings {
   dndUntil: number;
   /** В режиме «Не беспокоить» всё равно уведомлять об упоминаниях. */
   dndAllowMentions: boolean;
+  /** Разрешить входящим звонкам обходить DND и тихие часы. */
+  dndAllowCalls: boolean;
   /** Тихие часы по расписанию. */
   quietHoursEnabled: boolean;
   /** Начало и конец тихих часов, «ЧЧ:ММ». */
@@ -106,24 +108,31 @@ const defaultSettings: Settings = {
   notificationSoundMentionsOnly: false,
   dndUntil: 0,
   dndAllowMentions: false,
+  dndAllowCalls: false,
   quietHoursEnabled: false,
   quietHoursStart: '19:00',
   quietHoursEnd: '09:00',
   quietHoursWeekends: false,
 
-  hour24Clock: false,
+  hour24Clock: true,
   dateFormatString: 'D MMM YYYY',
 
   developerTools: false,
 };
 
 export const getSettings = () => {
-  const settings = localStorage.getItem(STORAGE_KEY);
-  if (settings === null) return defaultSettings;
-  return {
-    ...defaultSettings,
-    ...(JSON.parse(settings) as Settings),
-  };
+  try {
+    const settings = localStorage.getItem(STORAGE_KEY);
+    if (settings === null) return defaultSettings;
+    const stored: unknown = JSON.parse(settings);
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return defaultSettings;
+    return {
+      ...defaultSettings,
+      ...(stored as Partial<Settings>),
+    };
+  } catch {
+    return defaultSettings;
+  }
 };
 
 export const setSettings = (settings: Settings) => {

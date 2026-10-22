@@ -9,6 +9,8 @@ import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientEvent, MatrixEvent, Room, SyncState } from 'matrix-js-sdk';
+import { notificationPolicy, createNotificationBatcher } from '../../utils/notificationPolicy';
+import { ownsNotifications } from '../../hooks/useNotificationOwner';
 import LogoSVG from '../../../../public/res/svg/cinny.svg';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
@@ -16,7 +18,7 @@ import { useSelectedRoom } from '../../hooks/router/useSelectedRoom';
 import { useInboxNotificationsSelected } from '../../hooks/router/useInbox';
 import { useRoomNavigate } from '../../hooks/useRoomNavigate';
 import { usePreviousValue } from '../../hooks/usePreviousValue';
-import { Settings, settingsAtom } from '../../state/settings';
+import { settingsAtom } from '../../state/settings';
 import { useSetting } from '../../state/hooks/settings';
 import { allInvitesAtom } from '../../state/room-list/inviteList';
 import { roomToUnreadAtom } from '../../state/room/roomToUnread';
@@ -213,6 +215,63 @@ export function MessageNotifications() {
       }
     };
 
+    let lastSound = 0;
+    const batcher = createNotificationBatcher<{
+      room: Room;
+      mEvent: MatrixEvent;
+      highlight: boolean;
+      isDirect: boolean;
+      threadRootId?: string;
+    }>(
+      (item, count) => {
+        const { room, mEvent, highlight, isDirect, threadRootId } = item;
+        const { roomId } = room;
+        const isThreadReply = !!threadRootId;
+        const c = ctx.current;
+        if (
+          !ownsNotifications(mx.getSafeUserId()) ||
+          room.hasUserReadEvent(mx.getSafeUserId(), mEvent.getId()!)
+        )
+          return;
+        // Пользователь уже смотрит на это сообщение.
+        if (document.hasFocus()) {
+          if (c.notificationSelected) return;
+          if (c.selectedRoomId === roomId) {
+            if (!isThreadReply) return;
+            const panel = store.get(roomIdToThreadPanelAtomFamily(roomId));
+            if (panel?.view === 'thread' && panel.rootId === threadRootId) return;
+          }
+        }
+
+        const { settings: s } = c;
+        const important = highlight || isDirect;
+        const policy = notificationPolicy(s, 'message', important);
+        if (!policy.allowed) return;
+
+        if (policy.visual) {
+          const content = buildMessageNotification(room, mEvent, {
+            isDirect,
+            threadRootId: isThreadReply ? threadRootId : undefined,
+            showContent: s.notificationShowContent,
+          });
+          if (count > 1)
+            content.attribution = `${count} новых сообщений${
+              content.attribution ? ` · ${content.attribution}` : ''
+            }`;
+          showSystemNotification(mx, c.useAuthentication, content, c.openTarget).catch(
+            () => undefined
+          );
+        }
+
+        if (policy.sound && Date.now() - lastSound >= 3000) {
+          lastSound = Date.now();
+          playNotificationSound(s.notificationVolume);
+        }
+      },
+      800,
+      (previous, next) => ({ ...next, highlight: previous.highlight || next.highlight })
+    );
+
     const handleEvent = async (mEvent: MatrixEvent) => {
       if (mx.getSyncState() !== SyncState.Syncing) return;
       const eventId = mEvent.getId();
@@ -251,37 +310,19 @@ export function MessageNotifications() {
         if (!followed) return;
       }
 
-      // Пользователь уже смотрит на это сообщение.
-      if (document.hasFocus()) {
-        if (c.notificationSelected) return;
-        if (c.selectedRoomId === roomId) {
-          if (!isThreadReply) return;
-          const panel = store.get(roomIdToThreadPanelAtomFamily(roomId));
-          if (panel?.view === 'thread' && panel.rootId === threadRootId) return;
-        }
-      }
-
-      const s: Settings = c.settings;
-      const important = highlight || isDirect;
-      if (isDndActive(s) && !(s.dndAllowMentions && important)) return;
-
-      if (s.showNotifications) {
-        const content = buildMessageNotification(room, mEvent, {
-          isDirect,
-          threadRootId: isThreadReply ? threadRootId : undefined,
-          showContent: s.notificationShowContent,
-        });
-        showSystemNotification(mx, c.useAuthentication, content, c.openTarget);
-      }
-
-      if (s.isNotificationSounds && (!s.notificationSoundMentionsOnly || important)) {
-        playNotificationSound(s.notificationVolume);
-      }
+      batcher.add(`${roomId}:${isThreadReply ? threadRootId : 'main'}`, {
+        room,
+        mEvent,
+        highlight,
+        isDirect,
+        threadRootId: isThreadReply ? threadRootId : undefined,
+      });
     };
 
     mx.on(ClientEvent.Event, handleEvent);
     return () => {
       mx.removeListener(ClientEvent.Event, handleEvent);
+      batcher.dispose();
     };
   }, [mx, store]);
 
@@ -301,10 +342,12 @@ export function InviteNotifications() {
 
   useEffect(() => {
     if (invites.length <= previousInviteLen || mx.getSyncState() !== SyncState.Syncing) return;
-    if (isDndActive(settings)) return;
+    if (!ownsNotifications(mx.getSafeUserId())) return;
+    const policy = notificationPolicy(settings, 'invite');
+    if (!policy.allowed) return;
     const count = invites.length - previousInviteLen;
 
-    if (settings.showNotifications) {
+    if (policy.visual) {
       if (isNativeApp()) {
         desktopNotify({
           title: 'Приглашение',
@@ -324,7 +367,7 @@ export function InviteNotifications() {
         };
       }
     }
-    if (settings.isNotificationSounds) {
+    if (policy.sound) {
       playInviteSound(settings.notificationVolume);
     }
   }, [mx, invites, previousInviteLen, settings, navigate]);

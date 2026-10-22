@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Icon, Icons, Scroll, IconButton } from 'folds';
 import {
@@ -25,7 +26,7 @@ export function HomeCreateRoom() {
           <Box grow="Yes" alignItems="Center" gap="200">
             <BackRouteHandler>
               {(onBack) => (
-                <IconButton onClick={onBack}>
+                <IconButton aria-label="Назад" onClick={onBack}>
                   <Icon src={Icons.ArrowLeft} />
                 </IconButton>
               )}
@@ -41,7 +42,7 @@ export function HomeCreateRoom() {
                 <Box direction="Column" gap="700">
                   <PageHero
                     icon={<Icon size="600" src={Icons.Hash} />}
-                    title="Create Room"
+                    title={t('Create Room')}
                     subTitle="Build a Room for Real-Time Conversations."
                   />
                   <CreateRoomForm onCreate={navigateRoom} />

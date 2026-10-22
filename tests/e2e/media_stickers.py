@@ -112,7 +112,51 @@ with sync_playwright() as playwright:
     # Serve actual bytes over loopback. WebKit's media stack does not reliably
     # pass service-worker-controlled resource requests through Playwright routes.
     class MediaHandler(http.server.BaseHTTPRequestHandler):
+        # WebKit can bypass Playwright routes while a service worker controls the
+        # page. Serve Matrix fixtures over HTTP and proxy real media/auth traffic.
+        def proxy_matrix(self):
+            if 'preview_url' in self.path:
+                provider = any(name in self.path for name in ['gifs', 'tenor', 'giphy', 'imgur'])
+                data = json.dumps({'errcode': 'M_UNRECOGNIZED', 'error': 'Unrecognized request'} if provider else {
+                    'og:title': 'Playable video page', 'og:video': media_base + '/clip.webm',
+                    'og:video:type': 'video/webm', 'og:image': media_base + '/loop.gif',
+                }).encode()
+                self.send_response(404 if provider else 200)
+                self.send_header('Content-Type', 'application/json')
+            else:
+                data = self.rfile.read(int(self.headers.get('Content-Length', 0))) or None
+                request = urllib.request.Request(HS + self.path, data=data, method=self.command,
+                    headers={key: value for key, value in self.headers.items()
+                             if key.lower() not in ['host', 'content-length', 'connection', 'accept-encoding']})
+                try:
+                    response = opener.open(request, timeout=60)
+                except urllib.error.HTTPError as error:
+                    response = error
+                with response:
+                    data = response.read()
+                    self.send_response(response.status)
+                    for key in ['Content-Type', 'Content-Range', 'Accept-Ranges']:
+                        if response.headers.get(key):
+                            self.send_header(key, response.headers[key])
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Content-Length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_OPTIONS(self):
+            self.send_response(204)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Requested-With')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+            self.end_headers()
+
+        do_POST = proxy_matrix
+        do_PUT = proxy_matrix
+        do_DELETE = proxy_matrix
+
         def do_GET(self):
+            if self.path.startswith('/_matrix/') or self.path.startswith('/.well-known/'):
+                return self.proxy_matrix()
             data, content_type = (clip, 'video/webm') if 'clip' in self.path else (gif, 'image/gif')
             if self.path.startswith('/watch'):
                 data = ('<html><head><meta property="og:title" content="Playable video page">'
@@ -193,7 +237,7 @@ with sync_playwright() as playwright:
                   localStorage.setItem('cinny_device_id', s.device_id);
                   localStorage.setItem('cinny_user_id', s.user_id);
                   localStorage.setItem('cinny_hs_base_url', s.hs);
-                }''', {**current_session, 'hs': HS})
+                }''', {**current_session, 'hs': media_base})
                 page.goto(APP + '/home/' + room + '/')
                 editor = page.locator('[data-editable-name="RoomInput"]')
                 editor.wait_for(timeout=30000)
@@ -218,11 +262,11 @@ with sync_playwright() as playwright:
                     check(label + ' all 144 bundled PNGs decode in browser', len(decoded) == 144)
                 # Defaults must be present without any account/room sticker packs.
                 def open_stickers():
-                    button = page.get_by_role('button', name='Stickers', exact=True)
+                    button = page.get_by_role('button', name='Стикеры', exact=True)
                     if button.count():
                         button.click()
                     else:
-                        page.get_by_role('button', name='Emoji', exact=True).click()
+                        page.get_by_role('button', name='Эмодзи', exact=True).click()
                         page.get_by_text('Sticker', exact=True).click()
                 open_stickers()
                 page.locator('button[data-emoji-type="sticker"]').first.wait_for()
@@ -252,14 +296,14 @@ with sync_playwright() as playwright:
                 })
                 page.get_by_role('button', name=pack_name, exact=True).wait_for()
                 check(label + ' custom room pack appears without reopening picker')
-                page.get_by_placeholder('Search', exact=True).fill(custom_label)
+                page.get_by_placeholder('Поиск', exact=True).fill(custom_label)
                 page.get_by_role('button', name=custom_label + ' sticker', exact=True).click()
                 custom_event = wait_event(token, room, lambda e: e.get('content', {}).get('body') == custom_label)
                 check(label + ' custom sticker preserves existing MXC and metadata', custom_event['type'] == 'm.sticker' and custom_event['content']['url'] == custom_mxc and custom_event['content']['info']['w'] == 256)
                 jump_latest()
                 # Search matches Cyrillic labels as well as shortcodes.
                 open_stickers()
-                page.get_by_placeholder('Search', exact=True).fill('панда')
+                page.get_by_placeholder('Поиск', exact=True).fill('панда')
                 page.get_by_role('button', name='Панда sticker', exact=True).wait_for()
                 check(label + ' Cyrillic sticker search')
                 check(label + ' search hides unrelated stickers', page.locator('button[data-emoji-type="sticker"]:visible').count() == 1)
@@ -267,11 +311,11 @@ with sync_playwright() as playwright:
                 page.wait_for_function('() => document.querySelector("input[placeholder=Search]")?.value === ""')
                 page.get_by_role('button', name='Панда sticker', exact=True).wait_for()
                 check(label + ' switching packs clears search')
-                page.get_by_placeholder('Search', exact=True).fill('no-such-sticker-xyz')
+                page.get_by_placeholder('Поиск', exact=True).fill('no-such-sticker-xyz')
                 page.get_by_text('No Results found', exact=True).wait_for()
                 check(label + ' no matches do not show unrelated packs', page.locator('button[data-emoji-type="sticker"]:visible').count() == 0)
                 page.keyboard.press('Escape')
-                page.get_by_placeholder('Search', exact=True).wait_for(state='hidden')
+                page.get_by_placeholder('Поиск', exact=True).wait_for(state='hidden')
                 check(label + ' Escape closes picker from its search input')
                 for pack_name, sticker_key, sticker_body in [
                     ('Жесты', 'gestures/thumbs_up', 'Одобряю, лайк'),
@@ -296,7 +340,7 @@ with sync_playwright() as playwright:
                     check(label + ' expanded pack sends portable MXC ' + pack_name, new_event['content']['url'].startswith('mxc://') and new_event['content']['info']['w'] == 256)
                     jump_latest()
                 open_stickers()
-                page.get_by_placeholder('Search', exact=True).fill('спасибо')
+                page.get_by_placeholder('Поиск', exact=True).fill('спасибо')
                 page.get_by_role('button', name='Спасибо, пожалуйста sticker', exact=True).wait_for()
                 check(label + ' expanded packs searchable by Russian meaning')
                 page.keyboard.press('Escape')
@@ -377,8 +421,8 @@ with sync_playwright() as playwright:
                         page.get_by_role('button', name='Прикрепить', exact=True).click()
                         page.get_by_text('Файл', exact=True).click()
                     chosen.value.set_files({'name': unique_name, 'mimeType': mime, 'buffer': data})
-                    page.get_by_role('button', name='Send', exact=True).wait_for(timeout=30000)
-                    page.get_by_role('button', name='Send', exact=True).click()
+                    page.get_by_role('button', name='Отправить', exact=True).wait_for(timeout=30000)
+                    page.get_by_role('button', name='Отправить', exact=True).click()
                     upload = wait_event(token, room, lambda e: e.get('content', {}).get('body') == unique_name)
                     jump_latest()
                     content = upload['content']

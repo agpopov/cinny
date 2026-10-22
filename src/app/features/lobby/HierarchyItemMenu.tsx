@@ -235,6 +235,7 @@ export function HierarchyItemMenu({
   return (
     <Box gap="200" alignItems="Center" shrink="No">
       <IconButton
+        aria-label="Действия"
         onClick={handleOpenMenu}
         size="300"
         variant="SurfaceVariant"

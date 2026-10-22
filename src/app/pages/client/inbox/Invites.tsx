@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
@@ -200,21 +201,21 @@ function InviteCard({
           {invite.isEncrypted && (
             <Box shrink="No" alignItems="Center" justifyContent="Center">
               <Badge variant="Success" fill="Solid" size="400" radii="300">
-                <Text size="L400">Encrypted</Text>
+                <Text size="L400">{t('Encrypted')}</Text>
               </Badge>
             </Box>
           )}
           {invite.isDirect && (
             <Box shrink="No" alignItems="Center" justifyContent="Center">
               <Badge variant="Primary" fill="Solid" size="400" radii="300">
-                <Text size="L400">Direct Message</Text>
+                <Text size="L400">{t('Direct Message')}</Text>
               </Badge>
             </Box>
           )}
           {invite.isSpace && (
             <Box shrink="No" alignItems="Center" justifyContent="Center">
               <Badge variant="Secondary" fill="Soft" size="400" radii="300">
-                <Text size="L400">Space</Text>
+                <Text size="L400">{t('Space')}</Text>
               </Badge>
             </Box>
           )}
@@ -290,7 +291,7 @@ function InviteCard({
               disabled={joining || leaving}
               before={leaving ? <Spinner variant="Secondary" size="100" /> : undefined}
             >
-              <Text size="B300">Decline</Text>
+              <Text size="B300">{t('Decline')}</Text>
             </Button>
             <Button
               onClick={join}
@@ -302,7 +303,7 @@ function InviteCard({
               disabled={joining || leaving}
               before={joining ? <Spinner variant="Success" fill="Soft" size="100" /> : undefined}
             >
-              <Text size="B300">Accept</Text>
+              <Text size="B300">{t('Accept')}</Text>
             </Button>
           </Box>
         </Box>
@@ -311,7 +312,8 @@ function InviteCard({
         <Box gap="200" alignItems="Baseline">
           <Box grow="Yes">
             <Text size="T200" priority="300">
-              From: <b>{invite.senderId}</b>
+              {t('From:')}
+              <b>{invite.senderId}</b>
             </Text>
           </Box>
           {typeof invite.inviteTs === 'number' && invite.inviteTs !== 0 && (
@@ -328,7 +330,8 @@ function InviteCard({
         </Box>
         {invite.reason && (
           <Text size="T200" priority="300">
-            Reason: {invite.reason}
+            {t('Reason:')}
+            {invite.reason}
           </Text>
         )}
       </Box>
@@ -375,7 +378,7 @@ function InviteFilters({
           )
         }
       >
-        <Text size="T200">Primary</Text>
+        <Text size="T200">{t('Primary')}</Text>
       </Chip>
       <Chip
         variant={isUnknown ? 'Warning' : 'Surface'}
@@ -391,7 +394,7 @@ function InviteFilters({
           )
         }
       >
-        <Text size="T200">Public</Text>
+        <Text size="T200">{t('Public')}</Text>
       </Chip>
       <Chip
         variant={isSpam ? 'Critical' : 'Surface'}
@@ -407,7 +410,7 @@ function InviteFilters({
           )
         }
       >
-        <Text size="T200">Spam</Text>
+        <Text size="T200">{t('Spam')}</Text>
       </Chip>
     </Box>
   );
@@ -429,7 +432,7 @@ function KnownInvites({
 }: KnownInvitesProps) {
   return (
     <Box direction="Column" gap="200">
-      <Text size="H4">Primary</Text>
+      <Text size="H4">{t('Primary')}</Text>
       {invites.length > 0 ? (
         <Box direction="Column" gap="100">
           {invites.map((invite) => (
@@ -449,7 +452,7 @@ function KnownInvites({
           <PageHeroSection>
             <PageHero
               icon={<Icon size="600" src={Icons.Mail} />}
-              title="No Invites"
+              title={t('No Invites')}
               subTitle="When someone you share a room with sends you an invite, it’ll show up here."
             />
           </PageHeroSection>
@@ -488,7 +491,7 @@ function UnknownInvites({
   return (
     <Box direction="Column" gap="200">
       <Box gap="200" justifyContent="SpaceBetween" alignItems="Center">
-        <Text size="H4">Public</Text>
+        <Text size="H4">{t('Public')}</Text>
         <Box>
           {invites.length > 0 && (
             <Chip
@@ -498,7 +501,7 @@ function UnknownInvites({
               disabled={declining}
               radii="Pill"
             >
-              <Text size="T200">Decline All</Text>
+              <Text size="T200">{t('Decline All')}</Text>
             </Chip>
           )}
         </Box>
@@ -522,7 +525,7 @@ function UnknownInvites({
           <PageHeroSection>
             <PageHero
               icon={<Icon size="600" src={Icons.Info} />}
-              title="No Invites"
+              title={t('No Invites')}
               subTitle="Invites from people outside your rooms will appear here."
             />
           </PageHeroSection>
@@ -585,7 +588,7 @@ function SpamInvites({
 
   return (
     <Box direction="Column" gap="200">
-      <Text size="H4">Spam</Text>
+      <Text size="H4">{t('Spam')}</Text>
       {invites.length > 0 ? (
         <Box direction="Column" gap="100">
           <SequenceCard
@@ -611,7 +614,7 @@ function SpamInvites({
                     disabled={loading}
                   >
                     <Text size="B300" truncate>
-                      Decline All
+                      {t('Decline All')}
                     </Text>
                   </Button>
                   {reportRoomSupported && reportAllStatus.status !== AsyncStatus.Success && (
@@ -625,7 +628,7 @@ function SpamInvites({
                       disabled={loading}
                     >
                       <Text size="B300" truncate>
-                        Report All
+                        {t('Report All')}
                       </Text>
                     </Button>
                   )}
@@ -640,7 +643,7 @@ function SpamInvites({
                       before={blocking && <Spinner size="100" variant="Secondary" fill="Solid" />}
                     >
                       <Text size="B300" truncate>
-                        Block All
+                        {t('Block All')}
                       </Text>
                     </Button>
                   )}
@@ -681,7 +684,7 @@ function SpamInvites({
           <PageHeroSection>
             <PageHero
               icon={<Icon size="600" src={Icons.Warning} />}
-              title="No Spam Invites"
+              title={t('No Spam Invites')}
               subTitle="Invites detected as spam appear here."
             />
           </PageHeroSection>
@@ -753,7 +756,7 @@ export function Invites() {
             {screenSize === ScreenSize.Mobile && (
               <BackRouteHandler>
                 {(onBack) => (
-                  <IconButton onClick={onBack}>
+                  <IconButton aria-label="Назад" onClick={onBack}>
                     <Icon src={Icons.ArrowLeft} />
                   </IconButton>
                 )}
@@ -763,7 +766,7 @@ export function Invites() {
           <Box alignItems="Center" gap="200">
             {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Mail} />}
             <Text size="H3" truncate>
-              Invites
+              {t('Invites')}
             </Text>
           </Box>
           <Box grow="Yes" basis="No" />
@@ -776,7 +779,7 @@ export function Invites() {
               <Box ref={containerRef} direction="Column" gap="600">
                 <Box direction="Column" gap="100">
                   <span data-spacing-node />
-                  <Text size="L400">Filter</Text>
+                  <Text size="L400">{t('Filter')}</Text>
                   <InviteFilters
                     filter={filter}
                     onFilter={setFilter}

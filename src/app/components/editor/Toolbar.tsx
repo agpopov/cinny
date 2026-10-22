@@ -36,6 +36,7 @@ import { KeySymbol } from '../../utils/key-symbol';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { stopPropagation } from '../../utils/keyboard';
+import { LinkButton } from './LinkButton';
 
 function BtnTooltip({ text, shortCode }: { text: string; shortCode?: string }) {
   return (
@@ -298,6 +299,7 @@ export function Toolbar() {
                 icon={Icons.EyeBlind}
                 tooltip={<BtnTooltip text="Spoiler" shortCode={`${modKey} + H`} />}
               />
+              <LinkButton />
             </Box>
             <Line variant="SurfaceVariant" direction="Vertical" style={{ height: toRem(12) }} />
           </>

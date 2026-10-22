@@ -1,12 +1,12 @@
 /* eslint-disable no-param-reassign */
-import { Descendant, Text } from 'slate';
+import { type Descendant, Text } from 'slate';
 import parse from 'html-dom-parser';
-import { ChildNode, Element, isText, isTag } from 'domhandler';
+import { type ChildNode, Element, isText, isTag } from 'domhandler';
 
 import { readGroupMentionNode } from '../../utils/groupMentionHtml';
 import { sanitizeCustomHtml } from '../../utils/sanitize';
 import { BlockType, MarkType } from './types';
-import {
+import type {
   BlockQuoteElement,
   CodeBlockElement,
   CodeLineElement,
@@ -19,7 +19,8 @@ import {
   ParagraphElement,
   UnorderedListElement,
 } from './slate';
-import { createEmoticonElement, createMentionElement } from './utils';
+import { createEmoticonElement, createMentionElement, createLinkElement } from './utils';
+import { getLinkHref } from './links';
 import {
   parseMatrixToRoom,
   parseMatrixToRoomEvent,
@@ -90,6 +91,10 @@ const getInlineMarkElement = (
   children.forEach((child) => {
     if (Text.isText(child)) {
       child[markType] = true;
+    } else if ('type' in child && child.type === BlockType.Link) {
+      child.children.forEach((leaf) => {
+        leaf[markType] = true;
+      });
     }
   });
   return children;
@@ -155,6 +160,11 @@ const getInlineElement = (node: ChildNode, processText: ProcessTextCallback): In
 
     if (node.name === 'a') {
       const children = node.childNodes.flatMap((child) => getInlineElement(child, processText));
+      const href = getLinkHref(node.attribs.href ?? '');
+      if (href && node.attribs['data-md'] === undefined && children.every(Text.isText)) {
+        return [createLinkElement(href, children)];
+      }
+      if (!href) return children;
       children.unshift({ text: '[' });
       children.push({ text: `](${node.attribs.href})` });
       return children;

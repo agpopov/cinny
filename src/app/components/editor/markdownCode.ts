@@ -1,8 +1,8 @@
-import { Descendant, Text } from 'slate';
+import { type Descendant, Text } from 'slate';
 import { CodeRule } from '../../plugins/markdown/inline/rules';
 import { CodeBlockRule } from '../../plugins/markdown/block/rules';
 import {
-  GroupMentionMap,
+  type GroupMentionMap,
   groupMentionKey,
   getResolvedGroup,
   groupMentionText,

@@ -58,6 +58,7 @@ import { useRoomCreators } from '../../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../../hooks/useRoomPermissions';
 import { useRoomEvent } from '../../../hooks/useRoomEvent';
 import { ScreenSize, useScreenSizeContext } from '../../../hooks/useScreenSize';
+import { editableActiveElement } from '../../../utils/dom';
 
 type PanelHeaderProps = {
   title: string;
@@ -129,7 +130,12 @@ function PanelHeader({
           }
         >
           {(triggerRef) => (
-            <IconButton ref={triggerRef} variant="Background" onClick={onClose}>
+            <IconButton
+              aria-label="Закрыть"
+              ref={triggerRef}
+              variant="Background"
+              onClick={onClose}
+            >
               <Icon src={Icons.Cross} />
             </IconButton>
           )}
@@ -381,6 +387,8 @@ function ThreadView({
   useEffect(() => {
     // Как в Discord: открыли тред — сразу можно писать.
     const timer = setTimeout(() => {
+      // The user may already be typing in the main composer or another field.
+      if (editableActiveElement()) return;
       try {
         ReactEditor.focus(editor);
       } catch {

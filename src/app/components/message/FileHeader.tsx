@@ -2,6 +2,7 @@ import { Badge, Box, Icon, IconButton, Icons, Spinner, Text, as, toRem } from 'f
 import React, { ReactNode, useCallback } from 'react';
 import { EncryptedAttachmentInfo } from 'browser-encrypt-attachment';
 import FileSaver from 'file-saver';
+import { streamMediaToDisk } from '../../utils/saveMedia';
 import { mimeTypeToExt } from '../../utils/mimeTypes';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
@@ -28,33 +29,56 @@ export function FileDownloadButton({ filename, url, mimeType, encInfo }: FileDow
   const [downloadState, download] = useAsyncCallback(
     useCallback(async () => {
       const mediaUrl = mxcUrlToHttp(mx, url, useAuthentication);
-      if (!mediaUrl) throw new Error('Invalid media URL');
+      if (!mediaUrl) throw new Error('Некорректный адрес файла');
+      if (!encInfo) {
+        const streamed = await streamMediaToDisk(mediaUrl, filename);
+        if (streamed === 'cancelled') return 'Сохранение отменено.';
+        if (streamed === 'saved') return 'Файл сохранён.';
+      }
       const fileContent = encInfo
         ? await downloadEncryptedMedia(mediaUrl, (encBuf) => decryptFile(encBuf, mimeType, encInfo))
         : await downloadMedia(mediaUrl);
 
-      const fileURL = URL.createObjectURL(fileContent);
-      FileSaver.saveAs(fileURL, filename);
-      return fileURL;
+      FileSaver.saveAs(fileContent, filename);
+      return 'Файл передан для сохранения.';
     }, [mx, url, useAuthentication, mimeType, encInfo, filename])
   );
 
   const downloading = downloadState.status === AsyncStatus.Loading;
   const hasError = downloadState.status === AsyncStatus.Error;
+  let downloadStatus = '';
+  if (downloadState.status === AsyncStatus.Error)
+    downloadStatus =
+      downloadState.error instanceof Error
+        ? downloadState.error.message
+        : 'Не удалось сохранить файл. Повторите попытку.';
+  else if (downloading) downloadStatus = 'Сохранение файла…';
+  else if (downloadState.status === AsyncStatus.Success) downloadStatus = downloadState.data;
   return (
-    <IconButton
-      disabled={downloading}
-      onClick={download}
-      variant={hasError ? 'Critical' : 'SurfaceVariant'}
-      size="300"
-      radii="300"
-    >
-      {downloading ? (
-        <Spinner size="100" variant={hasError ? 'Critical' : 'Secondary'} />
-      ) : (
-        <Icon size="100" src={Icons.Download} />
-      )}
-    </IconButton>
+    <Box direction="Column" alignItems="Center">
+      <IconButton
+        aria-label={hasError ? `Повторить скачивание: ${filename}` : `Скачать: ${filename}`}
+        title={
+          downloadState.status === AsyncStatus.Error
+            ? String(downloadState.error)
+            : `Скачать ${filename}`
+        }
+        disabled={downloading}
+        onClick={() => download().catch(() => undefined)}
+        variant={hasError ? 'Critical' : 'SurfaceVariant'}
+        size="300"
+        radii="300"
+      >
+        {downloading ? (
+          <Spinner size="100" variant={hasError ? 'Critical' : 'Secondary'} />
+        ) : (
+          <Icon size="100" src={Icons.Download} />
+        )}
+      </IconButton>
+      <span role={hasError ? 'alert' : 'status'} aria-live="polite">
+        {downloadStatus}
+      </span>
+    </Box>
   );
 }
 

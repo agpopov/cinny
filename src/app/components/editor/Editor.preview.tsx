@@ -57,10 +57,20 @@ export function EditorPreview() {
                       >
                         <Icon src={toolbar ? Icons.AlphabetUnderline : Icons.Alphabet} />
                       </IconButton>
-                      <IconButton variant="SurfaceVariant" size="300" radii="300">
+                      <IconButton
+                        aria-label="Эмодзи"
+                        variant="SurfaceVariant"
+                        size="300"
+                        radii="300"
+                      >
                         <Icon src={Icons.Smile} />
                       </IconButton>
-                      <IconButton variant="SurfaceVariant" size="300" radii="300">
+                      <IconButton
+                        aria-label="Отправить"
+                        variant="SurfaceVariant"
+                        size="300"
+                        radii="300"
+                      >
                         <Icon src={Icons.Send} />
                       </IconButton>
                     </>

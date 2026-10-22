@@ -1,6 +1,6 @@
 type SendAttachmentOptions<TItem, TContent> = {
   prepare: (item: TItem) => Promise<TContent>;
-  send: (content: TContent) => Promise<unknown>;
+  send: (content: TContent, item: TItem) => Promise<unknown>;
   isPending: (item: TItem) => boolean;
   onSent: (item: TItem) => void;
 };
@@ -20,7 +20,7 @@ export const sendAttachments = async <TItem, TContent>(
       try {
         if (result.status === 'rejected') throw result.reason;
         // eslint-disable-next-line no-await-in-loop
-        await send(result.value);
+        await send(result.value, item);
         onSent(item);
       } catch (error) {
         failures.push(error);

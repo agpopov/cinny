@@ -87,6 +87,7 @@ function MemberDrawerHeader({ room }: MemberDrawerHeaderProps) {
           >
             {(triggerRef) => (
               <IconButton
+                aria-label="Закрыть"
                 ref={triggerRef}
                 variant="Background"
                 onClick={() => setPeopleDrawer(false)}

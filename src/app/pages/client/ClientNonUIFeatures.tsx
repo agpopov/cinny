@@ -12,6 +12,9 @@ import {
 } from './DesktopIntegration';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
+import { useNotificationOwner } from '../../hooks/useNotificationOwner';
+import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { useSearchIndexSubscription } from '../../hooks/useLocalSearch';
 
 function SystemEmojiFeature() {
   const [twitterEmoji] = useSetting(settingsAtom, 'twitterEmoji');
@@ -64,6 +67,8 @@ type ClientNonUIFeaturesProps = {
 };
 
 export function ClientNonUIFeatures({ children }: ClientNonUIFeaturesProps) {
+  useSearchIndexSubscription();
+  useNotificationOwner(useMatrixClient().getSafeUserId());
   return (
     <>
       <SystemEmojiFeature />

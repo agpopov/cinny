@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Icon, IconButton, Icons, Line, Text, Tooltip, TooltipProvider } from 'folds';
 import { useAtom } from 'jotai';
@@ -18,14 +19,14 @@ type MicrophoneButtonProps = {
 export function MicrophoneButton({ enabled, onToggle }: MicrophoneButtonProps) {
   const [micState, toggleMic] = useAsyncCallback(onToggle);
   const loading = micState.status === AsyncStatus.Loading;
-  
+
   return (
     <TooltipProvider
       position="Top"
       delay={500}
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Turn Off Microphone' : 'Turn On Microphone'}</Text>
+          <Text size="T200">{enabled ? t('Turn Off Microphone') : t('Turn On Microphone')}</Text>
         </Tooltip>
       }
     >
@@ -36,6 +37,7 @@ export function MicrophoneButton({ enabled, onToggle }: MicrophoneButtonProps) {
           fill="Soft"
           radii="400"
           size="400"
+          aria-label={enabled ? 'Выключить микрофон' : 'Включить микрофон'}
           onClick={toggleMic}
           outlined
           disabled={loading}
@@ -58,7 +60,7 @@ export function SoundButton({ enabled, onToggle }: SoundButtonProps) {
       delay={500}
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Turn Off Sound' : 'Turn On Sound'}</Text>
+          <Text size="T200">{enabled ? t('Turn Off Sound') : t('Turn On Sound')}</Text>
         </Tooltip>
       }
     >
@@ -69,6 +71,7 @@ export function SoundButton({ enabled, onToggle }: SoundButtonProps) {
           fill="Soft"
           radii="400"
           size="400"
+          aria-label={enabled ? 'Выключить звук' : 'Включить звук'}
           onClick={() => onToggle()}
           outlined
         >
@@ -97,7 +100,7 @@ export function VideoButton({ enabled, onToggle }: VideoButtonProps) {
       delay={500}
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Stop Camera' : 'Start Camera'}</Text>
+          <Text size="T200">{enabled ? t('Stop Camera') : t('Start Camera')}</Text>
         </Tooltip>
       }
     >
@@ -108,6 +111,7 @@ export function VideoButton({ enabled, onToggle }: VideoButtonProps) {
           fill="Soft"
           radii="400"
           size="400"
+          aria-label={enabled ? 'Выключить камеру' : 'Включить камеру'}
           onClick={toggleVideo}
           outlined
           disabled={loading}
@@ -134,7 +138,7 @@ export function ScreenShareButton({ enabled, onToggle }: ScreenShareButtonProps)
       delay={500}
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Stop Screenshare' : 'Start Screenshare'}</Text>
+          <Text size="T200">{enabled ? t('Stop Screenshare') : t('Start Screenshare')}</Text>
         </Tooltip>
       }
     >
@@ -145,6 +149,7 @@ export function ScreenShareButton({ enabled, onToggle }: ScreenShareButtonProps)
           fill="Soft"
           radii="400"
           size="400"
+          aria-label={enabled ? 'Остановить демонстрацию экрана' : 'Показать экран'}
           onClick={() => onToggle()}
           outlined
         >
@@ -164,7 +169,7 @@ export function ChatButton() {
       delay={500}
       tooltip={
         <Tooltip>
-          <Text size="T200">{chat ? 'Close Chat' : 'Open Chat'}</Text>
+          <Text size="T200">{chat ? t('Close Chat') : t('Open Chat')}</Text>
         </Tooltip>
       }
     >
@@ -175,6 +180,7 @@ export function ChatButton() {
           fill="Soft"
           radii="400"
           size="400"
+          aria-label={chat ? 'Закрыть чат' : 'Открыть чат'}
           onClick={() => setChat(!chat)}
           outlined
         >

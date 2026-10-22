@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, forwardRef, useMemo, useRef, useState } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -78,7 +79,7 @@ const DirectMenu = forwardRef<HTMLDivElement, DirectMenuProps>(({ requestClose }
           aria-disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            {t('Mark as Read')}
           </Text>
         </MenuItem>
       </Box>
@@ -103,11 +104,16 @@ function DirectHeader() {
         <Box alignItems="Center" grow="Yes" gap="300">
           <Box grow="Yes">
             <Text size="H4" truncate>
-              Direct Messages
+              {t('Direct Messages')}
             </Text>
           </Box>
           <Box>
-            <IconButton aria-pressed={!!menuAnchor} variant="Background" onClick={handleOpenMenu}>
+            <IconButton
+              aria-label="Действия"
+              aria-pressed={!!menuAnchor}
+              variant="Background"
+              onClick={handleOpenMenu}
+            >
               <Icon src={Icons.VerticalDots} size="200" />
             </IconButton>
           </Box>
@@ -147,7 +153,7 @@ function DirectEmpty() {
         icon={<Icon size="600" src={Icons.Mention} />}
         title={
           <Text size="H5" align="Center">
-            No Direct Messages
+            {t('No Direct Messages')}
           </Text>
         }
         content={
@@ -158,7 +164,7 @@ function DirectEmpty() {
         options={
           <Button variant="Secondary" size="300" onClick={() => navigate(getDirectCreatePath())}>
             <Text size="B300" truncate>
-              Direct Message
+              {t('Direct Message')}
             </Text>
           </Button>
         }

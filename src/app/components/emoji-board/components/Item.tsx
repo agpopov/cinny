@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box } from 'folds';
 import { MatrixClient } from 'matrix-js-sdk';
+import { AuthenticatedImage } from '../../media/AuthenticatedImage';
 import { EmojiItemInfo, EmojiType } from '../types';
 import * as css from './styles.css';
 import { PackImageReader } from '../../../plugins/custom-emoji';
@@ -65,7 +66,7 @@ export function CustomEmojiItem({ mx, useAuthentication, image }: CustomEmojiIte
       data-emoji-data={image.url}
       data-emoji-shortcode={image.shortcode}
     >
-      <img
+      <AuthenticatedImage
         loading="lazy"
         className={css.CustomEmojiImg}
         alt={image.body || image.shortcode}
@@ -99,7 +100,7 @@ export function StickerItem({ mx, useAuthentication, image }: StickerItemProps) 
       data-emoji-data={image.url}
       data-emoji-shortcode={image.shortcode}
     >
-      <img
+      <AuthenticatedImage
         loading="lazy"
         className={css.StickerImg}
         alt={image.body || image.shortcode}

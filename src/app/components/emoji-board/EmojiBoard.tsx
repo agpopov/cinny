@@ -430,8 +430,10 @@ export function EmojiBoard({
 
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const virtualBaseRef = useRef<HTMLDivElement>(null);
+  const getGroupKey = useCallback((index: number) => groups[index].id, [groups]);
   const virtualizer = useVirtualizer({
     count: groups.length,
+    getItemKey: getGroupKey,
     getScrollElement: () => contentScrollRef.current,
     estimateSize: () => 40,
     overscan: VIRTUAL_OVER_SCAN,
@@ -491,7 +493,7 @@ export function EmojiBoard({
     if (scrollElement) {
       scrollElement.scrollTo({ top: 0 });
     }
-  }, [result?.query]);
+  }, [query]);
 
   // reset scroll position on tab change
   useEffect(() => {
@@ -501,10 +503,15 @@ export function EmojiBoard({
   }, [tab, virtualizer, groups]);
 
   useEffect(() => {
-    if (!pendingGroupId || query) return;
+    if (!pendingGroupId || query) return undefined;
     const groupIndex = groups.findIndex((group) => group.id === pendingGroupId);
-    if (groupIndex >= 0) virtualizer.scrollToIndex(groupIndex, { align: 'start' });
-    setPendingGroupId(undefined);
+    // Let the restored, previously hidden groups receive their real dimensions.
+    // A scroll reset after clearing search can otherwise override this jump.
+    const frame = requestAnimationFrame(() => {
+      if (groupIndex >= 0) virtualizer.scrollToIndex(groupIndex, { align: 'start' });
+      setPendingGroupId(undefined);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pendingGroupId, query, groups, virtualizer]);
 
   return (
@@ -582,7 +589,7 @@ export function EmojiBoard({
                     virtualItem={vItem}
                     style={{ paddingTop: config.space.S200 }}
                     ref={virtualizer.measureElement}
-                    key={vItem.index}
+                    key={vItem.key}
                   >
                     <EmojiGroup key={group.id} id={group.id} label={group.name}>
                       {group.items.map(renderItem)}

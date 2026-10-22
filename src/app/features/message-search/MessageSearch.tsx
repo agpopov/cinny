@@ -1,5 +1,6 @@
-import React, { RefObject, useEffect, useMemo, useRef } from 'react';
-import { Text, Box, Icon, Icons, config, Spinner, IconButton, Line, toRem } from 'folds';
+import { t } from 'i18next';
+import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import { Text, Box, Icon, Icons, config, Spinner, Button, IconButton, Line, toRem } from 'folds';
 import { useAtomValue } from 'jotai';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -22,6 +23,8 @@ import { MessageSearchParams, useMessageSearch } from './useMessageSearch';
 import { SearchResultGroup } from './SearchResultGroup';
 import { SearchInput } from './SearchInput';
 import { SearchFilters } from './SearchFilters';
+import { loadSearchHistory, useLocalSearchStatus } from '../../hooks/useLocalSearch';
+import { SearchField } from './SearchFilters.css';
 import { VirtualTile } from '../../components/virtualizer';
 
 const useSearchPathSearchParams = (searchParams: URLSearchParams): _SearchPathSearchParams =>
@@ -64,6 +67,16 @@ export function MessageSearch({
   const scrollTopAnchorRef = useRef<HTMLDivElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchPathSearchParams = useSearchPathSearchParams(searchParams);
+  const source = searchParams.get('source') === 'server' ? 'server' : 'local';
+  const [localTerm, setLocalTerm] = useState(searchParams.get('term') ?? '');
+  useEffect(() => {
+    if (source === 'local' && searchParams.has('term')) {
+      setLocalTerm(searchParams.get('term') ?? '');
+      const next = new URLSearchParams(searchParams);
+      next.delete('term');
+      setSearchParams(next, { replace: true });
+    }
+  }, [source, searchParams, setSearchParams]);
   const { navigateRoom } = useRoomNavigate();
 
   const searchParamRooms = useMemo(() => {
@@ -87,19 +100,78 @@ export function MessageSearch({
     const defaultRooms = isGlobal ? undefined : rooms;
 
     return {
-      term: searchPathSearchParams.term,
+      term: source === 'local' ? localTerm : searchPathSearchParams.term,
       order: searchPathSearchParams.order ?? SearchOrderBy.Recent,
       rooms: searchParamRooms ?? defaultRooms,
       senders: searchParamsSenders ?? senders,
     };
-  }, [searchPathSearchParams, searchParamRooms, searchParamsSenders, rooms, senders]);
+  }, [
+    searchPathSearchParams,
+    searchParamRooms,
+    searchParamsSenders,
+    rooms,
+    senders,
+    source,
+    localTerm,
+  ]);
 
-  const searchMessages = useMessageSearch(msgSearchParams);
+  const after = searchParams.get('after') ?? '';
+  const before = searchParams.get('before') ?? '';
+  const kind = searchParams.get('kind') ?? 'all';
+  const { version, count, error: indexError } = useLocalSearchStatus();
+  const [historyBusy, setHistoryBusy] = useState(false);
+  const [historyStatus, setHistoryStatus] = useState('');
+  const historyAbort = useRef<AbortController>();
+  useEffect(() => () => historyAbort.current?.abort(), []);
+  const updateFilter = (key: string, value: string) =>
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      if (key === 'source' && value === 'server' && localTerm) next.set('term', localTerm);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      return next;
+    });
+  const loadHistory = async () => {
+    if (historyAbort.current) return;
+    const controller = new AbortController();
+    historyAbort.current = controller;
+    setHistoryBusy(true);
+    setHistoryStatus('Загрузка истории…');
+    try {
+      const result = await loadSearchHistory(
+        mx,
+        msgSearchParams.rooms ?? allRooms,
+        controller.signal
+      );
+      setHistoryStatus(
+        controller.signal.aborted
+          ? 'Загрузка остановлена. Уже загруженная история сохранена.'
+          : `История загружена. Комнат с более ранними сообщениями: ${result.remaining}. Не расшифровано: ${result.unavailable}.`
+      );
+    } catch (cause) {
+      setHistoryStatus(
+        controller.signal.aborted
+          ? 'Загрузка остановлена. Уже загруженная история сохранена.'
+          : `Не удалось загрузить историю: ${
+              cause instanceof Error ? cause.message : String(cause)
+            }. Можно повторить загрузку.`
+      );
+    } finally {
+      historyAbort.current = undefined;
+      setHistoryBusy(false);
+    }
+  };
+  const searchMessages = useMessageSearch({ ...msgSearchParams, source, after, before, kind });
 
   const { status, data, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     enabled: !!msgSearchParams.term,
     queryKey: [
       'search',
+      source,
+      after,
+      before,
+      kind,
+      source === 'local' ? version : 0,
       msgSearchParams.term,
       msgSearchParams.order,
       msgSearchParams.rooms,
@@ -125,6 +197,10 @@ export function MessageSearch({
   const vItems = virtualizer.getVirtualItems();
 
   const handleSearch = (term: string) => {
+    if (source === 'local') {
+      setLocalTerm(term);
+      return;
+    }
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
       newParams.delete('term');
@@ -133,6 +209,7 @@ export function MessageSearch({
     });
   };
   const handleSearchClear = () => {
+    setLocalTerm('');
     if (searchInputRef.current) {
       searchInputRef.current.value = '';
     }
@@ -198,7 +275,7 @@ export function MessageSearch({
           radii="Pill"
           outlined
           size="300"
-          aria-label="Scroll to Top"
+          aria-label={t('Scroll to Top')}
         >
           <Icon src={Icons.ChevronTop} size="300" />
         </IconButton>
@@ -206,11 +283,113 @@ export function MessageSearch({
       <Box ref={scrollTopAnchorRef} direction="Column" gap="300">
         <SearchInput
           active={!!msgSearchParams.term}
-          loading={status === 'pending'}
+          loading={!!msgSearchParams.term && status === 'pending'}
           searchInputRef={searchInputRef}
+          defaultValue={msgSearchParams.term}
           onSearch={handleSearch}
           onReset={handleSearchClear}
         />
+        <Box wrap="Wrap" gap="200" alignItems="End">
+          <label htmlFor="search-source">
+            Где искать
+            <br />
+            <select
+              className={SearchField}
+              id="search-source"
+              aria-label="Где искать"
+              value={source}
+              onChange={(event) => updateFilter('source', event.target.value)}
+            >
+              <option value="local">На этом устройстве, включая E2EE</option>
+              <option value="server">На сервере, без E2EE</option>
+            </select>
+          </label>
+          <label htmlFor="search-after">
+            С даты
+            <input
+              className={SearchField}
+              id="search-after"
+              type="date"
+              value={after}
+              onChange={(event) => updateFilter('after', event.target.value)}
+            />
+          </label>
+          <label htmlFor="search-before">
+            По дату
+            <input
+              className={SearchField}
+              id="search-before"
+              type="date"
+              value={before}
+              min={after || undefined}
+              onChange={(event) => updateFilter('before', event.target.value)}
+            />
+          </label>
+          <label htmlFor="search-kind">
+            Содержимое
+            <br />
+            <select
+              className={SearchField}
+              id="search-kind"
+              aria-label="Тип содержимого"
+              value={kind}
+              onChange={(event) => updateFilter('kind', event.target.value)}
+            >
+              <option value="all">Все сообщения</option>
+              <option value="m.text">Текст</option>
+              <option value="attachment">Вложения</option>
+              <option value="m.image">Изображения</option>
+              <option value="m.video">Видео</option>
+              <option value="m.audio">Аудио</option>
+              <option value="m.file">Файлы</option>
+            </select>
+          </label>
+          <label htmlFor="search-sender">
+            Автор (Matrix ID)
+            <input
+              className={SearchField}
+              id="search-sender"
+              placeholder="@user:company.ru"
+              value={searchParamsSenders?.join(', ') ?? ''}
+              onChange={(event) =>
+                updateFilter(
+                  'senders',
+                  event.target.value.trim()
+                    ? encodeSearchParamValueArray(
+                        event.target.value
+                          .split(',')
+                          .map((value) => value.trim())
+                          .filter(Boolean)
+                      )
+                    : ''
+                )
+              }
+            />
+          </label>
+        </Box>
+        {source === 'local' && (
+          <Box direction="Column" gap="200">
+            <Text size="T200">
+              Поиск по загруженной и расшифрованной истории этого устройства, до 50 000 событий.
+              Индекс хранится локально в зашифрованном виде и удаляется при выходе. Файлы целиком не
+              индексируются.
+            </Text>
+            <Text size="T200">Событий в индексе: {count}. Сортировка: сначала новые.</Text>
+            {indexError && <Text role="alert">{indexError}</Text>}
+            <Button
+              onClick={historyBusy ? () => historyAbort.current?.abort() : loadHistory}
+              size="300"
+              variant="Secondary"
+            >
+              <Text>
+                {historyBusy
+                  ? 'Остановить загрузку'
+                  : 'Загрузить более раннюю историю выбранных комнат'}
+              </Text>
+            </Button>
+            {historyStatus && <Text role="status">{historyStatus}</Text>}
+          </Box>
+        )}
         <SearchFilters
           defaultRoomsFilterName={defaultRoomsFilterName}
           allowGlobal={allowGlobal}
@@ -221,6 +400,7 @@ export function MessageSearch({
           onGlobalChange={handleGlobalChange}
           order={msgSearchParams.order}
           onOrderChange={handleOrderChange}
+          allowOrder={source === 'server'}
         />
       </Box>
 
@@ -229,7 +409,7 @@ export function MessageSearch({
           <PageHeroSection>
             <PageHero
               icon={<Icon size="600" src={Icons.Message} />}
-              title="Search Messages"
+              title={t('Search Messages')}
               subTitle="Find helpful messages in your community by searching with related keywords."
             />
           </PageHeroSection>
@@ -307,6 +487,11 @@ export function MessageSearch({
         </Box>
       )}
 
+      {hasNextPage && (
+        <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} variant="Secondary">
+          <Text>Загрузить следующие результаты</Text>
+        </Button>
+      )}
       {error && (
         <Box
           className={ContainerColor({ variant: 'Critical' })}

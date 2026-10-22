@@ -1,12 +1,14 @@
 import {
-  IEventWithRoomId,
-  IResultContext,
-  ISearchRequestBody,
-  ISearchResponse,
-  ISearchResult,
+  type IEventWithRoomId,
+  type IResultContext,
+  type ISearchRequestBody,
+  type ISearchResponse,
+  type ISearchResult,
   SearchOrderBy,
 } from 'matrix-js-sdk';
 import { useCallback } from 'react';
+import { getLocalSearchIndex } from '../../hooks/useLocalSearch';
+import { matchesSearch, type SearchFilters } from '../../utils/localSearch';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 
 export type ResultItem = {
@@ -63,7 +65,8 @@ const parseSearchResult = (result: ISearchResponse): SearchResult => {
   return searchResult;
 };
 
-export type MessageSearchParams = {
+export type MessageSearchParams = SearchFilters & {
+  source?: string;
   term?: string;
   order?: string;
   rooms?: string[];
@@ -71,7 +74,7 @@ export type MessageSearchParams = {
 };
 export const useMessageSearch = (params: MessageSearchParams) => {
   const mx = useMatrixClient();
-  const { term, order, rooms, senders } = params;
+  const { term, order, rooms, senders, source, after, before, kind } = params;
 
   const searchMessages = useCallback(
     async (nextBatch?: string) => {
@@ -81,6 +84,33 @@ export const useMessageSearch = (params: MessageSearchParams) => {
           groups: [],
         };
       const limit = 20;
+      const joinedRooms = mx
+        .getRooms()
+        .filter(
+          (room) => room.getMyMembership() === 'join' && (!rooms || rooms.includes(room.roomId))
+        );
+      if (source !== 'server') {
+        const result = await getLocalSearchIndex(mx).search(
+          { term, after, before, kind, senders, rooms: joinedRooms.map((room) => room.roomId) },
+          Number(nextBatch) || 0,
+          limit
+        );
+        return {
+          highlights: [term],
+          nextToken: result.next === undefined ? undefined : String(result.next),
+          groups: groupSearchResult(
+            result.events.map((event) => ({
+              rank: 0,
+              result: event,
+              context: { events_before: [], events_after: [], profile_info: {} },
+            }))
+          ),
+        };
+      }
+      const serverRooms = joinedRooms
+        .filter((room) => !mx.isRoomEncrypted(room.roomId))
+        .map((room) => room.roomId);
+      if (!serverRooms.length) return { highlights: [], groups: [] };
 
       const requestBody: ISearchRequestBody = {
         search_categories: {
@@ -92,7 +122,7 @@ export const useMessageSearch = (params: MessageSearchParams) => {
             },
             filter: {
               limit,
-              rooms,
+              rooms: serverRooms,
               senders,
             },
             include_state: false,
@@ -106,9 +136,16 @@ export const useMessageSearch = (params: MessageSearchParams) => {
         body: requestBody,
         next_batch: nextBatch === '' ? undefined : nextBatch,
       });
-      return parseSearchResult(r);
+      const result = parseSearchResult(r);
+      result.groups = result.groups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => matchesSearch(item.event, { after, before, kind })),
+        }))
+        .filter((group) => group.items.length > 0);
+      return result;
     },
-    [mx, term, order, rooms, senders]
+    [mx, term, order, rooms, senders, source, after, before, kind]
   );
 
   return searchMessages;

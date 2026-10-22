@@ -9,8 +9,8 @@ import {
 } from 'matrix-js-sdk';
 import {
   ClientWidgetApi,
-  IRoomEvent,
-  IWidget,
+  type IRoomEvent,
+  type IWidget,
   Widget,
   WidgetApiToWidgetAction,
   WidgetDriver,
@@ -19,8 +19,8 @@ import { CallWidgetDriver } from './CallWidgetDriver';
 import { trimTrailingSlash } from '../../utils/common';
 import {
   ElementCallIntent,
-  ElementCallThemeKind,
-  ElementMediaStateDetail,
+  type ElementCallThemeKind,
+  type ElementMediaStateDetail,
   ElementWidgetActions,
 } from './types';
 import { CallControl } from './CallControl';
@@ -106,6 +106,7 @@ export class CallEmbed {
       lang: 'en-EN',
       theme: themeKind,
       header: 'none',
+      showControls: 'true',
     });
 
     if (!room.isCallRoom() && CallEmbed.startingCall(intent)) {
@@ -182,7 +183,7 @@ export class CallEmbed {
       this.listenAction<ElementMediaStateDetail>(ElementWidgetActions.DeviceMute, (evt) => {
         if (initialMediaEvent) {
           initialMediaEvent = false;
-          this.control.applyState();
+          this.control.applyState().catch(() => undefined);
           return;
         }
         this.control.onMediaState(evt);
@@ -245,10 +246,20 @@ export class CallEmbed {
     });
 
     // Attach listeners for feeding events - the underlying widget classes handle permissions for us
-    this.mx.on(ClientEvent.Event, this.onEvent.bind(this));
-    this.mx.on(MatrixEventEvent.Decrypted, this.onEventDecrypted.bind(this));
-    this.mx.on(RoomStateEvent.Events, this.onStateUpdate.bind(this));
-    this.mx.on(ClientEvent.ToDeviceEvent, this.onToDeviceEvent.bind(this));
+    const onEvent = this.onEvent.bind(this);
+    const onEventDecrypted = this.onEventDecrypted.bind(this);
+    const onStateUpdate = this.onStateUpdate.bind(this);
+    const onToDeviceEvent = this.onToDeviceEvent.bind(this);
+    this.mx.on(ClientEvent.Event, onEvent);
+    this.mx.on(MatrixEventEvent.Decrypted, onEventDecrypted);
+    this.mx.on(RoomStateEvent.Events, onStateUpdate);
+    this.mx.on(ClientEvent.ToDeviceEvent, onToDeviceEvent);
+    this.disposables.push(() => {
+      this.mx.off(ClientEvent.Event, onEvent);
+      this.mx.off(MatrixEventEvent.Decrypted, onEventDecrypted);
+      this.mx.off(RoomStateEvent.Events, onStateUpdate);
+      this.mx.off(ClientEvent.ToDeviceEvent, onToDeviceEvent);
+    });
   }
 
   /**
@@ -260,14 +271,10 @@ export class CallEmbed {
     this.disposables.forEach((disposable) => {
       disposable();
     });
+    this.iframe.onload = null;
     this.call.stop();
     this.container.removeChild(this.iframe);
     this.control.dispose();
-
-    this.mx.off(ClientEvent.Event, this.onEvent.bind(this));
-    this.mx.off(MatrixEventEvent.Decrypted, this.onEventDecrypted.bind(this));
-    this.mx.off(RoomStateEvent.Events, this.onStateUpdate.bind(this));
-    this.mx.off(ClientEvent.ToDeviceEvent, this.onToDeviceEvent.bind(this));
 
     // Clear internal state
     this.readUpToMap = {};

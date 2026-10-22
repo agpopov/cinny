@@ -91,14 +91,14 @@ with sync_playwright() as playwright:
         page.screenshot(path=str(OUT/(label+'-mentions.png')))
         # Both forms of edits must avoid re-notifying existing recipients.
         row=page.locator('[data-message-id="'+event['event_id']+'"]')
-        page.mouse.move(0,0);row.hover();row.get_by_role('button',name='Edit Message',exact=True).click()
+        page.mouse.move(0,0);row.hover();row.get_by_role('button',name='Изменить сообщение',exact=True).click()
         edit=row.locator('[data-slate-editor="true"]');page.wait_for_function('(el)=>el.textContent.includes("GROUP COMBO")',arg=edit.element_handle());edit.focus();page.keyboard.press('Control+End');page.keyboard.insert_text(' исправлено '+label)
-        row.get_by_role('button',name='Save',exact=True).click()
+        row.get_by_role('button',name='Сохранить',exact=True).click()
         revised=wait_event(token,room,lambda e:e.get('content',{}).get('m.relates_to',{}).get('event_id')==event['event_id'] and 'исправлено '+label in e['content'].get('body',''))['content']
         check(label+' editing text does not re-ping',revised['m.mentions']=={} and revised['m.new_content']['m.mentions'].get('user_ids')==[b['user_id']])
-        page.mouse.move(0,0);row.hover();row.get_by_role('button',name='Edit Message',exact=True).click()
+        page.mouse.move(0,0);row.hover();row.get_by_role('button',name='Изменить сообщение',exact=True).click()
         edit=row.locator('[data-slate-editor="true"]');page.wait_for_function('(el)=>el.textContent.includes("GROUP COMBO")',arg=edit.element_handle());edit.focus();page.keyboard.press('Control+A');page.wait_for_timeout(100);page.keyboard.insert_text('REMOVED ALL MENTIONS '+label)
-        row.get_by_role('button',name='Save',exact=True).click()
+        row.get_by_role('button',name='Сохранить',exact=True).click()
         removed=wait_event(token,room,lambda e:e.get('content',{}).get('m.relates_to',{}).get('event_id')==event['event_id'] and 'REMOVED ALL MENTIONS '+label in e['content'].get('body',''))['content']
         check(label+' removing mentions clears resolved and delta lists',removed['m.mentions']=={} and removed['m.new_content']['m.mentions']=={})
         editor=page.locator('[data-editable-name="RoomInput"]')

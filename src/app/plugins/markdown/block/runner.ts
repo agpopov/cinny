@@ -1,5 +1,5 @@
 import { replaceMatch } from '../internal';
-import { BlockMDParser, BlockMDRule } from './type';
+import type { BlockMDParser, BlockMDRule } from './type';
 
 /**
  * Parses block-level markdown text into HTML using defined block rules.

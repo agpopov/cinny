@@ -1,6 +1,6 @@
 /* eslint-disable no-control-regex */
 import type { MatrixClient, Room } from 'matrix-js-sdk';
-import { Descendant, Text } from 'slate';
+import { type Descendant, Text } from 'slate';
 
 export const MENTION_GROUP_EVENT = 'in.cinny.mention_group';
 export const GROUP_MENTION_ATTRIBUTE = 'data-cinny-mention-group';

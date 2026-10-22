@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   Badge,
@@ -20,6 +21,7 @@ import classNames from 'classnames';
 import { BlurhashCanvas } from 'react-blurhash';
 import FocusTrap from 'focus-trap-react';
 import { EncryptedAttachmentInfo } from 'browser-encrypt-attachment';
+import { downloadMedia, needsMediaBlob } from '../../../utils/media';
 import { IImageInfo, MATRIX_BLUR_HASH_PROPERTY_NAME } from '../../../../types/matrix/common';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
@@ -96,7 +98,7 @@ export const ImageContent = as<'div', ImageContentProps>(
           );
           return fileContent;
         }
-        return mediaUrl;
+        return needsMediaBlob(mediaUrl) ? downloadMedia(mediaUrl) : mediaUrl;
       }, [mx, url, useAuthentication, mimeType, encInfo])
     );
 
@@ -170,7 +172,7 @@ export const ImageContent = as<'div', ImageContentProps>(
               }}
               before={<Icon size="Inherit" src={Icons.Photo} filled />}
             >
-              <Text size="B300">View</Text>
+              <Text size="B300">{t('View')}</Text>
             </Button>
           </Box>
         )}
@@ -214,7 +216,7 @@ export const ImageContent = as<'div', ImageContentProps>(
                     }
                   }}
                 >
-                  <Text size="B300">Spoiler</Text>
+                  <Text size="B300">{t('Spoiler')}</Text>
                 </Chip>
               )}
             </TooltipProvider>
@@ -249,7 +251,7 @@ export const ImageContent = as<'div', ImageContentProps>(
                   onClick={handleRetry}
                   before={<Icon size="Inherit" src={Icons.Warning} filled />}
                 >
-                  <Text size="B300">Retry</Text>
+                  <Text size="B300">{t('Retry')}</Text>
                 </Button>
               )}
             </TooltipProvider>

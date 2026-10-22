@@ -1,4 +1,4 @@
-import { IContent } from 'matrix-js-sdk';
+import type { IContent } from 'matrix-js-sdk';
 
 // Element шлёт и читает нестабильные типы MSC3381, стабильные принимаем на чтение.
 export const POLL_START_TYPE = 'org.matrix.msc3381.poll.start';
@@ -153,10 +153,7 @@ export const tallyPoll = (poll: PollStart, votes: PollVote[], endTs?: number): P
     if (!prev || prev.ts <= vote.ts) latest.set(vote.sender, vote);
   });
 
-  const counts: Record<string, number> = {};
-  poll.answers.forEach((a) => {
-    counts[a.id] = 0;
-  });
+  const counts: Record<string, number> = Object.fromEntries(poll.answers.map((a) => [a.id, 0]));
   const choices = new Map<string, string[]>();
 
   latest.forEach((vote, sender) => {

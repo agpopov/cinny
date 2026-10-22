@@ -53,6 +53,7 @@ export function UIAFlowOverlay({
             >
               {(anchorRef) => (
                 <IconButton
+                  aria-label="Закрыть"
                   ref={anchorRef}
                   variant="Critical"
                   size="300"

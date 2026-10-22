@@ -119,7 +119,7 @@ export function SpaceSettings({ initialPage, requestClose }: SpaceSettingsProps)
               </Box>
               <Box shrink="No">
                 {screenSize === ScreenSize.Mobile && (
-                  <IconButton onClick={requestClose} variant="Background">
+                  <IconButton aria-label="Закрыть" onClick={requestClose} variant="Background">
                     <Icon src={Icons.Cross} />
                   </IconButton>
                 )}

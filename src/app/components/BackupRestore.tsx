@@ -177,6 +177,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
             <BackupSyncing count={remainingSession} />
           )}
           <IconButton
+            aria-label="Действия"
             aria-pressed={!!menuCords}
             size="300"
             variant="Surface"

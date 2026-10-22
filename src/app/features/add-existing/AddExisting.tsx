@@ -201,7 +201,7 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                   <Text size="H4">Add Existing</Text>
                 </Box>
                 <Box shrink="No">
-                  <IconButton size="300" radii="300" onClick={requestClose}>
+                  <IconButton aria-label="Закрыть" size="300" radii="300" onClick={requestClose}>
                     <Icon src={Icons.Cross} />
                   </IconButton>
                 </Box>

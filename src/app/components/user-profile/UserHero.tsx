@@ -12,6 +12,7 @@ import {
 } from 'folds';
 import classNames from 'classnames';
 import FocusTrap from 'focus-trap-react';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import * as css from './styles.css';
 import { UserAvatar } from '../user-avatar';
 import colorMXID from '../../../util/colorMXID';
@@ -40,7 +41,12 @@ export function UserHero({ userId, avatarUrl, presence }: UserHeroProps) {
         }}
       >
         {avatarUrl && (
-          <img className={css.UserHeroCover} src={avatarUrl} alt={userId} draggable="false" />
+          <AuthenticatedImage
+            className={css.UserHeroCover}
+            src={avatarUrl}
+            alt={userId}
+            draggable="false"
+          />
         )}
       </div>
       <div className={css.UserHeroAvatarContainer}>

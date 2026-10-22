@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   FormEventHandler,
   MouseEventHandler,
@@ -70,11 +71,11 @@ const useRoomTypeFilters = (): RoomTypeFilter[] =>
         value: undefined,
       },
       {
-        title: 'Spaces',
+        title: t('Spaces'),
         value: RoomType.Space,
       },
       {
-        title: 'Rooms',
+        title: t('Rooms'),
         value: 'null',
       },
     ],
@@ -106,7 +107,7 @@ function Search({ active, loading, searchInputRef, onSearch, onReset }: SearchPr
   return (
     <Box as="form" direction="Column" gap="100" onSubmit={handleSearchSubmit}>
       <span data-spacing-node />
-      <Text size="L400">Search</Text>
+      <Text size="L400">{t('Search')}</Text>
       <Input
         ref={searchInputRef}
         style={{ paddingRight: config.space.S300 }}
@@ -488,7 +489,7 @@ export function PublicRooms() {
             <Box grow="No" justifyContent="Center" alignItems="Center" gap="200">
               {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Search} />}
               <Text size="H3" truncate>
-                Search
+                {t('Search')}
               </Text>
             </Box>
             <Box grow="Yes" basis="No" />
@@ -499,7 +500,7 @@ export function PublicRooms() {
               {screenSize === ScreenSize.Mobile && (
                 <BackRouteHandler>
                   {(onBack) => (
-                    <IconButton onClick={onBack}>
+                    <IconButton aria-label="Назад" onClick={onBack}>
                       <Icon src={Icons.ArrowLeft} />
                     </IconButton>
                   )}

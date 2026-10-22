@@ -1,0 +1,29 @@
+diff --git a/src-tauri/capabilities/mobile.json b/src-tauri/capabilities/mobile.json
+index 5753b13..86cd96b 100644
+--- a/src-tauri/capabilities/mobile.json
++++ b/src-tauri/capabilities/mobile.json
+@@ -14,6 +14,23 @@
+     "allow-desktop-set-dnd",
+     "allow-desktop-show-window",
+     "allow-native-notification-permission",
+-    "allow-mobile-take-notification-target"
++    "allow-mobile-take-notification-target",
++    {
++      "identifier": "opener:allow-open-url",
++      "allow": [
++        {
++          "url": "http://*"
++        },
++        {
++          "url": "https://*"
++        },
++        {
++          "url": "mailto:*"
++        },
++        {
++          "url": "tel:*"
++        }
++      ]
++    }
+   ]
+ }

@@ -1,87 +1,59 @@
-import { MatrixClient, SyncState } from 'matrix-js-sdk';
-import React, { useCallback, useState } from 'react';
-import { Box, config, Line, Text } from 'folds';
+import { type MatrixClient, SyncState } from 'matrix-js-sdk';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Box, Button, config, Text } from 'folds';
 import { useSyncState } from '../../hooks/useSyncState';
 import { ContainerColor } from '../../styles/ContainerColor.css';
 
-type StateData = {
-  current: SyncState | null;
-  previous: SyncState | null | undefined;
-};
-
-type SyncStatusProps = {
-  mx: MatrixClient;
-};
-export function SyncStatus({ mx }: SyncStatusProps) {
-  const [stateData, setStateData] = useState<StateData>({
-    current: null,
-    previous: undefined,
-  });
-
+export function SyncStatus({ mx }: { mx: MatrixClient }) {
+  const [state, setState] = useState(mx.getSyncState());
+  const [online, setOnline] = useState(navigator.onLine);
+  const [retryError, setRetryError] = useState('');
+  const retry = useCallback(() => {
+    try {
+      mx.retryImmediately();
+      setRetryError('');
+    } catch (cause) {
+      setRetryError(cause instanceof Error ? cause.message : String(cause));
+    }
+  }, [mx]);
   useSyncState(
     mx,
-    useCallback((current, previous) => {
-      setStateData((s) => {
-        if (s.current === current && s.previous === previous) {
-          return s;
-        }
-        return { current, previous };
-      });
-    }, [])
+    useCallback((current) => setState(current), [])
   );
-
-  if (
-    (stateData.current === SyncState.Prepared ||
-      stateData.current === SyncState.Syncing ||
-      stateData.current === SyncState.Catchup) &&
-    stateData.previous !== SyncState.Syncing
-  ) {
-    return (
-      <Box direction="Column" shrink="No">
-        <Box
-          className={ContainerColor({ variant: 'Success' })}
-          style={{ padding: `${config.space.S100} 0` }}
-          alignItems="Center"
-          justifyContent="Center"
-        >
-          <Text size="L400">Connecting...</Text>
-        </Box>
-        <Line variant="Success" size="300" />
-      </Box>
-    );
-  }
-
-  if (stateData.current === SyncState.Reconnecting) {
-    return (
-      <Box direction="Column" shrink="No">
-        <Box
-          className={ContainerColor({ variant: 'Warning' })}
-          style={{ padding: `${config.space.S100} 0` }}
-          alignItems="Center"
-          justifyContent="Center"
-        >
-          <Text size="L400">Connection Lost! Reconnecting...</Text>
-        </Box>
-        <Line variant="Warning" size="300" />
-      </Box>
-    );
-  }
-
-  if (stateData.current === SyncState.Error) {
-    return (
-      <Box direction="Column" shrink="No">
-        <Box
-          className={ContainerColor({ variant: 'Critical' })}
-          style={{ padding: `${config.space.S100} 0` }}
-          alignItems="Center"
-          justifyContent="Center"
-        >
-          <Text size="L400">Connection Lost!</Text>
-        </Box>
-        <Line variant="Critical" size="300" />
-      </Box>
-    );
-  }
-
-  return null;
+  useEffect(() => {
+    const update = () => {
+      setOnline(navigator.onLine);
+      if (navigator.onLine) retry();
+    };
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, [retry]);
+  const failed = !online || state === SyncState.Error || state === SyncState.Reconnecting;
+  if (!failed && state !== SyncState.Prepared && state !== SyncState.Catchup) return null;
+  let message = 'Синхронизация сообщений…';
+  if (failed) message = 'Связь с сервером потеряна. Переподключаемся…';
+  if (!online) message = 'Нет сети. Текст сохраняется в черновике; отправка требует подключения.';
+  return (
+    <Box
+      role="status"
+      shrink="No"
+      gap="200"
+      wrap="Wrap"
+      alignItems="Center"
+      className={ContainerColor({ variant: failed ? 'Warning' : 'Success' })}
+      style={{ padding: config.space.S200 }}
+    >
+      <Text size="T300">{message}</Text>
+      {failed && online && (
+        <Button size="300" variant="Secondary" onClick={retry}>
+          <Text>Повторить подключение</Text>
+        </Button>
+      )}
+      {retryError && <Text role="alert">{retryError}</Text>}
+    </Box>
+  );
 }

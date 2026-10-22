@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   ChangeEventHandler,
   MouseEventHandler,
@@ -215,7 +216,7 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
                 gap="100"
                 style={{ padding: config.space.S200, paddingBottom: 0 }}
               >
-                <Text size="L400">Search</Text>
+                <Text size="L400">{t('Search')}</Text>
                 <Input
                   onChange={handleSearchChange}
                   size="300"
@@ -238,7 +239,7 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
                     paddingRight: 0,
                   }}
                 >
-                  {!searchResult && <Text size="L400">Rooms</Text>}
+                  {!searchResult && <Text size="L400">{t('Rooms')}</Text>}
                   {searchResult && <Text size="L400">{`Rooms for "${searchResult.query}"`}</Text>}
                   {searchResult && searchResult.items.length === 0 && (
                     <Text style={{ padding: config.space.S400 }} size="T300" align="Center">
@@ -294,7 +295,7 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
                   {localSelected && localSelected.length > 0 ? (
                     <Text size="B300">Save ({localSelected.length})</Text>
                   ) : (
-                    <Text size="B300">Save</Text>
+                    <Text size="B300">{t('Save')}</Text>
                   )}
                 </Button>
                 <Button
@@ -335,9 +336,11 @@ type SearchFiltersProps = {
   onGlobalChange: (global?: boolean) => void;
   order?: string;
   onOrderChange: (order?: string) => void;
+  allowOrder?: boolean;
 };
 export function SearchFilters({
   defaultRoomsFilterName,
+  allowOrder = true,
   allowGlobal,
   roomList,
   selectedRooms,
@@ -351,7 +354,7 @@ export function SearchFilters({
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Filter</Text>
+      <Text size="L400">{t('Filter')}</Text>
       <Box gap="200" wrap="Wrap">
         <Chip
           variant={!global ? 'Success' : 'Surface'}
@@ -370,7 +373,7 @@ export function SearchFilters({
             outlined
             onClick={() => onGlobalChange(true)}
           >
-            <Text size="T200">Global</Text>
+            <Text size="T200">{t('Global')}</Text>
           </Chip>
         )}
         <Line
@@ -404,7 +407,7 @@ export function SearchFilters({
           onChange={onSelectedRoomsChange}
         />
         <Box grow="Yes" data-spacing-node />
-        <OrderButton order={order} onChange={onOrderChange} />
+        {allowOrder && <OrderButton order={order} onChange={onOrderChange} />}
       </Box>
     </Box>
   );

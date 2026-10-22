@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   ChangeEventHandler,
   FormEventHandler,
@@ -174,7 +175,7 @@ function SystemThemePreferences() {
   return (
     <Box wrap="Wrap" gap="400">
       <SettingTile
-        title="Light Theme:"
+        title={t('Light Theme:')}
         after={
           <Chip
             variant={themeKind === ThemeKind.Light ? 'Primary' : 'Secondary'}
@@ -215,7 +216,7 @@ function SystemThemePreferences() {
         }
       />
       <SettingTile
-        title="Dark Theme:"
+        title={t('Dark Theme:')}
         after={
           <Chip
             variant={themeKind === ThemeKind.Dark ? 'Primary' : 'Secondary'}
@@ -311,7 +312,7 @@ function Appearance() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Appearance</Text>
+      <Text size="L400">{t('Appearance')}</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -319,8 +320,8 @@ function Appearance() {
         gap="400"
       >
         <SettingTile
-          title="System Theme"
-          description="Choose between light and dark theme based on system preference."
+          title={t('System Theme')}
+          description={t('Choose between light and dark theme based on system preference.')}
           after={<Switch variant="Primary" value={systemTheme} onChange={setSystemTheme} />}
         />
         {systemTheme && <SystemThemePreferences />}
@@ -328,28 +329,28 @@ function Appearance() {
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Theme"
-          description="Theme to use when system theme is not enabled."
+          title={t('Theme')}
+          description={t('Theme to use when system theme is not enabled.')}
           after={<SelectTheme disabled={systemTheme} />}
         />
       </SequenceCard>
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Monochrome Mode"
+          title={t('Monochrome Mode')}
           after={<Switch variant="Primary" value={monochromeMode} onChange={setMonochromeMode} />}
         />
       </SequenceCard>
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Twitter Emoji"
+          title={t('Twitter Emoji')}
           after={<Switch variant="Primary" value={twitterEmoji} onChange={setTwitterEmoji} />}
         />
       </SequenceCard>
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
-        <SettingTile title="Page Zoom" after={<PageZoomInput />} />
+        <SettingTile title={t('Page Zoom')} after={<PageZoomInput />} />
       </SequenceCard>
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
@@ -392,26 +393,27 @@ function DateHint({ hasChanges, handleReset }: DateHintProps) {
         >
           <Menu style={{ maxHeight: '85vh', overflowY: 'auto' }}>
             <Header size="300" style={{ padding: `0 ${config.space.S200}` }}>
-              <Text size="L400">Formatting</Text>
+              <Text size="L400">{t('Formatting')}</Text>
             </Header>
 
             <Box direction="Column">
               <Box style={categoryPadding} direction="Column">
                 <Header size="300">
-                  <Text size="L400">Year</Text>
+                  <Text size="L400">{t('Year')}</Text>
                 </Header>
                 <Box direction="Column" tabIndex={0} gap="100">
                   <Text size="T300">
                     YY
                     <Text as="span" size="Inherit" priority="300">
                       {': '}
-                      Two-digit year
+                      {t('Two-digit year')}
                     </Text>{' '}
                   </Text>
                   <Text size="T300">
                     YYYY
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Four-digit year
+                      {': '}
+                      {t('Four-digit year')}
                     </Text>
                   </Text>
                 </Box>
@@ -419,31 +421,35 @@ function DateHint({ hasChanges, handleReset }: DateHintProps) {
 
               <Box style={categoryPadding} direction="Column">
                 <Header size="300">
-                  <Text size="L400">Month</Text>
+                  <Text size="L400">{t('Month')}</Text>
                 </Header>
                 <Box direction="Column" tabIndex={0} gap="100">
                   <Text size="T300">
                     M
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}The month
+                      {': '}
+                      {t('The month')}
                     </Text>
                   </Text>
                   <Text size="T300">
                     MM
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Two-digit month
+                      {': '}
+                      {t('Two-digit month')}
                     </Text>{' '}
                   </Text>
                   <Text size="T300">
                     MMM
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Short month name
+                      {': '}
+                      {t('Short month name')}
                     </Text>
                   </Text>
                   <Text size="T300">
                     MMMM
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Full month name
+                      {': '}
+                      {t('Full month name')}
                     </Text>
                   </Text>
                 </Box>
@@ -451,50 +457,56 @@ function DateHint({ hasChanges, handleReset }: DateHintProps) {
 
               <Box style={categoryPadding} direction="Column">
                 <Header size="300">
-                  <Text size="L400">Day of the Month</Text>
+                  <Text size="L400">{t('Day of the Month')}</Text>
                 </Header>
                 <Box direction="Column" tabIndex={0} gap="100">
                   <Text size="T300">
                     D
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Day of the month
+                      {': '}
+                      {t('Day of the month')}
                     </Text>
                   </Text>
                   <Text size="T300">
                     DD
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Two-digit day of the month
+                      {': '}
+                      {t('Two-digit day of the month')}
                     </Text>
                   </Text>
                 </Box>
               </Box>
               <Box style={categoryPadding} direction="Column">
                 <Header size="300">
-                  <Text size="L400">Day of the Week</Text>
+                  <Text size="L400">{t('Day of the Week')}</Text>
                 </Header>
                 <Box direction="Column" tabIndex={0} gap="100">
                   <Text size="T300">
                     d
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Day of the week (Sunday = 0)
+                      {': '}
+                      {t('Day of the week (Sunday = 0)')}
                     </Text>
                   </Text>
                   <Text size="T300">
                     dd
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Two-letter day name
+                      {': '}
+                      {t('Two-letter day name')}
                     </Text>
                   </Text>
                   <Text size="T300">
                     ddd
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Short day name
+                      {': '}
+                      {t('Short day name')}
                     </Text>
                   </Text>
                   <Text size="T300">
                     dddd
                     <Text as="span" size="Inherit" priority="300">
-                      {': '}Full day name
+                      {': '}
+                      {t('Full day name')}
                     </Text>
                   </Text>
                 </Box>
@@ -506,6 +518,7 @@ function DateHint({ hasChanges, handleReset }: DateHintProps) {
     >
       {hasChanges ? (
         <IconButton
+          aria-label="Закрыть"
           tabIndex={-1}
           onClick={handleReset}
           type="reset"
@@ -517,6 +530,7 @@ function DateHint({ hasChanges, handleReset }: DateHintProps) {
         </IconButton>
       ) : (
         <IconButton
+          aria-label="Сведения"
           tabIndex={-1}
           onClick={handleOpenMenu}
           type="button"
@@ -590,7 +604,7 @@ function CustomDateFormat({ value, onChange }: CustomDateFormatProps) {
           disabled={!hasChanges}
           type="submit"
         >
-          <Text size="B400">Save</Text>
+          <Text size="B400">{t('Save')}</Text>
         </Button>
       </Box>
     </SettingTile>
@@ -606,7 +620,7 @@ function PresetDateFormat({ value, onChange }: PresetDateFormatProps) {
   const dateFormatItems = useDateFormatItems();
 
   const getDisplayDate = (format: string): string =>
-    format !== '' ? dayjs().format(format) : 'Custom';
+    format !== '' ? dayjs().format(format) : t('Custom');
 
   const handleMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
     setMenuCords(evt.currentTarget.getBoundingClientRect());
@@ -687,7 +701,7 @@ function SelectDateFormat() {
   return (
     <>
       <SettingTile
-        title="Date Format"
+        title={t('Date Format')}
         description={customDateFormat ? dayjs().format(dateFormatString) : ''}
         after={<PresetDateFormat value={selectedDateFormat} onChange={handlePresetChange} />}
       />
@@ -703,10 +717,10 @@ function DateAndTime() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Date & Time</Text>
+      <Text size="L400">{t('Date & Time')}</Text>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="24-Hour Time Format"
+          title={t('24-Hour Time Format')}
           after={<Switch variant="Primary" value={hour24Clock} onChange={setHour24Clock} />}
         />
       </SequenceCard>
@@ -725,26 +739,28 @@ function Editor() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Editor</Text>
+      <Text size="L400">{t('Editor')}</Text>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="ENTER for Newline"
-          description={`Use ${
+          title={t('ENTER for Newline')}
+          description={`Используйте ${
             isMacOS() ? KeySymbol.Command : 'Ctrl'
-          } + ENTER to send message and ENTER for newline.`}
+          } + Enter для отправки, Enter — для новой строки.`}
           after={<Switch variant="Primary" value={enterForNewline} onChange={setEnterForNewline} />}
         />
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Markdown Formatting"
+          title={t('Markdown Formatting')}
           after={<Switch variant="Primary" value={isMarkdown} onChange={setIsMarkdown} />}
         />
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Hide Typing & Read Receipts"
-          description="Turn off both typing status and read receipts to keep your activity private."
+          title={t('Hide Typing & Read Receipts')}
+          description={t(
+            'Turn off both typing status and read receipts to keep your activity private.'
+          )}
           after={<Switch variant="Primary" value={hideActivity} onChange={setHideActivity} />}
         />
       </SequenceCard>
@@ -910,16 +926,16 @@ function Messages() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Messages</Text>
+      <Text size="L400">{t('Messages')}</Text>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
-        <SettingTile title="Message Layout" after={<SelectMessageLayout />} />
+        <SettingTile title={t('Message Layout')} after={<SelectMessageLayout />} />
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
-        <SettingTile title="Message Spacing" after={<SelectMessageSpacing />} />
+        <SettingTile title={t('Message Spacing')} after={<SelectMessageSpacing />} />
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Legacy Username Color"
+          title={t('Legacy Username Color')}
           after={
             <Switch
               variant="Primary"
@@ -931,7 +947,7 @@ function Messages() {
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Hide Membership Change"
+          title={t('Hide Membership Change')}
           after={
             <Switch
               variant="Primary"
@@ -943,7 +959,7 @@ function Messages() {
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Hide Profile Change"
+          title={t('Hide Profile Change')}
           after={
             <Switch
               variant="Primary"
@@ -955,7 +971,7 @@ function Messages() {
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Disable Media Auto Load"
+          title={t('Disable Media Auto Load')}
           after={
             <Switch
               variant="Primary"
@@ -967,19 +983,19 @@ function Messages() {
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Url Preview"
+          title={t('Url Preview')}
           after={<Switch variant="Primary" value={urlPreview} onChange={setUrlPreview} />}
         />
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Url Preview in Encrypted Room"
+          title={t('Url Preview in Encrypted Room')}
           after={<Switch variant="Primary" value={encUrlPreview} onChange={setEncUrlPreview} />}
         />
       </SequenceCard>
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile
-          title="Show Hidden Events"
+          title={t('Show Hidden Events')}
           after={
             <Switch variant="Primary" value={showHiddenEvents} onChange={setShowHiddenEvents} />
           }
@@ -999,11 +1015,11 @@ export function General({ requestClose }: GeneralProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              General
+              {t('General')}
             </Text>
           </Box>
           <Box shrink="No">
-            <IconButton onClick={requestClose} variant="Surface">
+            <IconButton aria-label="Закрыть" onClick={requestClose} variant="Surface">
               <Icon src={Icons.Cross} />
             </IconButton>
           </Box>

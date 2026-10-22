@@ -2,6 +2,7 @@ import React, { KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo } from '
 import { Editor } from 'slate';
 import { Box, MenuItem, Text, toRem } from 'folds';
 import { Room } from 'matrix-js-sdk';
+import { AuthenticatedImage } from '../../media/AuthenticatedImage';
 
 import { AutocompleteQuery } from './autocompleteQuery';
 import { AutocompleteMenu } from './AutocompleteMenu';
@@ -103,7 +104,7 @@ export function EmoticonAutocomplete({
               isCustomEmoji && customEmojiUrl ? (
                 <Box
                   shrink="No"
-                  as="img"
+                  as={AuthenticatedImage}
                   src={customEmojiUrl}
                   alt={emoticon.shortcode}
                   style={{ width: toRem(24), height: toRem(24), objectFit: 'contain' }}

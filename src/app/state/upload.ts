@@ -3,7 +3,7 @@ import { atomFamily } from 'jotai/utils';
 import { MatrixClient, UploadResponse, UploadProgress, MatrixError } from 'matrix-js-sdk';
 import { useCallback } from 'react';
 import { useThrottle } from '../hooks/useThrottle';
-import { uploadContent, TUploadContent } from '../utils/matrix';
+import { cancelContentUpload, uploadContent, TUploadContent } from '../utils/matrix';
 
 export enum UploadStatus {
   Idle = 'idle',
@@ -124,7 +124,7 @@ export const useBindUploadAtom = (
 
   const cancelUpload = useCallback(async () => {
     if (upload.status === UploadStatus.Loading) {
-      await mx.cancelUpload(upload.promise);
+      await cancelContentUpload(mx, upload.promise);
     }
   }, [mx, upload]);
 

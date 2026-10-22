@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   KeyboardEventHandler,
   RefObject,
@@ -7,13 +8,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useStore } from 'jotai';
 import { isKeyHotkey } from 'is-hotkey';
 import { EventType, IContent, MsgType, RelationType, Room } from 'matrix-js-sdk';
 import { ReactEditor } from 'slate-react';
 import { Transforms, Editor } from 'slate';
 import {
   Box,
+  Button,
   Dialog,
   Icon,
   IconButton,
@@ -28,6 +30,7 @@ import {
   config,
   toRem,
 } from 'folds';
+import { getMessageAttempt, getAttachmentAttempt } from '../../utils/messageAttempt';
 import { mentionsOutsideMarkdownCode } from '../../components/editor/markdownCode';
 
 import {
@@ -62,7 +65,12 @@ import {
 } from '../../components/editor';
 import { EmojiBoard, EmojiBoardTab } from '../../components/emoji-board';
 import { UseStateProvider } from '../../components/UseStateProvider';
-import { TUploadContent, encryptFile, getMxIdLocalPart } from '../../utils/matrix';
+import {
+  TUploadContent,
+  cancelContentUpload,
+  encryptFile,
+  getMxIdLocalPart,
+} from '../../utils/matrix';
 import { useTypingStatusUpdater } from '../../hooks/useTypingStatusUpdater';
 import { useFilePicker } from '../../hooks/useFilePicker';
 import { useFilePasteHandler } from '../../hooks/useFilePasteHandler';
@@ -74,6 +82,7 @@ import {
   roomIdToReplyDraftAtomFamily,
   roomIdToUploadItemsAtomFamily,
   roomUploadAtomFamily,
+  getUploadKey,
 } from '../../state/room/roomInputDrafts';
 import { UploadCardRenderer } from '../../components/upload-card';
 import {
@@ -90,7 +99,13 @@ import {
 } from '../../state/upload';
 import { safeFile } from '../../utils/mimeTypes';
 import { sendAttachments } from '../../utils/sendAttachments';
-import { fulfilledPromiseSettledResult } from '../../utils/common';
+import { bytesToSize } from '../../utils/common';
+import { useMediaConfig } from '../../hooks/useMediaConfig';
+import {
+  attachmentFileLimit,
+  ATTACHMENT_QUEUE_LIMIT,
+  ATTACHMENT_COUNT_LIMIT,
+} from '../../utils/attachmentLimits';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import {
@@ -119,6 +134,9 @@ import { usePowerLevelTags } from '../../hooks/usePowerLevelTags';
 import { useComposingCheck } from '../../hooks/useComposingCheck';
 import { IImageInfo } from '../../../types/matrix/common';
 import { resolveSticker } from '../../plugins/custom-emoji/resolveSticker';
+import { usePersistentDraft } from '../../hooks/usePersistentDraft';
+
+const draftScopeUsers = new WeakMap<ReturnType<typeof useStore>, Map<string, number>>();
 
 interface RoomInputProps {
   editor: Editor;
@@ -142,16 +160,40 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       threadRootId,
       draftKey: draftKeyProp,
       editableName = 'RoomInput',
-      placeholder = 'Send a message...',
+      placeholder = 'Написать сообщение…',
     },
     ref
   ) => {
     const draftKey = draftKeyProp ?? roomId;
+    const store = useStore();
     const threadId = threadRootId ?? null;
     const mx = useMatrixClient();
     const sendingRef = useRef(false);
     const [sending, setSending] = useState(false);
     const [sendError, setSendError] = useState('');
+    const messageAttempt = getMessageAttempt(mx, draftKey);
+    useEffect(() => {
+      let scopes = draftScopeUsers.get(store);
+      if (!scopes) {
+        scopes = new Map();
+        draftScopeUsers.set(store, scopes);
+      }
+      const users = scopes;
+      users.set(draftKey, (users.get(draftKey) ?? 0) + 1);
+      return () => {
+        users.set(draftKey, (users.get(draftKey) ?? 1) - 1);
+        queueMicrotask(() => {
+          if (users.get(draftKey)) return;
+          users.delete(draftKey);
+          if (!store.get(roomIdToMsgDraftAtomFamily(draftKey)).length)
+            roomIdToMsgDraftAtomFamily.remove(draftKey);
+          if (!store.get(roomIdToReplyDraftAtomFamily(draftKey)))
+            roomIdToReplyDraftAtomFamily.remove(draftKey);
+          if (!store.get(roomIdToUploadItemsAtomFamily(draftKey)).length)
+            roomIdToUploadItemsAtomFamily.remove(draftKey);
+        });
+      };
+    }, [store, draftKey]);
     const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
     const [isMarkdown] = useSetting(settingsAtom, 'isMarkdown');
     const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
@@ -165,6 +207,16 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
     const [msgDraft, setMsgDraft] = useAtom(roomIdToMsgDraftAtomFamily(draftKey));
     const [replyDraft, setReplyDraft] = useAtom(roomIdToReplyDraftAtomFamily(draftKey));
+    const {
+      save: saveDraft,
+      flush: flushDraft,
+      ready: draftReady,
+      error: draftError,
+    } = usePersistentDraft(editor, draftKey, setReplyDraft);
+    useEffect(() => {
+      if (draftReady) saveDraft(editor.children, replyDraft);
+    }, [draftReady, replyDraft, editor, saveDraft]);
+
     const replyUserID = replyDraft?.userId;
 
     const powerLevelTags = usePowerLevelTags(room, powerLevels);
@@ -202,42 +254,74 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
     const sendTypingStatus = useTypingStatusUpdater(mx, roomId);
 
+    const mediaConfig = useMediaConfig();
+    const serverFileLimit = mediaConfig['m.upload.size'];
+    const fileLimit = attachmentFileLimit(serverFileLimit, room.hasEncryptionStateEvent());
+    const preparation = useRef(Promise.resolve());
+    const pendingBytes = useRef(0);
+    const pendingCount = useRef(0);
+    const [preparingFiles, setPreparingFiles] = useState(false);
     const handleFiles = useCallback(
-      async (files: File[]) => {
+      (files: File[]) => {
         setUploadBoard(true);
-        const safeFiles = files.map(safeFile);
-        const fileItems: TUploadItem[] = [];
-
-        if (room.hasEncryptionStateEvent()) {
-          const encryptFiles = fulfilledPromiseSettledResult(
-            await Promise.allSettled(safeFiles.map((f) => encryptFile(f)))
-          );
-          encryptFiles.forEach((ef) =>
-            fileItems.push({
-              ...ef,
-              metadata: {
-                markedAsSpoiler: false,
-              },
-            })
-          );
-        } else {
-          safeFiles.forEach((f) =>
-            fileItems.push({
-              file: f,
-              originalFile: f,
-              encInfo: undefined,
-              metadata: {
-                markedAsSpoiler: false,
-              },
-            })
-          );
-        }
-        setSelectedFiles({
-          type: 'PUT',
-          item: fileItems,
+        const errors: string[] = [];
+        let bytes = selectedFilesRef.current.reduce(
+          (sum, item) => sum + item.file.size,
+          pendingBytes.current
+        );
+        let count = selectedFilesRef.current.length + pendingCount.current;
+        const accepted = files.filter((file) => {
+          if (file.size > fileLimit) {
+            errors.push(`${file.name}: лимит файла ${bytesToSize(fileLimit)}`);
+            return false;
+          }
+          if (bytes + file.size > ATTACHMENT_QUEUE_LIMIT || count >= ATTACHMENT_COUNT_LIMIT) {
+            errors.push(
+              `${file.name}: очередь ограничена ${bytesToSize(
+                ATTACHMENT_QUEUE_LIMIT
+              )} и ${ATTACHMENT_COUNT_LIMIT} файлами`
+            );
+            return false;
+          }
+          bytes += file.size;
+          count += 1;
+          return true;
         });
+        if (errors.length) setSendError(errors.join('\n'));
+        if (!accepted.length) return Promise.resolve();
+        const reserved = accepted.reduce((sum, file) => sum + file.size, 0);
+        pendingBytes.current += reserved;
+        pendingCount.current += accepted.length;
+        setPreparingFiles(true);
+        const run = async () => {
+          const fileItems: TUploadItem[] = [];
+          for (let fileIndex = 0; fileIndex < accepted.length; fileIndex += 1) {
+            const original = accepted[fileIndex];
+            try {
+              const file = safeFile(original);
+              // Sequential preparation bounds memory and preserves selection order.
+              // eslint-disable-next-line no-await-in-loop
+              const prepared = await (room.hasEncryptionStateEvent()
+                ? encryptFile(file)
+                : Promise.resolve({ file, originalFile: file, encInfo: undefined }));
+              fileItems.push({ ...prepared, metadata: { markedAsSpoiler: false } });
+            } catch {
+              errors.push(`${original.name}: не удалось подготовить файл. Добавьте его ещё раз.`);
+            }
+          }
+          selectedFilesRef.current = [...selectedFilesRef.current, ...fileItems];
+          setSelectedFiles({ type: 'PUT', item: fileItems });
+          if (errors.length) setSendError(errors.join('\n'));
+        };
+        const task = preparation.current.then(run).finally(() => {
+          pendingBytes.current -= reserved;
+          pendingCount.current -= accepted.length;
+          setPreparingFiles(pendingCount.current > 0);
+        });
+        preparation.current = task.catch(() => undefined);
+        return task;
       },
-      [setSelectedFiles, room]
+      [setSelectedFiles, room, fileLimit]
     );
     const pickFile = useFilePicker(handleFiles, true);
     const handlePaste = useFilePasteHandler(handleFiles);
@@ -283,6 +367,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const handleRemoveUpload = useCallback(
       (upload: TUploadContent | TUploadContent[]) => {
         const uploads = Array.isArray(upload) ? upload : [upload];
+        selectedFilesRef.current = selectedFilesRef.current.filter(
+          (item) => !uploads.includes(item.file)
+        );
         setSelectedFiles({
           type: 'DELETE',
           item: selectedFiles.filter((f) => uploads.find((u) => u === f.file)),
@@ -292,13 +379,23 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       [setSelectedFiles, selectedFiles]
     );
 
-    const handleCancelUpload = (uploads: Upload[]) => {
-      uploads.forEach((upload) => {
-        if (upload.status === UploadStatus.Loading) {
-          mx.cancelUpload(upload.promise);
-        }
-      });
-      handleRemoveUpload(uploads.map((upload) => upload.file));
+    const handleCancelUpload = async (uploads: Upload[]) => {
+      const removals = await Promise.all(
+        uploads.map(async (upload) => {
+          try {
+            await getAttachmentAttempt(mx, upload.file).cancel(mx, roomId);
+            if (upload.status === UploadStatus.Loading)
+              await cancelContentUpload(mx, upload.promise);
+            return true;
+          } catch (cause) {
+            setSendError(cause instanceof Error ? cause.message : String(cause));
+            return false;
+          }
+        })
+      );
+      handleRemoveUpload(
+        uploads.filter((_, index) => removals[index]).map((upload) => upload.file)
+      );
     };
 
     const handleSendUpload = async (uploads: UploadSuccess[]) => {
@@ -313,7 +410,19 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           if (type.startsWith('audio/')) return getAudioMsgContent(fileItem, upload.mxc);
           return getFileMsgContent(fileItem, upload.mxc);
         },
-        send: (content) => mx.sendMessage(roomId, threadId, content as any),
+        send: (content, upload) => {
+          const attempt = getAttachmentAttempt(mx, upload.file);
+          const metadata = selectedFilesRef.current.find(
+            (item) => item.file === upload.file
+          )?.metadata;
+          return attempt.send(
+            mx,
+            roomId,
+            threadId ?? null,
+            content as any,
+            JSON.stringify([upload.mxc, metadata])
+          );
+        },
         isPending: (upload) => selectedFilesRef.current.some((item) => item.file === upload.file),
         onSent: (upload) => handleRemoveUpload(upload.file),
       });
@@ -339,7 +448,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const sendEditor = { ...editor, children: nodes };
       try {
         const groupMentions = await resolveGroupMentions(mx, room, nodes);
-        uploadBoardHandlers.current?.handleSend();
+        uploadBoardHandlers.current
+          ?.handleSend()
+          .catch((cause) => setSendError(cause instanceof Error ? cause.message : String(cause)));
 
         const commandName = getBeginCommand(editor);
         let plainText = toPlainText(nodes, isMarkdown, groupMentions).trim();
@@ -377,6 +488,8 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           }
           resetEditor(editor);
           resetEditorHistory(editor);
+          saveDraft(editor.children, replyDraft);
+          await flushDraft();
           sendTypingStatus(false);
           return;
         }
@@ -419,11 +532,19 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           content,
           !!room.currentState.getStateEvents('m.room.encryption', '')
         );
-        await mx.sendMessage(roomId, threadId, content as any);
+        await messageAttempt.send(
+          mx,
+          roomId,
+          threadId ?? null,
+          content as any,
+          JSON.stringify([original, replyDraft])
+        );
         if (JSON.stringify(editor.children) !== original) return;
         resetEditor(editor);
         resetEditorHistory(editor);
         setReplyDraft(undefined);
+        saveDraft(editor.children);
+        await flushDraft();
         sendTypingStatus(false);
       } catch (error) {
         setSendError(
@@ -444,6 +565,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       replyDraft,
       sendTypingStatus,
       setReplyDraft,
+      saveDraft,
+      flushDraft,
+      messageAttempt,
       isMarkdown,
       commands,
     ]);
@@ -531,6 +655,16 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
     return (
       <div ref={ref}>
+        {(preparingFiles || selectedFiles.length > 0) && (
+          <Text size="T200" priority="300" role="status" aria-live="polite">
+            {preparingFiles ? 'Подготовка файлов… ' : ''}
+            {serverFileLimit
+              ? `Лимит сервера: ${bytesToSize(serverFileLimit)}. `
+              : 'Сервер не сообщил лимит файла. '}
+            {room.hasEncryptionStateEvent() ? `Лимит шифрования: ${bytesToSize(fileLimit)}. ` : ''}
+            {`Очередь: до ${bytesToSize(ATTACHMENT_QUEUE_LIMIT)}.`}
+          </Text>
+        )}
         {selectedFiles.length > 0 && (
           <UploadBoard
             header={
@@ -549,14 +683,20 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                 <UploadBoardContent>
                   {Array.from(selectedFiles)
                     .reverse()
-                    .map((fileItem, index) => (
+                    .map((fileItem) => (
                       <UploadCardRenderer
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={index}
+                        key={getUploadKey(fileItem.file)}
                         isEncrypted={!!fileItem.encInfo}
                         fileItem={fileItem}
                         setMetadata={handleFileMetadata}
-                        onRemove={handleRemoveUpload}
+                        onRemove={async (file) => {
+                          try {
+                            await getAttachmentAttempt(mx, file).cancel(mx, roomId);
+                            handleRemoveUpload(file);
+                          } catch (cause) {
+                            setSendError(cause instanceof Error ? cause.message : String(cause));
+                          }
+                        }}
                       />
                     ))}
                 </UploadBoardContent>
@@ -582,7 +722,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                 <Text size="H4" align="Center">
                   {`Drop Files in "${room?.name || 'Room'}"`}
                 </Text>
-                <Text align="Center">Drag and drop files here or click for selection dialog</Text>
+                <Text align="Center">
+                  {t('Drag and drop files here or click for selection dialog')}
+                </Text>
               </Box>
             </Dialog>
           </OverlayCenter>
@@ -619,14 +761,44 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             requestClose={handleCloseAutocomplete}
           />
         )}
-        {sendError && (
+        {(sendError || draftError) && (
           <Text role="alert" size="T300" style={{ padding: config.space.S300 }}>
-            {sendError}
+            {sendError || draftError}
           </Text>
         )}
+        {sendError && messageAttempt.pending && (
+          <Box gap="200" wrap="Wrap">
+            <Button size="300" variant="Secondary" disabled={sending} onClick={submit}>
+              <Text>Повторить отправку</Text>
+            </Button>
+            <Button
+              size="300"
+              variant="Secondary"
+              disabled={sending}
+              onClick={async () => {
+                try {
+                  await messageAttempt.cancel(mx, roomId);
+                  setSendError(
+                    'Локальная попытка отменена. Текст сохранён. Если сервер уже принял сообщение, оно останется в истории.'
+                  );
+                } catch (cause) {
+                  setSendError(cause instanceof Error ? cause.message : String(cause));
+                }
+              }}
+            >
+              <Text>Отменить локальную попытку</Text>
+            </Button>
+          </Box>
+        )}
         <CustomEditor
-          readOnly={sending}
+          readOnly={sending || !draftReady}
           onChange={() => {
+            if (
+              draftReady &&
+              editor.operations.some((operation) => operation.type !== 'set_selection')
+            ) {
+              saveDraft(editor.children, replyDraft);
+            }
             const range = getPrevWordRange(editor);
             setAutocompleteQuery(
               range ? getAutocompleteQuery(editor, range, AUTOCOMPLETE_PREFIXES) : undefined
@@ -647,6 +819,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                   style={{ padding: `${config.space.S200} ${config.space.S300} 0` }}
                 >
                   <IconButton
+                    aria-label="Закрыть"
                     onClick={() => setReplyDraft(undefined)}
                     variant="SurfaceVariant"
                     size="300"
@@ -716,12 +889,12 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                         onCustomEmojiSelect={handleEmoticonSelect}
                         onStickerSelect={handleStickerSelect}
                         requestClose={() => {
-                          setEmojiBoardTab((t) => {
-                            if (t) {
+                          setEmojiBoardTab((tab) => {
+                            if (tab) {
                               if (!mobileOrTablet()) ReactEditor.focus(editor);
                               return undefined;
                             }
-                            return t;
+                            return tab;
                           });
                         }}
                       />
@@ -729,7 +902,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                   >
                     {!hideStickerBtn && (
                       <IconButton
-                        aria-label="Stickers"
+                        aria-label={t('Stickers')}
                         aria-pressed={emojiBoardTab === EmojiBoardTab.Sticker}
                         onClick={() => setEmojiBoardTab(EmojiBoardTab.Sticker)}
                         variant="SurfaceVariant"
@@ -744,7 +917,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                     )}
                     <IconButton
                       ref={emojiBtnRef}
-                      aria-label="Emoji"
+                      aria-label={t('Emoji')}
                       aria-pressed={
                         hideStickerBtn ? !!emojiBoardTab : emojiBoardTab === EmojiBoardTab.Emoji
                       }
@@ -764,7 +937,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                 )}
               </UseStateProvider>
               <IconButton
-                aria-label="Send message"
+                aria-label={t('Send message')}
                 disabled={sending}
                 onClick={submit}
                 variant="SurfaceVariant"

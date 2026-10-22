@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   Badge,
@@ -15,6 +16,7 @@ import {
 import classNames from 'classnames';
 import { BlurhashCanvas } from 'react-blurhash';
 import { EncryptedAttachmentInfo } from 'browser-encrypt-attachment';
+import { downloadMedia, needsMediaBlob } from '../../../utils/media';
 import {
   IThumbnailContent,
   IVideoInfo,
@@ -85,8 +87,8 @@ export const VideoContent = as<'div', VideoContentProps>(
             decryptFile(encBuf, mimeType, encInfo)
           );
         }
-        // Let the browser stream and seek unencrypted video using Range requests.
-        return mediaUrl;
+        // Use Range streaming when a service worker can authenticate requests.
+        return needsMediaBlob(mediaUrl) ? downloadMedia(mediaUrl) : mediaUrl;
       }, [mx, url, useAuthentication, mimeType, encInfo])
     );
 
@@ -185,7 +187,7 @@ export const VideoContent = as<'div', VideoContentProps>(
                     if (srcState.status === AsyncStatus.Idle) loadSrc().catch(() => undefined);
                   }}
                 >
-                  <Text size="B300">Spoiler</Text>
+                  <Text size="B300">{t('Spoiler')}</Text>
                 </Chip>
               )}
             </TooltipProvider>
@@ -220,7 +222,7 @@ export const VideoContent = as<'div', VideoContentProps>(
                   onClick={handleRetry}
                   before={<Icon size="Inherit" src={Icons.Warning} filled />}
                 >
-                  <Text size="B300">Retry</Text>
+                  <Text size="B300">{t('Retry')}</Text>
                 </Button>
               )}
             </TooltipProvider>

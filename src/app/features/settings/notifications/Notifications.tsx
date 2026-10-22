@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Text, IconButton, Icon, Icons, Scroll } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
@@ -20,11 +21,11 @@ export function Notifications({ requestClose }: NotificationsProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Notifications
+              {t('Notifications')}
             </Text>
           </Box>
           <Box shrink="No">
-            <IconButton onClick={requestClose} variant="Surface">
+            <IconButton aria-label="Закрыть" onClick={requestClose} variant="Surface">
               <Icon src={Icons.Cross} />
             </IconButton>
           </Box>
@@ -41,16 +42,14 @@ export function Notifications({ requestClose }: NotificationsProps) {
               <SpecialMessagesNotifications />
               <KeywordMessagesNotifications />
               <Box direction="Column" gap="100">
-                <Text size="L400">Block Messages</Text>
+                <Text size="L400">{t('Block Messages')}</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
                   direction="Column"
                   gap="400"
                 >
-                  <SettingTile
-                    description={'This option has been moved to "Account > Block Users" section.'}
-                  />
+                  <SettingTile description="Эта настройка перенесена в раздел «Аккаунт → Заблокированные пользователи»." />
                 </SequenceCard>
               </Box>
             </Box>

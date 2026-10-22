@@ -13,6 +13,7 @@ import {
   color,
   config,
 } from 'folds';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import { ImageOverlay } from '../ImageOverlay';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
@@ -106,7 +107,7 @@ function PreviewMedia({ src, poster, kind, title, autoLoad, loop }: PreviewMedia
         onClick={() => setViewer(true)}
         aria-label={title}
       >
-        <img
+        <AuthenticatedImage
           className={css.PreviewMedia}
           src={src}
           alt={title}
@@ -291,6 +292,7 @@ export const UrlPreviewHolder = as<'div'>(({ children, ...props }, ref) => {
             <>
               <div className={css.UrlPreviewHolderGradient({ position: 'Left' })} />
               <IconButton
+                aria-label="Назад"
                 className={css.UrlPreviewHolderBtn({ position: 'Left' })}
                 variant="Secondary"
                 radii="Pill"
@@ -309,6 +311,7 @@ export const UrlPreviewHolder = as<'div'>(({ children, ...props }, ref) => {
               <>
                 <div className={css.UrlPreviewHolderGradient({ position: 'Right' })} />
                 <IconButton
+                  aria-label="Вперёд"
                   className={css.UrlPreviewHolderBtn({ position: 'Right' })}
                   variant="Primary"
                   radii="Pill"

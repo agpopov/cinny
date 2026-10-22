@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useState } from 'react';
 import { Box, Button, config, Menu, Spinner, Text } from 'folds';
 import { AuthDict, IMyDevice, MatrixError } from 'matrix-js-sdk';
@@ -104,7 +105,7 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
   return devices.length > 0 ? (
     <>
       <Box direction="Column" gap="100">
-        <Text size="L400">Others</Text>
+        <Text size="L400">{t('Others')}</Text>
         {authMetadata && (
           <SequenceCard
             className={SequenceCardStyle}
@@ -113,8 +114,8 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
             gap="400"
           >
             <SettingTile
-              title="Device Dashboard"
-              description="Manage your devices on OIDC dashboard."
+              title={t('Device Dashboard')}
+              description={t('Manage your devices on OIDC dashboard.')}
               after={
                 <Button
                   size="300"
@@ -124,7 +125,7 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
                   outlined
                   onClick={handleDashboardOIDC}
                 >
-                  <Text size="B300">Open</Text>
+                  <Text size="B300">{t('Open')}</Text>
                 </Button>
               }
             />
@@ -198,7 +199,10 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
             <Box grow="Yes" direction="Column">
               {deleteError ? (
                 <Text size="T200">
-                  <b>Failed to logout devices! Please try again. {deleteError.message}</b>
+                  <b>
+                    {t('Failed to logout devices! Please try again.')}
+                    {deleteError.message}
+                  </b>
                 </Text>
               ) : (
                 <Text size="T200">
@@ -210,7 +214,9 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
                   authData={authData}
                   unsupported={() => (
                     <Text size="T200">
-                      Authentication steps to perform this action are not supported by client.
+                      {t(
+                        'Authentication steps to perform this action are not supported by client.'
+                      )}
                     </Text>
                   )}
                 >
@@ -234,7 +240,7 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
                 disabled={deleting}
                 onClick={handleCancelDelete}
               >
-                <Text size="B300">Cancel</Text>
+                <Text size="B300">{t('Cancel')}</Text>
               </Button>
               <Button
                 size="300"
@@ -244,7 +250,7 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
                 before={deleting && <Spinner variant="Critical" fill="Solid" size="100" />}
                 onClick={() => deleteDevices()}
               >
-                <Text size="B300">Logout</Text>
+                <Text size="B300">{t('Logout')}</Text>
               </Button>
             </Box>
           </Box>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { RefObject, useRef } from 'react';
 import { Badge, Box, color, Header, Scroll, Text, toRem } from 'folds';
 import { useCallEmbed, useCallJoined, useCallEmbedPlacementSync } from '../../hooks/useCallEmbed';
@@ -19,7 +20,7 @@ import { webRTCSupported } from '../../utils/rtc';
 function LivekitServerMissingMessage() {
   return (
     <Text style={{ margin: 'auto', color: color.Critical.Main }} size="L400" align="Center">
-      Your homeserver does not support calling.
+      {t('Your homeserver does not support calling.')}
     </Text>
   );
 }
@@ -27,7 +28,7 @@ function LivekitServerMissingMessage() {
 function WebRTCMissingError() {
   return (
     <Text style={{ margin: 'auto', color: color.Critical.Main }} size="L400" align="Center">
-      Your browser does not support WebRTC, which is required for calling.
+      {t('Your browser does not support WebRTC, which is required for calling.')}
     </Text>
   );
 }
@@ -53,7 +54,7 @@ function JoinMessage({
 
   return (
     <Text style={{ margin: 'auto' }} size="L400" align="Center">
-      Voice chat’s empty — Be the first to hop in!
+      {t('Voice chat’s empty — Be the first to hop in!')}
     </Text>
   );
 }
@@ -61,7 +62,7 @@ function JoinMessage({
 function NoPermissionMessage() {
   return (
     <Text style={{ margin: 'auto' }} size="L400" align="Center">
-      You don&#39;t have permission to join!
+      {t('You don&#39;t have permission to join!')}
     </Text>
   );
 }
@@ -69,7 +70,7 @@ function NoPermissionMessage() {
 function AlreadyInCallMessage() {
   return (
     <Text style={{ margin: 'auto', color: color.Warning.Main }} size="L400" align="Center">
-      Already in another call — End the current call to join!
+      {t('Already in another call — End the current call to join!')}
     </Text>
   );
 }
@@ -105,11 +106,12 @@ function CallPrescreen() {
           {hasParticipant && (
             <Header size="300">
               <Box grow="Yes" alignItems="Center">
-                <Text size="L400">Participant</Text>
+                <Text size="L400">{t('Participant')}</Text>
               </Box>
               <Badge variant="Critical" fill="Solid" size="400">
                 <Text as="span" size="L400" truncate>
-                  {callMembers.length} Live
+                  {callMembers.length}
+                  {t('Live')}
                 </Text>
               </Badge>
             </Header>

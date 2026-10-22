@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   Box,
@@ -66,12 +67,14 @@ function DeviceDetails({ device }: { device: IMyDevice }) {
     <>
       {typeof device.device_id === 'string' && (
         <Text className={BreakWord} size="T200" priority="300">
-          Device ID: <i>{device.device_id}</i>
+          {t('Device ID:')}
+          <i>{device.device_id}</i>
         </Text>
       )}
       {typeof device.last_seen_ip === 'string' && (
         <Text className={BreakWord} size="T200" priority="300">
-          IP Address: <i>{device.last_seen_ip}</i>
+          {t('IP Address:')}
+          <i>{device.last_seen_ip}</i>
         </Text>
       )}
     </>
@@ -97,7 +100,7 @@ export function DeviceKeyDetails({ crypto }: DeviceKeyDetailsProps) {
 
   return (
     <Text className={BreakWord} size="T200" priority="300">
-      Device Key:{' '}
+      {t('Device Key:')}{' '}
       <i>{keysState.status === AsyncStatus.Success ? keysState.data.ed25519 : 'loading...'}</i>
     </Text>
   );
@@ -145,7 +148,7 @@ function DeviceRename({ device, onCancel, onRename, refreshDeviceList }: DeviceR
 
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="100">
-      <Text size="L400">Device Name</Text>
+      <Text size="L400">{t('Device Name')}</Text>
       <Box gap="200">
         <Box grow="Yes" direction="Column">
           <Input
@@ -169,7 +172,7 @@ function DeviceRename({ device, onCancel, onRename, refreshDeviceList }: DeviceR
             disabled={renaming}
             before={renaming && <Spinner size="100" variant="Success" fill="Solid" />}
           >
-            <Text size="B300">Save</Text>
+            <Text size="B300">{t('Save')}</Text>
           </Button>
           <Button
             type="button"
@@ -180,7 +183,7 @@ function DeviceRename({ device, onCancel, onRename, refreshDeviceList }: DeviceR
             onClick={onCancel}
             disabled={renaming}
           >
-            <Text size="B300">Cancel</Text>
+            <Text size="B300">{t('Cancel')}</Text>
           </Button>
         </Box>
       </Box>
@@ -189,7 +192,7 @@ function DeviceRename({ device, onCancel, onRename, refreshDeviceList }: DeviceR
           {renameState.error.message}
         </Text>
       ) : (
-        <Text size="T200">Device names are visible to public.</Text>
+        <Text size="T200">{t('Device names are visible to public.')}</Text>
       )}
     </Box>
   );
@@ -203,7 +206,7 @@ export function DeviceLogoutBtn() {
   return (
     <>
       <Chip variant="Secondary" fill="Soft" radii="Pill" onClick={() => setPrompt(true)}>
-        <Text size="B300">Logout</Text>
+        <Text size="B300">{t('Logout')}</Text>
       </Chip>
       {prompt && (
         <Overlay open backdrop={<OverlayBackdrop />}>
@@ -244,7 +247,7 @@ export function DeviceDeleteBtn({
       onClick={() => onDeleteToggle(deviceId)}
       disabled={disabled}
     >
-      <Text size="B300">Undo</Text>
+      <Text size="B300">{t('Undo')}</Text>
     </Chip>
   ) : (
     <Chip
@@ -288,6 +291,7 @@ export function DeviceTile({
       <SettingTile
         before={
           <IconButton
+            aria-label="Раскрыть"
             variant={deleted ? 'Critical' : 'Secondary'}
             outlined={deleted}
             radii="300"
@@ -307,7 +311,7 @@ export function DeviceTile({
                   onClick={() => setEdit(true)}
                   disabled={disabled}
                 >
-                  <Text size="B300">Edit</Text>
+                  <Text size="B300">{t('Edit')}</Text>
                 </Chip>
               )}
             </Box>

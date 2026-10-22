@@ -10,6 +10,7 @@ export const checkIndexedDBSupport = async (): Promise<boolean> => {
       return;
     }
     db.onsuccess = () => {
+      db.result.close();
       resolve(true);
       indexedDB.deleteDatabase(dbName);
     };

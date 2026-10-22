@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/media-has-caption */
+import { t } from 'i18next';
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import FocusTrap from 'focus-trap-react';
@@ -40,6 +41,10 @@ import { CallEmbed } from '../plugins/call';
 import { useSelectedRoom } from '../hooks/router/useSelectedRoom';
 import { ScreenSize, useScreenSizeContext } from '../hooks/useScreenSize';
 import { useMatrixClient } from '../hooks/useMatrixClient';
+import { settingsAtom } from '../state/settings';
+import { notificationPolicy } from '../utils/notificationPolicy';
+import { useSharedClock } from '../hooks/useSharedClock';
+import { ownsNotifications, useNotificationOwner } from '../hooks/useNotificationOwner';
 import CallSound from '../../../public/sound/call.ogg';
 import { useCallMembersChange, useCallSession } from '../hooks/useCall';
 import { useRoomAvatar, useRoomName } from '../hooks/useRoomMeta';
@@ -81,7 +86,19 @@ function IncomingCall({ dm, info, onIgnore, onAnswer, onReject }: IncomingCallPr
   const canAnswer = livekitSupported && rtcSupported;
   const { room } = info;
 
+  useEffect(() => {
+    const timeout = window.setTimeout(
+      onIgnore,
+      Math.max(0, info.senderTs + info.lifetime - Date.now())
+    );
+    return () => window.clearTimeout(timeout);
+  }, [info, onIgnore]);
+
   const audioRef = useRef<HTMLAudioElement>(null);
+  const settings = useAtomValue(settingsAtom);
+  const now = useSharedClock();
+  const owner = useNotificationOwner(mx.getSafeUserId());
+  const policy = notificationPolicy(settings, 'call', true, new Date(now));
 
   const roomName = useRoomName(room);
   const roomAvatar = useRoomAvatar(room, dm);
@@ -102,16 +119,17 @@ function IncomingCall({ dm, info, onIgnore, onAnswer, onReject }: IncomingCallPr
     )
   );
 
-  const playSound = useCallback(() => {
-    const audioElement = audioRef.current;
-    audioElement?.play();
-  }, []);
-
   useEffect(() => {
-    if (info.notificationType === 'ring') {
-      playSound();
+    const audio = audioRef.current;
+    if (!audio) return undefined;
+    audio.volume = policy.volume;
+    if (info.notificationType === 'ring' && policy.sound && owner) {
+      audio.play().catch(() => undefined);
+    } else {
+      audio.pause();
     }
-  }, [playSound, info.notificationType]);
+    return () => audio.pause();
+  }, [info.notificationType, policy.sound, policy.volume, owner]);
 
   return (
     <>
@@ -153,7 +171,7 @@ function IncomingCall({ dm, info, onIgnore, onAnswer, onReject }: IncomingCallPr
                       {roomName}
                     </Text>
                     <Text size="T300" align="Center">
-                      Incoming Call
+                      {t('Incoming Call')}
                     </Text>
                   </Box>
                 </Box>
@@ -163,16 +181,16 @@ function IncomingCall({ dm, info, onIgnore, onAnswer, onReject }: IncomingCallPr
                     size="L400"
                     align="Center"
                   >
-                    Your homeserver does not support calling.
+                    {t('Your homeserver does not support calling.')}
                   </Text>
                 )}
-                {!webRTCSupported && (
+                {!rtcSupported && (
                   <Text
                     style={{ margin: 'auto', color: color.Critical.Main }}
                     size="L400"
                     align="Center"
                   >
-                    Your browser does not support WebRTC, which is required for calling.
+                    {t('Your browser does not support WebRTC, which is required for calling.')}
                   </Text>
                 )}
                 <Box direction="Column" gap="300">
@@ -192,7 +210,7 @@ function IncomingCall({ dm, info, onIgnore, onAnswer, onReject }: IncomingCallPr
                     disabled={!canAnswer}
                   >
                     <Text as="span" size="B400">
-                      Answer
+                      {t('Answer')}
                     </Text>
                   </Button>
                   <Button
@@ -230,6 +248,8 @@ function IncomingCallListener({ callEmbed, joined }: IncomingCallListenerProps) 
   const directs = useAtomValue(mDirectAtom);
   const { navigateRoom } = useRoomNavigate();
 
+  const settingsRef = useRef(useAtomValue(settingsAtom));
+  settingsRef.current = useAtomValue(settingsAtom);
   const [callInfo, setCallInfo] = useState<IncomingCallInfo>();
   const dm = callInfo ? directs.has(callInfo.room.roomId) : false;
   const startCall = useCallStart(dm);
@@ -298,6 +318,11 @@ function IncomingCallListener({ callEmbed, joined }: IncomingCallListenerProps) 
         refEventId,
       };
 
+      if (
+        !notificationPolicy(settingsRef.current, 'call', true).allowed ||
+        !ownsNotifications(mx.getSafeUserId())
+      )
+        return;
       setCallInfo(info);
     },
     [mx]

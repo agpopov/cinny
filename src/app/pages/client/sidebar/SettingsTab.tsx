@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { useAtom } from 'jotai';
 import { Text } from 'folds';
@@ -31,11 +32,11 @@ export function SettingsTab() {
 
   return (
     <SidebarItem active={settings}>
-      <SidebarItemTooltip tooltip="User Settings">
+      <SidebarItemTooltip tooltip={t('User Settings')}>
         {(triggerRef) => (
           <SidebarAvatar
             as="button"
-            aria-label="User Settings"
+            aria-label={t('User Settings')}
             ref={triggerRef}
             onClick={openSettings}
           >

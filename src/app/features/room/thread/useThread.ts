@@ -10,6 +10,7 @@ import {
   Thread,
   ThreadEvent,
 } from 'matrix-js-sdk';
+import { useSharedClock } from '../../../hooks/useSharedClock';
 import { isFollowedThread } from '../../../utils/room';
 import { isThreadUnread } from '../../../utils/notifications';
 import { getEventPreviewText, getSenderName } from '../../../utils/notificationContent';
@@ -118,25 +119,27 @@ export const getThreadLastReply = (room: Room, thread: Thread): ThreadLastReply 
 /** Подписка на список тредов комнаты (создание, новые ответы, удаление). */
 export const useRoomThreads = (room: Room): Thread[] => {
   const [version, setVersion] = useState(0);
+  const [readVersion, setReadVersion] = useState(0);
   useEffect(() => {
     const bump = () => setVersion((v) => v + 1);
+    const read = () => setReadVersion((v) => v + 1);
     room.on(ThreadEvent.New, bump);
     room.on(ThreadEvent.Update, bump);
     room.on(ThreadEvent.NewReply, bump);
     room.on(ThreadEvent.Delete, bump);
-    room.on(RoomEvent.UnreadNotifications, bump);
-    room.on(RoomEvent.Receipt, bump);
+    room.on(RoomEvent.UnreadNotifications, read);
+    room.on(RoomEvent.Receipt, read);
     return () => {
       room.removeListener(ThreadEvent.New, bump);
       room.removeListener(ThreadEvent.Update, bump);
       room.removeListener(ThreadEvent.NewReply, bump);
       room.removeListener(ThreadEvent.Delete, bump);
-      room.removeListener(RoomEvent.UnreadNotifications, bump);
-      room.removeListener(RoomEvent.Receipt, bump);
+      room.removeListener(RoomEvent.UnreadNotifications, read);
+      room.removeListener(RoomEvent.Receipt, read);
     };
   }, [room]);
 
-  return useMemo(
+  const sorted = useMemo(
     () =>
       room
         .getThreads()
@@ -145,6 +148,9 @@ export const useRoomThreads = (room: Room): Thread[] => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [room, version]
   );
+  // Receipts change badges, never ordering. Reuse the already sorted array.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => sorted.slice(), [sorted, readVersion]);
 };
 
 /** Сколько отслеживаемых тредов комнаты с непрочитанным (для значка в шапке). */
@@ -223,6 +229,11 @@ let activeLoads = 0;
 const runThreadLoads = () => {
   const room = activeLoads < THREAD_LOAD_CONCURRENCY ? loadQueue.shift() : undefined;
   if (!room) return;
+  if (room.client.getRoom(room.roomId) !== room || room.getMyMembership() !== 'join') {
+    requestedRooms.delete(room);
+    runThreadLoads();
+    return;
+  }
   activeLoads += 1;
   room
     .createThreadsTimelineSets()
@@ -247,27 +258,20 @@ export const requestRoomThreads = (mx: MatrixClient, room: Room) => {
   runThreadLoads();
 };
 
-const ACTIVE_THREADS_REFRESH = 5 * 60 * 1000;
-
 /** Недавно обновлённые треды комнаты для списка слева, новые сверху. */
 export const useActiveRoomThreads = (mx: MatrixClient, room: Room, enabled = true): Thread[] => {
   const threads = useRoomThreads(room);
-  const [now, setNow] = useState(() => Date.now());
+  const now = useSharedClock();
 
   useEffect(() => {
     if (enabled) requestRoomThreads(mx, room);
   }, [mx, room, enabled]);
 
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), ACTIVE_THREADS_REFRESH);
-    return () => clearInterval(timer);
-  }, []);
-
   return useMemo(
     () =>
-      (enabled ? threads : [])
-        .filter((thread) => !thread.rootEvent?.isRedacted() && isActiveThread(thread, now))
-        .sort((a, b) => getThreadLastActivity(b) - getThreadLastActivity(a)),
+      (enabled ? threads : []).filter(
+        (thread) => !thread.rootEvent?.isRedacted() && isActiveThread(thread, now)
+      ),
     [threads, now, enabled]
   );
 };

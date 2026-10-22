@@ -1,11 +1,13 @@
-import { ClientWidgetApi } from 'matrix-widget-api';
+import type { ClientWidgetApi } from 'matrix-widget-api';
 import EventEmitter from 'events';
 import { CallControlState } from './CallControlState';
-import { ElementMediaStateDetail, ElementMediaStatePayload, ElementWidgetActions } from './types';
+import {
+  type ElementMediaStateDetail,
+  type ElementMediaStatePayload,
+  ElementWidgetActions,
+} from './types';
 
-export enum CallControlEvent {
-  StateUpdate = 'state_update',
-}
+export const CallControlEvent = { StateUpdate: 'state_update' } as const;
 
 export class CallControl extends EventEmitter implements CallControlState {
   private state: CallControlState;
@@ -16,59 +18,18 @@ export class CallControl extends EventEmitter implements CallControlState {
 
   private bodyMutationObserver: MutationObserver;
 
-  private controlMutationObserver: MutationObserver;
-
   private mediaStatePromiseResolver: undefined | (() => void);
+
+  private mediaStatePromiseRejecter: undefined | ((reason: Error) => void);
+
+  private mediaTimer?: ReturnType<typeof setTimeout>;
+
+  private disposed = false;
+
+  public error?: string;
 
   private get document(): Document | undefined {
     return this.iframe.contentDocument ?? this.iframe.contentWindow?.document;
-  }
-
-  private get screenshareButton(): HTMLElement | undefined {
-    const screenshareBtn = this.document?.querySelector(
-      '[data-testid="incall_screenshare"]'
-    ) as HTMLElement | null;
-
-    return screenshareBtn ?? undefined;
-  }
-
-  private get leaveButton(): Element | undefined {
-    const leaveBtn = this.document?.querySelector('[data-testid="incall_leave"]');
-
-    return leaveBtn ?? undefined;
-  }
-
-  private get settingsButton(): HTMLElement | undefined {
-    const settingsButtonLeft = this.document?.querySelector(
-      '[data-testid="settings-bottom-left"]'
-    ) as HTMLButtonElement | undefined;
-    const settingsButtonCenter = this.document?.querySelector(
-      '[data-testid="settings-bottom-center"]'
-    ) as HTMLButtonElement | undefined;
-
-    return settingsButtonLeft ?? settingsButtonCenter ?? undefined;
-  }
-
-  private get reactionsButton(): HTMLElement | undefined {
-    const reactionsButton = this.leaveButton?.previousElementSibling as HTMLElement | null;
-
-    return reactionsButton ?? undefined;
-  }
-
-  private get spotlightButton(): HTMLInputElement | undefined {
-    const spotlightButton = this.document?.querySelector(
-      'input[value="spotlight"]'
-    ) as HTMLInputElement | null;
-
-    return spotlightButton ?? undefined;
-  }
-
-  private get gridButton(): HTMLInputElement | undefined {
-    const gridButton = this.document?.querySelector(
-      'input[value="grid"]'
-    ) as HTMLInputElement | null;
-
-    return gridButton ?? undefined;
   }
 
   constructor(state: CallControlState, call: ClientWidgetApi, iframe: HTMLIFrameElement) {
@@ -79,7 +40,6 @@ export class CallControl extends EventEmitter implements CallControlState {
     this.iframe = iframe;
 
     this.bodyMutationObserver = new MutationObserver(this.onBodyMutation.bind(this));
-    this.controlMutationObserver = new MutationObserver(this.onControlMutation.bind(this));
   }
 
   public getState(): CallControlState {
@@ -120,56 +80,66 @@ export class CallControl extends EventEmitter implements CallControlState {
 
     this.bodyMutationObserver.observe(this.document.body, {
       childList: true,
-      subtree: false, // only direct children of body
+      subtree: true, // New participants attach audio inside the React root.
     });
     this.onBodyMutation();
   }
-  
+
   private onBodyMutation() {
     if (!this.document) return;
 
     this.document.body.style.setProperty('background', 'none', 'important');
 
-    const controls = this.leaveButton?.parentElement?.parentElement;
-    if (controls) {
-      controls.style.setProperty('position', 'absolute');
-      controls.style.setProperty('visibility', 'hidden');
-    }
-
-    this.observeControls();
-  }
-
-  private observeControls() {
-    this.controlMutationObserver.disconnect();
-
-    const screenshareBtn = this.screenshareButton;
-    if (screenshareBtn) {
-      this.controlMutationObserver.observe(screenshareBtn, {
-        attributes: true,
-        attributeFilter: ['data-kind'],
-      });
-    }
-    const spotlightBtn = this.spotlightButton;
-    if (spotlightBtn) {
-      this.controlMutationObserver.observe(spotlightBtn, {
-        attributes: true,
-      });
-    }
-
-    this.onControlMutation();
+    this.applySound();
   }
 
   public applySound() {
     this.setSound(this.sound);
   }
 
-  private async setMediaState(state: ElementMediaStatePayload) {
-    const data = await this.call.transport.send(ElementWidgetActions.DeviceMute, state);
-    return new Promise<typeof data>(resolve => {
-      if (this.mediaStatePromiseResolver) {
-        this.mediaStatePromiseResolver();
-      }
-      this.mediaStatePromiseResolver = () => resolve(data);
+  private async setMediaState(state: ElementMediaStatePayload): Promise<void> {
+    if (this.disposed) throw new Error('Звонок завершён');
+    if (this.mediaStatePromiseResolver) throw new Error('Дождитесь переключения устройства');
+    // Subscribe before sending: a device event can precede the transport ACK.
+    return new Promise<void>((resolve, reject) => {
+      let completed = false;
+      const finish = (error?: Error) => {
+        if (completed) return;
+        completed = true;
+        clearTimeout(this.mediaTimer);
+        this.mediaStatePromiseResolver = undefined;
+        this.mediaStatePromiseRejecter = undefined;
+        this.error = error?.message;
+        this.emitStateUpdate();
+        if (error) reject(error);
+        else resolve();
+      };
+      this.mediaStatePromiseResolver = () => finish();
+      this.mediaStatePromiseRejecter = (error) => finish(error);
+      this.mediaTimer = setTimeout(
+        () =>
+          finish(
+            new Error(
+              'Устройство не ответило. Проверьте разрешения микрофона и камеры в настройках звонка и системы.'
+            )
+          ),
+        10000
+      );
+      this.call.transport
+        .send(ElementWidgetActions.DeviceMute, state)
+        .then((response) => {
+          // Element Call replies with media state even if no change event is
+          // emitted (for example, applying an already selected initial state).
+          const data = response as ElementMediaStatePayload;
+          if (
+            !completed &&
+            data &&
+            (typeof data.audio_enabled === 'boolean' || typeof data.video_enabled === 'boolean')
+          ) {
+            this.onMediaState({ detail: { data } } as CustomEvent<ElementMediaStateDetail>);
+          }
+        })
+        .catch((cause) => finish(cause instanceof Error ? cause : new Error(String(cause))));
     });
   }
 
@@ -208,20 +178,6 @@ export class CallControl extends EventEmitter implements CallControlState {
     }
   }
 
-  private onControlMutation() {
-    const screenshare: boolean = this.screenshareButton?.getAttribute('data-kind') === 'primary';
-    const spotlight: boolean = this.spotlightButton?.checked ?? false;
-
-    this.state = new CallControlState(
-      this.microphone,
-      this.video,
-      this.sound,
-      screenshare,
-      spotlight
-    );
-    this.emitStateUpdate();
-  }
-
   public toggleMicrophone() {
     const payload: ElementMediaStatePayload = {
       audio_enabled: !this.microphone,
@@ -254,33 +210,15 @@ export class CallControl extends EventEmitter implements CallControlState {
     this.emitStateUpdate();
 
     if (!this.sound && this.microphone) {
-      this.toggleMicrophone();
+      this.toggleMicrophone().catch(() => undefined);
     }
-  }
-
-  public toggleScreenshare() {
-    this.screenshareButton?.click();
-  }
-
-  public toggleSpotlight() {
-    if (this.spotlight) {
-      this.gridButton?.click();
-      return;
-    }
-    this.spotlightButton?.click();
-  }
-
-  public toggleReactions() {
-    this.reactionsButton?.click();
-  }
-
-  public toggleSettings() {
-    this.settingsButton?.click();
   }
 
   public dispose() {
+    this.disposed = true;
+    this.mediaStatePromiseRejecter?.(new Error('Звонок завершён'));
+    clearTimeout(this.mediaTimer);
     this.bodyMutationObserver.disconnect();
-    this.controlMutationObserver.disconnect();
   }
 
   private emitStateUpdate() {

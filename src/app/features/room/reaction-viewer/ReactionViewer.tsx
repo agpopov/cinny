@@ -100,7 +100,7 @@ export const ReactionViewer = as<'div', ReactionViewerProps>(
             <Box grow="Yes">
               <Text size="H3" truncate>{`Reacted with :${selectedShortcode}:`}</Text>
             </Box>
-            <IconButton size="300" onClick={requestClose}>
+            <IconButton aria-label="Закрыть" size="300" onClick={requestClose}>
               <Icon src={Icons.Cross} />
             </IconButton>
           </Header>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Avatar,
   Box,
@@ -73,6 +74,8 @@ import { useRoomPinnedEvents } from '../../../hooks/useRoomPinnedEvents';
 import { MemberPowerTag, StateEvent } from '../../../../types/matrix/room';
 import { PowerIcon } from '../../../components/power';
 import colorMXID from '../../../../util/colorMXID';
+import { useBackDismiss } from '../../../hooks/useBackDismiss';
+import { useLongPress } from '../../../hooks/useLongPress';
 import { getPowerTagIconSrc } from '../../../hooks/useMemberPowerTag';
 
 export type ReactionHandler = (keyOrMxc: string, shortcode: string) => void;
@@ -126,6 +129,14 @@ export const MessageAllReactionItem = as<
   }
 >(({ room, relations, onClose, ...props }, ref) => {
   const [open, setOpen] = useState(false);
+  useBackDismiss(
+    open,
+    () => {
+      setOpen(false);
+      onClose?.();
+    },
+    40
+  );
 
   const handleClose = () => {
     setOpen(false);
@@ -171,7 +182,7 @@ export const MessageAllReactionItem = as<
         aria-pressed={open}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          View Reactions
+          {t('View Reactions')}
         </Text>
       </MenuItem>
     </>
@@ -187,6 +198,14 @@ export const MessageReadReceiptItem = as<
   }
 >(({ room, eventId, onClose, ...props }, ref) => {
   const [open, setOpen] = useState(false);
+  useBackDismiss(
+    open,
+    () => {
+      setOpen(false);
+      onClose?.();
+    },
+    40
+  );
 
   const handleClose = () => {
     setOpen(false);
@@ -221,7 +240,7 @@ export const MessageReadReceiptItem = as<
         aria-pressed={open}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          Read Receipts
+          {t('Read Receipts')}
         </Text>
       </MenuItem>
     </>
@@ -237,6 +256,14 @@ export const MessageSourceCodeItem = as<
   }
 >(({ room, mEvent, onClose, ...props }, ref) => {
   const [open, setOpen] = useState(false);
+  useBackDismiss(
+    open,
+    () => {
+      setOpen(false);
+      onClose?.();
+    },
+    40
+  );
 
   const getContent = (evt: MatrixEvent) =>
     evt.isEncrypted()
@@ -304,7 +331,7 @@ export const MessageSourceCodeItem = as<
         aria-pressed={open}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          View Source
+          {t('View Source')}
         </Text>
       </MenuItem>
     </>
@@ -336,7 +363,7 @@ export const MessageCopyLinkItem = as<
       ref={ref}
     >
       <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-        Copy Link
+        {t('Copy Link')}
       </Text>
     </MenuItem>
   );
@@ -392,6 +419,14 @@ export const MessageDeleteItem = as<
 >(({ room, mEvent, onClose, ...props }, ref) => {
   const mx = useMatrixClient();
   const [open, setOpen] = useState(false);
+  useBackDismiss(
+    open,
+    () => {
+      setOpen(false);
+      onClose?.();
+    },
+    40
+  );
 
   const [deleteState, deleteMessage] = useAsyncCallback(
     useCallback(
@@ -443,9 +478,9 @@ export const MessageDeleteItem = as<
                 size="500"
               >
                 <Box grow="Yes">
-                  <Text size="H4">Delete Message</Text>
+                  <Text size="H4">{t('Delete Message')}</Text>
                 </Box>
-                <IconButton size="300" onClick={handleClose} radii="300">
+                <IconButton aria-label="Закрыть" size="300" onClick={handleClose} radii="300">
                   <Icon src={Icons.Cross} />
                 </IconButton>
               </Header>
@@ -457,19 +492,21 @@ export const MessageDeleteItem = as<
                 gap="400"
               >
                 <Text priority="400">
-                  This action is irreversible! Are you sure that you want to delete this message?
+                  {t(
+                    'This action is irreversible! Are you sure that you want to delete this message?'
+                  )}
                 </Text>
                 <Box direction="Column" gap="100">
                   <Text size="L400">
-                    Reason{' '}
+                    {t('Reason')}{' '}
                     <Text as="span" size="T200">
-                      (optional)
+                      {t('(optional)')}
                     </Text>
                   </Text>
                   <Input name="reasonInput" variant="Background" />
                   {deleteState.status === AsyncStatus.Error && (
                     <Text style={{ color: color.Critical.Main }} size="T300">
-                      Failed to delete message! Please try again.
+                      {t('Failed to delete message! Please try again.')}
                     </Text>
                   )}
                 </Box>
@@ -484,7 +521,7 @@ export const MessageDeleteItem = as<
                   aria-disabled={deleteState.status === AsyncStatus.Loading}
                 >
                   <Text size="B400">
-                    {deleteState.status === AsyncStatus.Loading ? 'Deleting...' : 'Delete'}
+                    {deleteState.status === AsyncStatus.Loading ? 'Deleting...' : t('Delete')}
                   </Text>
                 </Button>
               </Box>
@@ -504,7 +541,7 @@ export const MessageDeleteItem = as<
         ref={ref}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          Delete
+          {t('Delete')}
         </Text>
       </Button>
     </>
@@ -521,6 +558,14 @@ export const MessageReportItem = as<
 >(({ room, mEvent, onClose, ...props }, ref) => {
   const mx = useMatrixClient();
   const [open, setOpen] = useState(false);
+  useBackDismiss(
+    open,
+    () => {
+      setOpen(false);
+      onClose?.();
+    },
+    40
+  );
 
   const [reportState, reportMessage] = useAsyncCallback(
     useCallback(
@@ -573,9 +618,9 @@ export const MessageReportItem = as<
                 size="500"
               >
                 <Box grow="Yes">
-                  <Text size="H4">Report Message</Text>
+                  <Text size="H4">{t('Report Message')}</Text>
                 </Box>
-                <IconButton size="300" onClick={handleClose} radii="300">
+                <IconButton aria-label="Закрыть" size="300" onClick={handleClose} radii="300">
                   <Icon src={Icons.Cross} />
                 </IconButton>
               </Header>
@@ -587,20 +632,21 @@ export const MessageReportItem = as<
                 gap="400"
               >
                 <Text priority="400">
-                  Report this message to server, which may then notify the appropriate people to
-                  take action.
+                  {t(
+                    'Report this message to server, which may then notify the appropriate people to take action.'
+                  )}
                 </Text>
                 <Box direction="Column" gap="100">
-                  <Text size="L400">Reason</Text>
+                  <Text size="L400">{t('Reason')}</Text>
                   <Input name="reasonInput" variant="Background" required />
                   {reportState.status === AsyncStatus.Error && (
                     <Text style={{ color: color.Critical.Main }} size="T300">
-                      Failed to report message! Please try again.
+                      {t('Failed to report message! Please try again.')}
                     </Text>
                   )}
                   {reportState.status === AsyncStatus.Success && (
                     <Text style={{ color: color.Success.Main }} size="T300">
-                      Message has been reported to server.
+                      {t('Message has been reported to server.')}
                     </Text>
                   )}
                 </Box>
@@ -618,7 +664,7 @@ export const MessageReportItem = as<
                   }
                 >
                   <Text size="B400">
-                    {reportState.status === AsyncStatus.Loading ? 'Reporting...' : 'Report'}
+                    {reportState.status === AsyncStatus.Loading ? 'Reporting...' : t('Report')}
                   </Text>
                 </Button>
               </Box>
@@ -638,7 +684,7 @@ export const MessageReportItem = as<
         ref={ref}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          Report
+          {t('Report')}
         </Text>
       </Button>
     </>
@@ -719,7 +765,13 @@ export const Message = as<'div', MessageProps>(
     const { hoverProps } = useHover({ onHoverChange: setHover });
     const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
+    useBackDismiss(!!menuAnchor, () => setMenuAnchor(undefined), 30);
     const [emojiBoardAnchor, setEmojiBoardAnchor] = useState<RectCords>();
+    useBackDismiss(!!emojiBoardAnchor, () => setEmojiBoardAnchor(undefined), 35);
+    const longPressProps = useLongPress(
+      (x, y) => setMenuAnchor({ x, y, width: 0, height: 0 }),
+      edit
+    );
 
     const senderDisplayName =
       getMemberDisplayName(room, senderId) ?? getMxIdLocalPart(senderId) ?? senderId;
@@ -740,6 +792,7 @@ export const Message = as<'div', MessageProps>(
         direction={messageLayout === MessageLayout.Compact ? 'RowReverse' : 'Row'}
         justifyContent="SpaceBetween"
         alignItems="Baseline"
+        wrap="Wrap"
         grow="Yes"
       >
         <Box alignItems="Center" gap="200">
@@ -747,6 +800,7 @@ export const Message = as<'div', MessageProps>(
             as="button"
             style={{ color: usernameColor }}
             data-user-id={senderId}
+            title={senderId}
             onContextMenu={onUserClick}
             onClick={onUsernameClick}
           >
@@ -761,16 +815,6 @@ export const Message = as<'div', MessageProps>(
           {tagIconSrc && <PowerIcon size="100" iconSrc={tagIconSrc} />}
         </Box>
         <Box shrink="No" gap="100">
-          {messageLayout === MessageLayout.Modern && hover && (
-            <>
-              <Text as="span" size="T200" priority="300">
-                {senderId}
-              </Text>
-              <Text as="span" size="T200" priority="300">
-                |
-              </Text>
-            </>
-          )}
           <Time
             ts={mEvent.getTs()}
             compact={messageLayout === MessageLayout.Compact}
@@ -830,8 +874,7 @@ export const Message = as<'div', MessageProps>(
 
     const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
       if (evt.altKey || !window.getSelection()?.isCollapsed || edit) return;
-      const tag = (evt.target as any).tagName;
-      if (typeof tag === 'string' && tag.toLowerCase() === 'a') return;
+      if ((evt.target as Element).closest('a, button, input, textarea, [contenteditable]')) return;
       evt.preventDefault();
       setMenuAnchor({
         x: evt.clientX,
@@ -880,10 +923,17 @@ export const Message = as<'div', MessageProps>(
         {...props}
         {...hoverProps}
         {...focusWithinProps}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+            event.preventDefault();
+            setMenuAnchor(event.currentTarget.getBoundingClientRect());
+          }
+        }}
         ref={ref}
       >
-        {!edit && (hover || !!menuAnchor || !!emojiBoardAnchor) && (
-          <div className={css.MessageOptionsBase}>
+        {!edit && (
+          <div className={css.MessageOptionsBase} data-visible={hover || !!menuAnchor}>
             <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
               <Box gap="100">
                 {canSendReaction && (
@@ -912,6 +962,7 @@ export const Message = as<'div', MessageProps>(
                     }
                   >
                     <IconButton
+                      aria-label="Добавить реакцию"
                       onClick={handleOpenEmojiBoard}
                       variant="SurfaceVariant"
                       size="300"
@@ -923,6 +974,7 @@ export const Message = as<'div', MessageProps>(
                   </PopOut>
                 )}
                 <IconButton
+                  aria-label="Ответить"
                   onClick={onReplyClick}
                   data-event-id={mEvent.getId()}
                   variant="SurfaceVariant"
@@ -933,6 +985,7 @@ export const Message = as<'div', MessageProps>(
                 </IconButton>
                 {!isThreadedMessage && (
                   <IconButton
+                    aria-label="Ответить в треде"
                     onClick={(ev) => onReplyClick(ev, true)}
                     data-event-id={mEvent.getId()}
                     variant="SurfaceVariant"
@@ -944,7 +997,7 @@ export const Message = as<'div', MessageProps>(
                 )}
                 {canEditEvent(mx, mEvent) && onEditId && (
                   <IconButton
-                    aria-label="Edit Message"
+                    aria-label={t('Edit Message')}
                     onClick={() => onEditId(mEvent.getId())}
                     variant="SurfaceVariant"
                     size="300"
@@ -992,7 +1045,7 @@ export const Message = as<'div', MessageProps>(
                                 size="T300"
                                 truncate
                               >
-                                Add Reaction
+                                {t('Add Reaction')}
                               </Text>
                             </MenuItem>
                           )}
@@ -1019,7 +1072,7 @@ export const Message = as<'div', MessageProps>(
                               size="T300"
                               truncate
                             >
-                              Reply
+                              {t('Reply')}
                             </Text>
                           </MenuItem>
                           {!isThreadedMessage && (
@@ -1039,7 +1092,7 @@ export const Message = as<'div', MessageProps>(
                                 size="T300"
                                 truncate
                               >
-                                Reply in Thread
+                                {t('Reply in Thread')}
                               </Text>
                             </MenuItem>
                           )}
@@ -1060,7 +1113,7 @@ export const Message = as<'div', MessageProps>(
                                 size="T300"
                                 truncate
                               >
-                                Edit Message
+                                {t('Edit Message')}
                               </Text>
                             </MenuItem>
                           )}
@@ -1078,6 +1131,18 @@ export const Message = as<'div', MessageProps>(
                               onClose={closeMenu}
                             />
                           )}
+                          <MenuItem
+                            size="300"
+                            radii="300"
+                            onClick={() => {
+                              copyToClipboard(mEvent.getContent().body ?? '');
+                              closeMenu();
+                            }}
+                          >
+                            <Text as="span" size="T300">
+                              Скопировать текст
+                            </Text>
+                          </MenuItem>
                           <MessageCopyLinkItem room={room} mEvent={mEvent} onClose={closeMenu} />
                           {canPinEvent && (
                             <MessagePinItem room={room} mEvent={mEvent} onClose={closeMenu} />
@@ -1113,6 +1178,10 @@ export const Message = as<'div', MessageProps>(
                     variant="SurfaceVariant"
                     size="300"
                     radii="300"
+                    aria-label="Действия сообщения"
+                    aria-haspopup="menu"
+                    aria-expanded={!!menuAnchor}
+                    data-message-actions
                     onClick={handleOpenMenu}
                     aria-pressed={!!menuAnchor}
                   >
@@ -1124,17 +1193,22 @@ export const Message = as<'div', MessageProps>(
           </div>
         )}
         {messageLayout === MessageLayout.Compact && (
-          <CompactLayout before={headerJSX} onContextMenu={handleContextMenu}>
+          <CompactLayout before={headerJSX} onContextMenu={handleContextMenu} {...longPressProps}>
             {msgContentJSX}
           </CompactLayout>
         )}
         {messageLayout === MessageLayout.Bubble && (
-          <BubbleLayout before={avatarJSX} header={headerJSX} onContextMenu={handleContextMenu}>
+          <BubbleLayout
+            before={avatarJSX}
+            header={headerJSX}
+            onContextMenu={handleContextMenu}
+            {...longPressProps}
+          >
             {msgContentJSX}
           </BubbleLayout>
         )}
         {messageLayout !== MessageLayout.Compact && messageLayout !== MessageLayout.Bubble && (
-          <ModernLayout before={avatarJSX} onContextMenu={handleContextMenu}>
+          <ModernLayout before={avatarJSX} onContextMenu={handleContextMenu} {...longPressProps}>
             {headerJSX}
             {msgContentJSX}
           </ModernLayout>
@@ -1174,12 +1248,12 @@ export const Event = as<'div', EventProps>(
     const { hoverProps } = useHover({ onHoverChange: setHover });
     const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
+    useBackDismiss(!!menuAnchor, () => setMenuAnchor(undefined), 30);
     const stateEvent = typeof mEvent.getStateKey() === 'string';
 
     const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
       if (evt.altKey || !window.getSelection()?.isCollapsed) return;
-      const tag = (evt.target as any).tagName;
-      if (typeof tag === 'string' && tag.toLowerCase() === 'a') return;
+      if ((evt.target as Element).closest('a, button, input, textarea, [contenteditable]')) return;
       evt.preventDefault();
       setMenuAnchor({
         x: evt.clientX,
@@ -1209,86 +1283,83 @@ export const Event = as<'div', EventProps>(
         {...props}
         {...hoverProps}
         {...focusWithinProps}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+            event.preventDefault();
+            setMenuAnchor(event.currentTarget.getBoundingClientRect());
+          }
+        }}
         ref={ref}
       >
-        {(hover || !!menuAnchor) && (
-          <div className={css.MessageOptionsBase}>
-            <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
-              <Box gap="100">
-                <PopOut
-                  anchor={menuAnchor}
-                  position="Bottom"
-                  align={menuAnchor?.width === 0 ? 'Start' : 'End'}
-                  offset={menuAnchor?.width === 0 ? 0 : undefined}
-                  content={
-                    <FocusTrap
-                      focusTrapOptions={{
-                        initialFocus: false,
-                        onDeactivate: () => setMenuAnchor(undefined),
-                        clickOutsideDeactivates: true,
-                        isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
-                        isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
-                        escapeDeactivates: stopPropagation,
-                      }}
-                    >
-                      <Menu {...props} ref={ref}>
-                        <Box direction="Column" gap="100" className={css.MessageMenuGroup}>
-                          {!hideReadReceipts && (
-                            <MessageReadReceiptItem
-                              room={room}
-                              eventId={mEvent.getId() ?? ''}
-                              onClose={closeMenu}
-                            />
-                          )}
-                          {showDeveloperTools && (
-                            <MessageSourceCodeItem
-                              room={room}
-                              mEvent={mEvent}
-                              onClose={closeMenu}
-                            />
-                          )}
-                          <MessageCopyLinkItem room={room} mEvent={mEvent} onClose={closeMenu} />
-                        </Box>
-                        {((!mEvent.isRedacted() && canDelete && !stateEvent) ||
-                          (mEvent.getSender() !== mx.getUserId() && !stateEvent)) && (
-                          <>
-                            <Line size="300" />
-                            <Box direction="Column" gap="100" className={css.MessageMenuGroup}>
-                              {!mEvent.isRedacted() && canDelete && (
-                                <MessageDeleteItem
-                                  room={room}
-                                  mEvent={mEvent}
-                                  onClose={closeMenu}
-                                />
-                              )}
-                              {mEvent.getSender() !== mx.getUserId() && (
-                                <MessageReportItem
-                                  room={room}
-                                  mEvent={mEvent}
-                                  onClose={closeMenu}
-                                />
-                              )}
-                            </Box>
-                          </>
-                        )}
-                      </Menu>
-                    </FocusTrap>
-                  }
-                >
-                  <IconButton
-                    variant="SurfaceVariant"
-                    size="300"
-                    radii="300"
-                    onClick={handleOpenMenu}
-                    aria-pressed={!!menuAnchor}
+        <div className={css.MessageOptionsBase} data-visible={hover || !!menuAnchor}>
+          <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
+            <Box gap="100">
+              <PopOut
+                anchor={menuAnchor}
+                position="Bottom"
+                align={menuAnchor?.width === 0 ? 'Start' : 'End'}
+                offset={menuAnchor?.width === 0 ? 0 : undefined}
+                content={
+                  <FocusTrap
+                    focusTrapOptions={{
+                      initialFocus: false,
+                      onDeactivate: () => setMenuAnchor(undefined),
+                      clickOutsideDeactivates: true,
+                      isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
+                      isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
+                      escapeDeactivates: stopPropagation,
+                    }}
                   >
-                    <Icon src={Icons.VerticalDots} size="100" />
-                  </IconButton>
-                </PopOut>
-              </Box>
-            </Menu>
-          </div>
-        )}
+                    <Menu {...props} ref={ref}>
+                      <Box direction="Column" gap="100" className={css.MessageMenuGroup}>
+                        {!hideReadReceipts && (
+                          <MessageReadReceiptItem
+                            room={room}
+                            eventId={mEvent.getId() ?? ''}
+                            onClose={closeMenu}
+                          />
+                        )}
+                        {showDeveloperTools && (
+                          <MessageSourceCodeItem room={room} mEvent={mEvent} onClose={closeMenu} />
+                        )}
+                        <MessageCopyLinkItem room={room} mEvent={mEvent} onClose={closeMenu} />
+                      </Box>
+                      {((!mEvent.isRedacted() && canDelete && !stateEvent) ||
+                        (mEvent.getSender() !== mx.getUserId() && !stateEvent)) && (
+                        <>
+                          <Line size="300" />
+                          <Box direction="Column" gap="100" className={css.MessageMenuGroup}>
+                            {!mEvent.isRedacted() && canDelete && (
+                              <MessageDeleteItem room={room} mEvent={mEvent} onClose={closeMenu} />
+                            )}
+                            {mEvent.getSender() !== mx.getUserId() && (
+                              <MessageReportItem room={room} mEvent={mEvent} onClose={closeMenu} />
+                            )}
+                          </Box>
+                        </>
+                      )}
+                    </Menu>
+                  </FocusTrap>
+                }
+              >
+                <IconButton
+                  variant="SurfaceVariant"
+                  size="300"
+                  radii="300"
+                  aria-label="Действия сообщения"
+                  aria-haspopup="menu"
+                  aria-expanded={!!menuAnchor}
+                  data-message-actions
+                  onClick={handleOpenMenu}
+                  aria-pressed={!!menuAnchor}
+                >
+                  <Icon src={Icons.VerticalDots} size="100" />
+                </IconButton>
+              </PopOut>
+            </Box>
+          </Menu>
+        </div>
         <div onContextMenu={handleContextMenu}>{children}</div>
       </MessageBase>
     );

@@ -47,10 +47,10 @@ export const useThemes = (): Theme[] => {
 export const useThemeNames = (): Record<string, string> =>
   useMemo(
     () => ({
-      [LightTheme.id]: 'Light',
-      [SilverTheme.id]: 'Silver',
-      [DarkTheme.id]: 'Dark',
-      [ButterTheme.id]: 'Butter',
+      [LightTheme.id]: 'Светлая',
+      [SilverTheme.id]: 'Серебристая',
+      [DarkTheme.id]: 'Тёмная',
+      [ButterTheme.id]: 'Тёплая',
     }),
     []
   );

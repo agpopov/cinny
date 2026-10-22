@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Box,
   Button,
@@ -259,7 +260,7 @@ export function PasswordRegisterForm({
       <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
         <Box direction="Column" gap="100">
           <Text as="label" size="L400" priority="300">
-            Username
+            {t('Username')}
           </Text>
           <Input
             variant="Background"
@@ -284,7 +285,7 @@ export function PasswordRegisterForm({
             <>
               <Box direction="Column" gap="100">
                 <Text as="label" size="L400" priority="300">
-                  Password
+                  {t('Password')}
                 </Text>
                 <PasswordInput
                   ref={passRef}
@@ -314,7 +315,7 @@ export function PasswordRegisterForm({
               </Box>
               <Box direction="Column" gap="100">
                 <Text as="label" size="L400" priority="300">
-                  Confirm Password
+                  {t('Confirm Password')}
                 </Text>
                 <PasswordInput
                   ref={confPassRef}
@@ -350,7 +351,7 @@ export function PasswordRegisterForm({
         {hasStageInFlows(uiaFlows, AuthType.Email) && (
           <Box direction="Column" gap="100">
             <Text as="label" size="L400" priority="300">
-              {requiredStageInFlows(uiaFlows, AuthType.Email) ? 'Email' : 'Email (Optional)'}
+              {requiredStageInFlows(uiaFlows, AuthType.Email) ? t('Email') : 'Email (Optional)'}
             </Text>
             <Input
               variant="Background"
@@ -368,9 +369,9 @@ export function PasswordRegisterForm({
           <Box alignItems="Center" gap="200">
             <Checkbox name="termsInput" size="300" variant="Primary" required />
             <Text size="T300">
-              I accept server{' '}
+              {t('I accept server')}{' '}
               <a href={termUrl} target="_blank" rel="noreferrer">
-                Terms and Conditions
+                {t('Terms and Conditions')}
               </a>
               .
             </Text>
@@ -391,7 +392,7 @@ export function PasswordRegisterForm({
         <span data-spacing-node />
         <Button variant="Primary" size="500" type="submit">
           <Text as="span" size="B500">
-            Register
+            {t('Register')}
           </Text>
         </Button>
       </Box>

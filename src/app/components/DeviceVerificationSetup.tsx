@@ -301,7 +301,7 @@ export const DeviceVerificationSetup = forwardRef<HTMLDivElement, DeviceVerifica
           <Box grow="Yes">
             <Text size="H4">Setup Device Verification</Text>
           </Box>
-          <IconButton size="300" radii="300" onClick={onCancel}>
+          <IconButton aria-label="Закрыть" size="300" radii="300" onClick={onCancel}>
             <Icon src={Icons.Cross} />
           </IconButton>
         </Header>
@@ -336,7 +336,7 @@ export const DeviceVerificationReset = forwardRef<HTMLDivElement, DeviceVerifica
           <Box grow="Yes">
             <Text size="H4">Reset Device Verification</Text>
           </Box>
-          <IconButton size="300" radii="300" onClick={onCancel}>
+          <IconButton aria-label="Закрыть" size="300" radii="300" onClick={onCancel}>
             <Icon src={Icons.Cross} />
           </IconButton>
         </Header>

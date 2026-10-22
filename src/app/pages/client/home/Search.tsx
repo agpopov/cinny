@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useRef } from 'react';
 import { Box, Icon, Icons, Text, Scroll, IconButton } from 'folds';
 import { Page, PageContent, PageContentCenter, PageHeader } from '../../../components/page';
@@ -19,7 +20,7 @@ export function HomeSearch() {
             {screenSize === ScreenSize.Mobile && (
               <BackRouteHandler>
                 {(onBack) => (
-                  <IconButton onClick={onBack}>
+                  <IconButton aria-label="Назад" onClick={onBack}>
                     <Icon src={Icons.ArrowLeft} />
                   </IconButton>
                 )}
@@ -29,7 +30,7 @@ export function HomeSearch() {
           <Box justifyContent="Center" alignItems="Center" gap="200">
             {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Search} />}
             <Text size="H3" truncate>
-              Message Search
+              {t('Message Search')}
             </Text>
           </Box>
           <Box grow="Yes" basis="No" />

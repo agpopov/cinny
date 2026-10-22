@@ -14,7 +14,7 @@ type MicrophoneButtonProps = {
 function MicrophoneButton({ enabled, onToggle, disabled }: MicrophoneButtonProps) {
   const [micState, toggleMic] = useAsyncCallback(onToggle);
   const loading = micState.status === AsyncStatus.Loading;
-  
+
   return (
     <TooltipProvider
       position="Top"
@@ -33,6 +33,7 @@ function MicrophoneButton({ enabled, onToggle, disabled }: MicrophoneButtonProps
           size="300"
           onClick={toggleMic}
           outlined
+          aria-label={enabled ? 'Выключить устройство' : 'Включить устройство'}
           disabled={disabled || loading}
         >
           <Icon size="100" src={enabled ? Icons.Mic : Icons.MicMute} filled={!enabled} />
@@ -106,6 +107,7 @@ function VideoButton({ enabled, onToggle, disabled }: VideoButtonProps) {
           size="300"
           onClick={toggleVideo}
           outlined
+          aria-label={enabled ? 'Выключить устройство' : 'Включить устройство'}
           disabled={disabled || loading}
         >
           <Icon
@@ -113,39 +115,6 @@ function VideoButton({ enabled, onToggle, disabled }: VideoButtonProps) {
             src={enabled ? Icons.VideoCamera : Icons.VideoCameraMute}
             filled={enabled}
           />
-        </IconButton>
-      )}
-    </TooltipProvider>
-  );
-}
-
-type ScreenShareButtonProps = {
-  enabled: boolean;
-  onToggle: () => void;
-  disabled?: boolean;
-};
-function ScreenShareButton({ enabled, onToggle, disabled }: ScreenShareButtonProps) {
-  return (
-    <TooltipProvider
-      position="Top"
-      tooltip={
-        <Tooltip>
-          <Text size="T200">{enabled ? 'Stop Screenshare' : 'Start Screenshare'}</Text>
-        </Tooltip>
-      }
-    >
-      {(anchorRef) => (
-        <IconButton
-          ref={anchorRef}
-          variant={enabled ? 'Success' : 'Surface'}
-          fill="Soft"
-          radii="300"
-          size="300"
-          onClick={onToggle}
-          outlined
-          disabled={disabled}
-        >
-          <Icon size="100" src={Icons.ScreenShare} filled={enabled} />
         </IconButton>
       )}
     </TooltipProvider>
@@ -161,10 +130,13 @@ export function CallControl({
   compact: boolean;
   callJoined: boolean;
 }) {
-  const { microphone, video, sound, screenshare } = useCallControlState(callEmbed.control);
+  const { microphone, video, sound } = useCallControlState(callEmbed.control);
   const setCallEmbed = useSetAtom(callEmbedAtom);
 
-  const handleMicrophoneToggle = useCallback(() => callEmbed.control.toggleMicrophone(), [callEmbed]);
+  const handleMicrophoneToggle = useCallback(
+    () => callEmbed.control.toggleMicrophone(),
+    [callEmbed]
+  );
   const handleVideoToggle = useCallback(() => callEmbed.control.toggleVideo(), [callEmbed]);
 
   const [hangupState, hangup] = useAsyncCallback(
@@ -195,19 +167,13 @@ export function CallControl({
           disabled={!callJoined}
         />
         {!compact && <StatusDivider />}
-        <VideoButton
-          enabled={video}
-          onToggle={handleVideoToggle}
-          disabled={!callJoined}
-        />
-        {!compact && (
-          <ScreenShareButton
-            enabled={screenshare}
-            onToggle={() => callEmbed.control.toggleScreenshare()}
-            disabled={!callJoined}
-          />
-        )}
+        <VideoButton enabled={video} onToggle={handleVideoToggle} disabled={!callJoined} />
       </Box>
+      {callEmbed.control.error && (
+        <Text role="alert" size="T200">
+          {callEmbed.control.error}
+        </Text>
+      )}
       <StatusDivider />
       <Chip
         variant="Critical"

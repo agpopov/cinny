@@ -1,5 +1,7 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage, Box, Button, Icon, Icons, Text } from 'folds';
+import { AuthenticatedImage } from '../../../components/media/AuthenticatedImage';
 import { useUserImagePack } from '../../../hooks/useImagePacks';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
@@ -31,7 +33,7 @@ export function UserPack({ onViewPack }: UserPackProps) {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Default Pack</Text>
+      <Text size="L400">{t('Default Pack')}</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -44,7 +46,11 @@ export function UserPack({ onViewPack }: UserPackProps) {
           before={
             <Avatar size="300" radii="300">
               {avatarUrl ? (
-                <AvatarImage style={{ objectFit: 'contain' }} src={avatarUrl} />
+                <AvatarImage
+                  as={AuthenticatedImage}
+                  style={{ objectFit: 'contain' }}
+                  src={avatarUrl}
+                />
               ) : (
                 <AvatarFallback>
                   <Icon size="400" src={Icons.Sticker} filled />
@@ -61,7 +67,7 @@ export function UserPack({ onViewPack }: UserPackProps) {
               outlined
               onClick={handleView}
             >
-              <Text size="B300">View</Text>
+              <Text size="B300">{t('View')}</Text>
             </Button>
           }
         />

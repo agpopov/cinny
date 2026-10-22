@@ -1,4 +1,5 @@
 import { ReactNode, useCallback, useEffect } from 'react';
+import { downloadMedia, needsMediaBlob } from '../../../utils/media';
 import { IThumbnailContent } from '../../../../types/matrix/common';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
@@ -33,7 +34,7 @@ export function ThumbnailContent({ info, renderImage }: ThumbnailContentProps) {
         return fileContent;
       }
 
-      return mediaUrl;
+      return needsMediaBlob(mediaUrl) ? downloadMedia(mediaUrl) : mediaUrl;
     }, [mx, info, useAuthentication])
   );
 

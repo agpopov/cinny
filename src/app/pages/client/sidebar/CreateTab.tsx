@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useState } from 'react';
 import { Box, config, Icon, Icons, Menu, PopOut, RectCords, Text } from 'folds';
 import FocusTrap from 'focus-trap-react';
@@ -73,7 +74,7 @@ export function CreateTab() {
                       onClick={handleCreateSpace}
                     >
                       <SettingTile before={<Icon size="400" src={Icons.Space} />}>
-                        <Text size="H6">Create Space</Text>
+                        <Text size="H6">{t('Create Space')}</Text>
                         <Text size="T300" priority="300">
                           Build a space for your community.
                         </Text>

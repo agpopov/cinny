@@ -1,10 +1,11 @@
-import { Descendant, Editor, Text } from 'slate';
-import { MatrixClient } from 'matrix-js-sdk';
+import { type Descendant, Editor, Text } from 'slate';
+import type { MatrixClient } from 'matrix-js-sdk';
 import { htmlToEditorInput } from './input';
 import { mentionsOutsideMarkdownCode } from './markdownCode';
 import { sanitizeText } from '../../utils/sanitize';
 import { BlockType } from './types';
-import { CustomElement } from './slate';
+import type { CustomElement } from './slate';
+import { linkToHtml, linkToPlainText } from './links';
 import {
   parseBlockMD,
   parseInlineMD,
@@ -13,10 +14,10 @@ import {
 } from '../../plugins/markdown';
 import { findAndReplace } from '../../utils/findAndReplace';
 import { sanitizeForRegex } from '../../utils/regex';
-import { isUserId } from '../../utils/matrix';
+import { isUserId } from '../../utils/matrixId';
 
 import {
-  GroupMentionMap,
+  type GroupMentionMap,
   getResolvedGroup,
   groupMentionHtml,
   groupMentionText,
@@ -93,7 +94,7 @@ const elementToCustomHtml = (
           )}" title="${sanitizeText(node.shortcode)}" height="32" />`
         : sanitizeText(node.key);
     case BlockType.Link:
-      return `<a href="${encodeURI(node.href)}">${node.children}</a>`;
+      return linkToHtml(node.href, children);
     case BlockType.Command:
       return `/${sanitizeText(node.command)}`;
     default:
@@ -200,7 +201,7 @@ const elementToPlainText = (
     case BlockType.Emoticon:
       return node.key.startsWith('mxc://') ? `:${node.shortcode}:` : node.key;
     case BlockType.Link:
-      return `[${node.children}](${node.href})`;
+      return linkToPlainText(node.href, children);
     case BlockType.Command:
       return `/${node.command}`;
     default:

@@ -105,7 +105,7 @@ function RoomUpgradeDialog({ requestClose }: { requestClose: () => void }) {
               <Box grow="Yes">
                 <Text size="H4">{room.isSpaceRoom() ? 'Space Upgrade' : 'Room Upgrade'}</Text>
               </Box>
-              <IconButton size="300" onClick={requestClose} radii="300">
+              <IconButton aria-label="Закрыть" size="300" onClick={requestClose} radii="300">
                 <Icon src={Icons.Cross} />
               </IconButton>
             </Header>

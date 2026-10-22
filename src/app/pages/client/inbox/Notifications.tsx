@@ -1,4 +1,5 @@
 /* eslint-disable react/destructuring-assignment */
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
@@ -27,6 +28,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { HTMLReactParserOptions } from 'html-react-parser';
 import { Opts as LinkifyOpts } from 'linkifyjs';
 import { useAtomValue } from 'jotai';
+import { Attention } from './Attention';
 import { Page, PageContent, PageContentCenter, PageHeader } from '../../../components/page';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../../utils/matrix';
@@ -379,7 +381,8 @@ function RoomNotificationsGroupComp({
         return (
           <Box grow="Yes" direction="Column">
             <Text size="T400" priority="300">
-              Room Tombstone. {content.body}
+              {t('Room Tombstone.')}
+              {content.body}
             </Text>
           </Box>
         );
@@ -441,7 +444,7 @@ function RoomNotificationsGroupComp({
               onClick={handleMarkAsRead}
               before={<Icon size="100" src={Icons.CheckTwice} />}
             >
-              <Text size="T200">Mark as Read</Text>
+              <Text size="T200">{t('Mark as Read')}</Text>
             </Chip>
           )}
         </Box>
@@ -527,7 +530,7 @@ function RoomNotificationsGroupComp({
                       variant="Secondary"
                       radii="400"
                     >
-                      <Text size="T200">Open</Text>
+                      <Text size="T200">{t('Open')}</Text>
                     </Chip>
                   </Box>
                 </Box>
@@ -564,7 +567,7 @@ const useNotificationsSearchParams = (
 
 const DEFAULT_REFRESH_MS = 7000;
 
-export function Notifications() {
+function NotificationHistory() {
   const mx = useMatrixClient();
   const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
   const [mediaAutoLoad] = useSetting(settingsAtom, 'mediaAutoLoad');
@@ -587,12 +590,13 @@ export function Notifications() {
     if (highlight) {
       setSearchParams(
         new URLSearchParams({
+          attention: 'history',
           only: 'highlight',
         })
       );
       return;
     }
-    setSearchParams();
+    setSearchParams({ attention: 'history' });
   };
 
   const [notificationTimeline, _loadTimeline, silentReloadTimeline] = useNotificationTimeline(
@@ -611,7 +615,7 @@ export function Notifications() {
 
   useInterval(
     useCallback(() => {
-      silentReloadTimeline();
+      silentReloadTimeline().catch(() => undefined);
     }, [silentReloadTimeline]),
     refreshIntervalTime
   );
@@ -645,7 +649,7 @@ export function Notifications() {
             {screenSize === ScreenSize.Mobile && (
               <BackRouteHandler>
                 {(onBack) => (
-                  <IconButton onClick={onBack}>
+                  <IconButton aria-label="Назад" onClick={onBack}>
                     <Icon src={Icons.ArrowLeft} />
                   </IconButton>
                 )}
@@ -655,7 +659,7 @@ export function Notifications() {
           <Box alignItems="Center" gap="200">
             {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Message} />}
             <Text size="H3" truncate>
-              Notification Messages
+              {t('Notification Messages')}
             </Text>
           </Box>
           <Box grow="Yes" basis="No" />
@@ -669,7 +673,10 @@ export function Notifications() {
               <Box direction="Column" gap="200">
                 <Box ref={scrollTopAnchorRef} direction="Column" gap="100">
                   <span data-spacing-node />
-                  <Text size="L400">Filter</Text>
+                  <Chip onClick={() => setSearchParams({})}>
+                    <Text size="T300">К центру внимания</Text>
+                  </Chip>
+                  <Text size="L400">Фильтр</Text>
                   <Box gap="200">
                     <Chip
                       onClick={() => setOnlyHighlighted(false)}
@@ -678,7 +685,7 @@ export function Notifications() {
                       before={!onlyHighlight && <Icon size="100" src={Icons.Check} />}
                       outlined
                     >
-                      <Text size="T200">All Notifications</Text>
+                      <Text size="T200">{t('All Notifications')}</Text>
                     </Chip>
                     <Chip
                       onClick={() => setOnlyHighlighted(true)}
@@ -687,7 +694,7 @@ export function Notifications() {
                       before={onlyHighlight && <Icon size="100" src={Icons.Check} />}
                       outlined
                     >
-                      <Text size="T200">Highlighted</Text>
+                      <Text size="T200">{t('Highlighted')}</Text>
                     </Chip>
                   </Box>
                 </Box>
@@ -702,7 +709,7 @@ export function Notifications() {
                     radii="Pill"
                     outlined
                     size="300"
-                    aria-label="Scroll to Top"
+                    aria-label={t('Scroll to Top')}
                   >
                     <Icon src={Icons.ChevronTop} size="300" />
                   </IconButton>
@@ -755,9 +762,9 @@ export function Notifications() {
                       direction="Column"
                       gap="200"
                     >
-                      <Text>No Notifications</Text>
+                      <Text>{t('No Notifications')}</Text>
                       <Text size="T200">
-                        You don&apos;t have any new notifications to display yet.
+                        {t('You don&apos;t have any new notifications to display yet.')}
                       </Text>
                     </Box>
                   )}
@@ -794,4 +801,9 @@ export function Notifications() {
       </Box>
     </Page>
   );
+}
+
+export function Notifications() {
+  const [params] = useSearchParams();
+  return params.get('attention') === 'history' ? <NotificationHistory /> : <Attention />;
 }

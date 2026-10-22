@@ -1,6 +1,7 @@
 import { JoinRule } from 'matrix-js-sdk';
 import { AvatarFallback, AvatarImage, Icon, Icons, color } from 'folds';
 import React, { ComponentProps, ReactEventHandler, ReactNode, forwardRef, useState } from 'react';
+import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import * as css from './RoomAvatar.css';
 import { getRoomIconSrc } from '../../utils/room';
 import colorMXID from '../../../util/colorMXID';
@@ -31,6 +32,7 @@ export function RoomAvatar({ roomId, src, alt, renderFallback }: RoomAvatarProps
 
   return (
     <AvatarImage
+      as={AuthenticatedImage}
       className={css.RoomAvatar}
       src={src}
       alt={alt}
