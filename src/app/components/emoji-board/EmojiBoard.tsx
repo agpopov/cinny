@@ -52,6 +52,8 @@ import {
 } from './components';
 import { EmojiBoardTab, EmojiType } from './types';
 import { VirtualTile } from '../virtualizer';
+import { IImageInfo } from '../../../types/matrix/common';
+import { getBuiltinStickerAssetUrl } from '../../plugins/custom-emoji/builtinStickers';
 
 const RECENT_GROUP_ID = 'recent_group';
 const SEARCH_GROUP_ID = 'search_group';
@@ -265,7 +267,9 @@ function StickerSidebar({ activeGroupAtom, packs, onScrollToGroup }: StickerSide
           if (!label) label = isUserId(pack.id) ? 'Personal Pack' : mx.getRoom(pack.id)?.name;
 
           const url =
-            mxcUrlToHttp(mx, pack.getAvatarUrl(usage) ?? '', useAuthentication) ?? undefined;
+            getBuiltinStickerAssetUrl(pack.getAvatarUrl(usage) ?? '', import.meta.env.BASE_URL) ??
+            mxcUrlToHttp(mx, pack.getAvatarUrl(usage) ?? '', useAuthentication) ??
+            undefined;
 
           return (
             <ImageGroupIcon
@@ -359,7 +363,7 @@ type EmojiBoardProps = {
   returnFocusOnDeactivate?: boolean;
   onEmojiSelect?: (unicode: string, shortcode: string) => void;
   onCustomEmojiSelect?: (mxc: string, shortcode: string) => void;
-  onStickerSelect?: (mxc: string, shortcode: string, label: string) => void;
+  onStickerSelect?: (mxc: string, shortcode: string, label: string, info?: IImageInfo) => void;
   allowTextCustomEmoji?: boolean;
   addToRecentEmoji?: boolean;
 };
@@ -444,7 +448,10 @@ export function EmojiBoard({
       onCustomEmojiSelect?.(emojiInfo.data, emojiInfo.shortcode);
     }
     if (emojiInfo.type === EmojiType.Sticker) {
-      onStickerSelect?.(emojiInfo.data, emojiInfo.shortcode, emojiInfo.label);
+      const image = imagePacks
+        .flatMap((pack) => pack.getImages(ImageUsage.Sticker))
+        .find((item) => item.url === emojiInfo.data && item.shortcode === emojiInfo.shortcode);
+      onStickerSelect?.(emojiInfo.data, emojiInfo.shortcode, emojiInfo.label, image?.info);
     }
     if (!evt.altKey && !evt.shiftKey) requestClose();
   };

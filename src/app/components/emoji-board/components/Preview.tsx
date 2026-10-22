@@ -5,6 +5,7 @@ import * as css from './styles.css';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { mxcUrlToHttp } from '../../../utils/matrix';
+import { getBuiltinStickerAssetUrl } from '../../../plugins/custom-emoji/builtinStickers';
 
 export type PreviewData = {
   key: string;
@@ -24,6 +25,10 @@ export function Preview({ previewAtom }: PreviewProps) {
   const { key, shortcode } = useAtomValue(previewAtom) ?? {};
 
   if (!shortcode) return null;
+  const imageUrl = key
+    ? getBuiltinStickerAssetUrl(key, import.meta.env.BASE_URL) ??
+      (key.startsWith('mxc://') ? mxcUrlToHttp(mx, key, useAuthentication) : undefined)
+    : undefined;
 
   return (
     <Box shrink="No" className={css.Preview} gap="300" alignItems="Center">
@@ -34,15 +39,7 @@ export function Preview({ previewAtom }: PreviewProps) {
           alignItems="Center"
           justifyContent="Center"
         >
-          {key.startsWith('mxc://') ? (
-            <img
-              className={css.PreviewImg}
-              src={mxcUrlToHttp(mx, key, useAuthentication) ?? key}
-              alt={shortcode}
-            />
-          ) : (
-            key
-          )}
+          {imageUrl ? <img className={css.PreviewImg} src={imageUrl} alt={shortcode} /> : key}
         </Box>
       )}
       <Text size="H5" truncate>

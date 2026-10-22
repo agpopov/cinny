@@ -1,10 +1,10 @@
-import { IContent, MatrixClient, MsgType } from 'matrix-js-sdk';
-import to from 'await-to-js';
+import { MsgType } from 'matrix-js-sdk';
+import type { IContent, MatrixClient } from 'matrix-js-sdk';
 import {
-  IThumbnailContent,
   MATRIX_BLUR_HASH_PROPERTY_NAME,
   MATRIX_SPOILER_PROPERTY_NAME,
 } from '../../../types/matrix/common';
+import type { IThumbnailContent } from '../../../types/matrix/common';
 import {
   getImageFileUrl,
   getThumbnail,
@@ -14,7 +14,7 @@ import {
   loadVideoElement,
 } from '../../utils/dom';
 import { encryptFile, getImageInfo, getThumbnailContent, getVideoInfo } from '../../utils/matrix';
-import { TUploadItem } from '../../state/room/roomInputDrafts';
+import type { TUploadItem } from '../../state/room/roomInputDrafts';
 import { encodeBlurHash } from '../../utils/blurHash';
 import { scaleYDimension } from '../../utils/common';
 
@@ -34,7 +34,7 @@ const generateThumbnailContent = async (
   const thumbMxc = data?.content_uri;
   if (!thumbMxc) throw new Error('Failed when uploading thumbnail!');
   const thumbnailContent = getThumbnailContent({
-    thumbnail: thumbnailFile,
+    thumbnail,
     encInfo: encThumbData?.encInfo,
     mxc: thumbMxc,
     width: dimensions[0],
@@ -48,23 +48,32 @@ export const getImageMsgContent = async (
   item: TUploadItem,
   mxc: string
 ): Promise<IContent> => {
-  const { file, originalFile, encInfo, metadata } = item;
-  const [imgError, imgEl] = await to(loadImageElement(getImageFileUrl(originalFile)));
-  if (imgError) console.warn(imgError);
-
+  const { originalFile, encInfo, metadata } = item;
   const content: IContent = {
     msgtype: MsgType.Image,
-    filename: file.name,
-    body: file.name,
+    filename: originalFile.name,
+    body: originalFile.name,
+    info: { mimetype: originalFile.type, size: originalFile.size },
     [MATRIX_SPOILER_PROPERTY_NAME]: metadata.markedAsSpoiler,
   };
-  if (imgEl) {
-    const blurHash = encodeBlurHash(imgEl, 512, scaleYDimension(imgEl.width, 512, imgEl.height));
-
-    content.info = {
-      ...getImageInfo(imgEl, file),
-      [MATRIX_BLUR_HASH_PROPERTY_NAME]: blurHash,
-    };
+  const objectUrl = getImageFileUrl(originalFile);
+  try {
+    const imgEl = await loadImageElement(objectUrl);
+    content.info = getImageInfo(imgEl, originalFile);
+    // A missing canvas, a huge image, or a failed blurhash must not prevent sending.
+    try {
+      content.info[MATRIX_BLUR_HASH_PROPERTY_NAME] = encodeBlurHash(
+        imgEl,
+        64,
+        Math.max(1, Math.min(64, scaleYDimension(imgEl.width, 64, imgEl.height)))
+      );
+    } catch (error) {
+      console.warn(error);
+    }
+  } catch (error) {
+    console.warn(error);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
   }
   if (encInfo) {
     content.file = {
@@ -82,38 +91,50 @@ export const getVideoMsgContent = async (
   item: TUploadItem,
   mxc: string
 ): Promise<IContent> => {
-  const { file, originalFile, encInfo, metadata } = item;
-
-  const [videoError, videoEl] = await to(loadVideoElement(getVideoFileUrl(originalFile)));
-  if (videoError) console.warn(videoError);
+  const { originalFile, encInfo, metadata } = item;
 
   const content: IContent = {
     msgtype: MsgType.Video,
-    filename: file.name,
-    body: file.name,
+    filename: originalFile.name,
+    body: originalFile.name,
+    info: { mimetype: originalFile.type, size: originalFile.size },
     [MATRIX_SPOILER_PROPERTY_NAME]: metadata.markedAsSpoiler,
   };
-  if (videoEl) {
-    const [thumbError, thumbContent] = await to(
-      generateThumbnailContent(
+  const objectUrl = getVideoFileUrl(originalFile);
+  let videoEl: HTMLVideoElement | undefined;
+  try {
+    videoEl = await loadVideoElement(objectUrl);
+    content.info = getVideoInfo(videoEl, originalFile);
+    try {
+      const thumbContent = await generateThumbnailContent(
         mx,
         videoEl,
         getThumbnailDimensions(videoEl.videoWidth, videoEl.videoHeight),
         !!encInfo
-      )
-    );
-    if (thumbContent && thumbContent.thumbnail_info) {
-      thumbContent.thumbnail_info[MATRIX_BLUR_HASH_PROPERTY_NAME] = encodeBlurHash(
-        videoEl,
-        512,
-        scaleYDimension(videoEl.videoWidth, 512, videoEl.videoHeight)
       );
+      Object.assign(content.info, thumbContent);
+      if (thumbContent.thumbnail_info) {
+        try {
+          thumbContent.thumbnail_info[MATRIX_BLUR_HASH_PROPERTY_NAME] = encodeBlurHash(
+            videoEl,
+            64,
+            Math.max(1, Math.min(64, scaleYDimension(videoEl.videoWidth, 64, videoEl.videoHeight)))
+          );
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+    } catch (error) {
+      console.warn(error);
     }
-    if (thumbError) console.warn(thumbError);
-    content.info = {
-      ...getVideoInfo(videoEl, file),
-      ...thumbContent,
-    };
+  } catch (error) {
+    console.warn(error);
+  } finally {
+    if (videoEl) {
+      videoEl.removeAttribute('src');
+      videoEl.load();
+    }
+    URL.revokeObjectURL(objectUrl);
   }
   if (encInfo) {
     content.file = {

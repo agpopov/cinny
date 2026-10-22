@@ -55,6 +55,7 @@ const permittedTagToAttributes = {
     'data-mx-spoiler',
     'data-mx-maths',
     'data-mx-pill',
+    'data-cinny-mention-group',
     'data-mx-ping',
     'data-md',
   ],

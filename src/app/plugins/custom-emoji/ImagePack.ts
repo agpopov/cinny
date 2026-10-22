@@ -1,9 +1,10 @@
-import { MatrixEvent } from 'matrix-js-sdk';
+import type { MatrixEvent } from 'matrix-js-sdk';
 import { PackAddress } from './PackAddress';
 import { PackImageReader } from './PackImageReader';
 import { PackImagesReader } from './PackImagesReader';
 import { PackMetaReader } from './PackMetaReader';
-import { ImageUsage, PackContent } from './types';
+import { ImageUsage } from './types';
+import type { PackContent } from './types';
 
 export class ImagePack {
   public readonly id: string;
@@ -20,7 +21,12 @@ export class ImagePack {
 
   private stickerMemo: PackImageReader[] | undefined;
 
-  constructor(id: string, content: PackContent, address: PackAddress | undefined) {
+  constructor(
+    id: string,
+    content: PackContent,
+    address: PackAddress | undefined,
+    images?: PackImagesReader
+  ) {
     this.id = id;
 
     this.address = address;
@@ -28,7 +34,7 @@ export class ImagePack {
     this.deleted = content.pack === undefined && content.images === undefined;
 
     this.meta = new PackMetaReader(content.pack ?? {});
-    this.images = new PackImagesReader(content.images ?? {});
+    this.images = images ?? new PackImagesReader(content.images ?? {});
   }
 
   static fromMatrixEvent(id: string, matrixEvent: MatrixEvent) {

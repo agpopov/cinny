@@ -1,4 +1,5 @@
-import { PackMeta, ImageUsage } from './types';
+import { ImageUsage } from './types';
+import type { PackMeta } from './types';
 
 export class PackMetaReader {
   private readonly meta: PackMeta;

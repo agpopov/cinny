@@ -52,22 +52,24 @@ export function getGlobalImagePacks(mx: MatrixClient): ImagePack[] {
   const emoteRoomsContent = getAccountData(mx, AccountDataEvent.PoniesEmoteRooms)?.getContent() as
     | EmoteRoomsContent
     | undefined;
-  if (typeof emoteRoomsContent !== 'object') return [];
+  if (!emoteRoomsContent || typeof emoteRoomsContent !== 'object') return [];
 
   const { rooms: roomIdToPackInfo } = emoteRoomsContent;
-  if (typeof roomIdToPackInfo !== 'object') return [];
+  if (!roomIdToPackInfo || typeof roomIdToPackInfo !== 'object') return [];
 
   const roomIds = Object.keys(roomIdToPackInfo);
 
   const packs = roomIds.flatMap((roomId) => {
-    if (typeof roomIdToPackInfo[roomId] !== 'object') return [];
+    if (!roomIdToPackInfo[roomId] || typeof roomIdToPackInfo[roomId] !== 'object') return [];
     const room = mx.getRoom(roomId);
     if (!room) return [];
     const packStateKeyToUnknown = roomIdToPackInfo[roomId];
     const packEvents = getStateEvents(room, StateEvent.PoniesRoomEmotes);
     const globalPackEvents = packEvents.filter((mE) => {
       const stateKey = mE.getStateKey();
-      if (typeof stateKey === 'string') return !!packStateKeyToUnknown[stateKey];
+      if (typeof stateKey === 'string') {
+        return Object.prototype.hasOwnProperty.call(packStateKeyToUnknown, stateKey);
+      }
       return false;
     });
     return makeImagePacks(globalPackEvents);

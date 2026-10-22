@@ -1,5 +1,6 @@
-import { IImageInfo } from '../../../types/matrix/common';
-import { ImageUsage, PackImage } from './types';
+import type { IImageInfo } from '../../../types/matrix/common';
+import { ImageUsage } from './types';
+import type { PackImage } from './types';
 
 export class PackImageReader {
   public readonly shortcode: string;
@@ -16,9 +17,10 @@ export class PackImageReader {
   }
 
   static fromPackImage(shortcode: string, image: PackImage): PackImageReader | undefined {
+    if (!image || typeof image !== 'object') return undefined;
     const { url } = image;
 
-    if (typeof url !== 'string') return undefined;
+    if (typeof url !== 'string' || !/^mxc:\/\/[^/]+\/.+/.test(url)) return undefined;
 
     return new PackImageReader(shortcode, url, image);
   }
@@ -29,7 +31,8 @@ export class PackImageReader {
   }
 
   get info(): IImageInfo | undefined {
-    return this.image.info;
+    const { info } = this.image;
+    return info && typeof info === 'object' && !Array.isArray(info) ? info : undefined;
   }
 
   get usage(): ImageUsage[] | undefined {

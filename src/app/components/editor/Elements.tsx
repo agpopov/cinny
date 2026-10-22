@@ -42,6 +42,8 @@ function RenderMentionElement({
         focus: selected && focused,
       })}
       contentEditable={false}
+      style={element.group ? { color: element.group.color, overflowWrap: 'anywhere' } : undefined}
+      aria-label={element.group ? `Упоминание группы ${element.group.name}` : undefined}
     >
       {element.name}
       {children}

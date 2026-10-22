@@ -44,6 +44,9 @@ function PreviewVideo({ fileItem }: PreviewVideoProps) {
   return (
     // eslint-disable-next-line jsx-a11y/media-has-caption
     <video
+      preload="metadata"
+      playsInline
+      muted
       style={{
         objectFit: 'contain',
         width: '100%',
@@ -120,7 +123,7 @@ export function UploadCardRenderer({
   const { metadata } = fileItem;
   const { upload, startUpload, cancelUpload } = useBindUploadAtom(mx, uploadAtom, isEncrypted);
   const { file } = upload;
-  const fileSizeExceeded = file.size >= allowSize;
+  const fileSizeExceeded = file.size > allowSize;
 
   if (upload.status === UploadStatus.Idle && !fileSizeExceeded) {
     startUpload();

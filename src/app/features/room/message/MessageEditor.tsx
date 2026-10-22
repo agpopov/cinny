@@ -1,3 +1,4 @@
+import type { RoomMessageEventContent } from 'matrix-js-sdk/lib/@types/events';
 import React, {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -23,6 +24,8 @@ import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { IContent, IMentions, MatrixEvent, RelationType, Room } from 'matrix-js-sdk';
 import { isKeyHotkey } from 'is-hotkey';
+import { mentionsOutsideMarkdownCode } from '../../../components/editor/markdownCode';
+import { resolveGroupMentions, assertMentionContentSize } from '../../../utils/mentionGroups';
 import {
   AUTOCOMPLETE_PREFIXES,
   AutocompletePrefix,
@@ -99,9 +102,15 @@ export const MessageEditor = as<'div', MessageEditorProps>(
 
     const [saveState, save] = useAsyncCallback(
       useCallback(async () => {
-        const plainText = toPlainText(editor.children, isMarkdown).trim();
+        const groupMentions = await resolveGroupMentions(
+          mx,
+          room,
+          mentionsOutsideMarkdownCode(editor.children, undefined, isMarkdown)
+        );
+        const plainText = toPlainText(editor.children, isMarkdown, groupMentions).trim();
         const customHtml = trimCustomHtml(
           toMatrixCustomHTML(editor.children, {
+            groupMentions,
             allowTextFormatting: true,
             allowBlockMarkdown: isMarkdown,
             allowInlineMarkdown: isMarkdown,
@@ -129,11 +138,11 @@ export const MessageEditor = as<'div', MessageEditorProps>(
           body: plainText,
         };
 
-        const mentionData = getMentions(mx, roomId, editor);
-
-        prevMentions?.user_ids?.forEach((prevMentionId) => {
-          mentionData.users.add(prevMentionId);
-        });
+        const mentionData = getMentions(mx, roomId, editor, groupMentions, customHtml);
+        const replyId = mEvent.getContent()['m.relates_to']?.['m.in_reply_to']?.event_id;
+        const replySender =
+          typeof replyId === 'string' ? room.findEventById(replyId)?.getSender() : undefined;
+        if (replySender && replySender !== mx.getUserId()) mentionData.users.add(replySender);
 
         const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
         newContent['m.mentions'] = mMentions;
@@ -145,6 +154,10 @@ export const MessageEditor = as<'div', MessageEditorProps>(
 
         const content: IContent = {
           ...newContent,
+          'm.mentions': getMentionContent(
+            Array.from(mentionData.users).filter((id) => !prevMentions?.user_ids?.includes(id)),
+            mentionData.room && !prevMentions?.room
+          ),
           body: `* ${plainText}`,
           'm.new_content': newContent,
           'm.relates_to': {
@@ -153,8 +166,12 @@ export const MessageEditor = as<'div', MessageEditorProps>(
           },
         };
 
-        return mx.sendMessage(roomId, content);
-      }, [mx, editor, roomId, mEvent, isMarkdown, getPrevBodyAndFormattedBody])
+        assertMentionContentSize(
+          content,
+          !!room.currentState.getStateEvents('m.room.encryption', '')
+        );
+        return mx.sendMessage(roomId, content as RoomMessageEventContent);
+      }, [mx, room, editor, roomId, mEvent, isMarkdown, getPrevBodyAndFormattedBody])
     );
 
     const handleSave = useCallback(() => {
@@ -255,7 +272,19 @@ export const MessageEditor = as<'div', MessageEditorProps>(
             requestClose={handleCloseAutocomplete}
           />
         )}
+        {saveState.status === AsyncStatus.Error && (
+          <Text role="alert" size="T300">
+            {String(saveState.error)}
+          </Text>
+        )}
         <CustomEditor
+          readOnly={saveState.status === AsyncStatus.Loading}
+          onChange={() => {
+            const range = getPrevWordRange(editor);
+            setAutocompleteQuery(
+              range ? getAutocompleteQuery(editor, range, AUTOCOMPLETE_PREFIXES) : undefined
+            );
+          }}
           editor={editor}
           placeholder="Edit message..."
           onKeyDown={handleKeyDown}

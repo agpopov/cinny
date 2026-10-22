@@ -28,7 +28,13 @@ import {
   config,
   toRem,
 } from 'folds';
+import { mentionsOutsideMarkdownCode } from '../../components/editor/markdownCode';
 
+import {
+  resolveGroupMentions,
+  assertMentionContentSize,
+  freshGroupMentionNodes,
+} from '../../utils/mentionGroups';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import {
   CustomEditor,
@@ -56,13 +62,7 @@ import {
 } from '../../components/editor';
 import { EmojiBoard, EmojiBoardTab } from '../../components/emoji-board';
 import { UseStateProvider } from '../../components/UseStateProvider';
-import {
-  TUploadContent,
-  encryptFile,
-  getImageInfo,
-  getMxIdLocalPart,
-  mxcUrlToHttp,
-} from '../../utils/matrix';
+import { TUploadContent, encryptFile, getMxIdLocalPart } from '../../utils/matrix';
 import { useTypingStatusUpdater } from '../../hooks/useTypingStatusUpdater';
 import { useFilePicker } from '../../hooks/useFilePicker';
 import { useFilePasteHandler } from '../../hooks/useFilePasteHandler';
@@ -88,8 +88,8 @@ import {
   UploadSuccess,
   createUploadFamilyObserverAtom,
 } from '../../state/upload';
-import { getImageUrlBlob, loadImageElement } from '../../utils/dom';
 import { safeFile } from '../../utils/mimeTypes';
+import { sendAttachments } from '../../utils/sendAttachments';
 import { fulfilledPromiseSettledResult } from '../../utils/common';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
@@ -107,7 +107,6 @@ import { mobileOrTablet } from '../../utils/user-agent';
 import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
 import { ReplyLayout, ThreadIndicator } from '../../components/message';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
-import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useImagePackRooms } from '../../hooks/useImagePackRooms';
 import { usePowerLevelsContext } from '../../hooks/usePowerLevels';
 import colorMXID from '../../../util/colorMXID';
@@ -118,6 +117,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { useRoomCreatorsTag } from '../../hooks/useRoomCreatorsTag';
 import { usePowerLevelTags } from '../../hooks/usePowerLevelTags';
 import { useComposingCheck } from '../../hooks/useComposingCheck';
+import { IImageInfo } from '../../../types/matrix/common';
+import { resolveSticker } from '../../plugins/custom-emoji/resolveSticker';
 
 interface RoomInputProps {
   editor: Editor;
@@ -148,7 +149,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const draftKey = draftKeyProp ?? roomId;
     const threadId = threadRootId ?? null;
     const mx = useMatrixClient();
-    const useAuthentication = useMediaAuthentication();
+    const sendingRef = useRef(false);
+    const [sending, setSending] = useState(false);
+    const [sendError, setSendError] = useState('');
     const [enterForNewline] = useSetting(settingsAtom, 'enterForNewline');
     const [isMarkdown] = useSetting(settingsAtom, 'isMarkdown');
     const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
@@ -183,6 +186,8 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
     const [uploadBoard, setUploadBoard] = useState(true);
     const [selectedFiles, setSelectedFiles] = useAtom(roomIdToUploadItemsAtomFamily(draftKey));
+    const selectedFilesRef = useRef(selectedFiles);
+    selectedFilesRef.current = selectedFiles;
     const uploadFamilyObserverAtom = createUploadFamilyObserverAtom(
       roomUploadAtomFamily,
       selectedFiles.map((f) => f.file)
@@ -297,110 +302,142 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     };
 
     const handleSendUpload = async (uploads: UploadSuccess[]) => {
-      const contentsPromises = uploads.map(async (upload) => {
-        const fileItem = selectedFiles.find((f) => f.file === upload.file);
-        if (!fileItem) throw new Error('Broken upload');
-
-        if (fileItem.file.type.startsWith('image')) {
-          return getImageMsgContent(mx, fileItem, upload.mxc);
-        }
-        if (fileItem.file.type.startsWith('video')) {
-          return getVideoMsgContent(mx, fileItem, upload.mxc);
-        }
-        if (fileItem.file.type.startsWith('audio')) {
-          return getAudioMsgContent(fileItem, upload.mxc);
-        }
-        return getFileMsgContent(fileItem, upload.mxc);
+      setSendError('');
+      const failures = await sendAttachments(uploads, {
+        prepare: async (upload) => {
+          const fileItem = selectedFiles.find((f) => f.file === upload.file);
+          if (!fileItem) throw new Error('Broken upload');
+          const { type } = fileItem.originalFile;
+          if (type.startsWith('image/')) return getImageMsgContent(mx, fileItem, upload.mxc);
+          if (type.startsWith('video/')) return getVideoMsgContent(mx, fileItem, upload.mxc);
+          if (type.startsWith('audio/')) return getAudioMsgContent(fileItem, upload.mxc);
+          return getFileMsgContent(fileItem, upload.mxc);
+        },
+        send: (content) => mx.sendMessage(roomId, threadId, content as any),
+        isPending: (upload) => selectedFilesRef.current.some((item) => item.file === upload.file),
+        onSent: (upload) => handleRemoveUpload(upload.file),
       });
-      handleCancelUpload(uploads);
-      const contents = fulfilledPromiseSettledResult(await Promise.allSettled(contentsPromises));
-      contents.forEach((content) => mx.sendMessage(roomId, threadId, content as any));
+      if (failures.length) {
+        const [error] = failures;
+        setSendError(
+          error instanceof Error
+            ? error.message
+            : 'Не удалось отправить вложение. Повторите попытку.'
+        );
+      }
     };
 
-    const submit = useCallback(() => {
-      uploadBoardHandlers.current?.handleSend();
-
-      const commandName = getBeginCommand(editor);
-      let plainText = toPlainText(editor.children, isMarkdown).trim();
-      let customHtml = trimCustomHtml(
-        toMatrixCustomHTML(editor.children, {
-          allowTextFormatting: true,
-          allowBlockMarkdown: isMarkdown,
-          allowInlineMarkdown: isMarkdown,
-        })
+    const submit = useCallback(async () => {
+      if (sendingRef.current) return;
+      sendingRef.current = true;
+      setSending(true);
+      setSendError('');
+      const original = JSON.stringify(editor.children);
+      const nodes = freshGroupMentionNodes(
+        mentionsOutsideMarkdownCode(JSON.parse(original), undefined, isMarkdown)
       );
-      let msgType = MsgType.Text;
+      const sendEditor = { ...editor, children: nodes };
+      try {
+        const groupMentions = await resolveGroupMentions(mx, room, nodes);
+        uploadBoardHandlers.current?.handleSend();
 
-      if (commandName) {
-        plainText = trimCommand(commandName, plainText);
-        customHtml = trimCommand(commandName, customHtml);
-      }
-      if (commandName === Command.Me) {
-        msgType = MsgType.Emote;
-      } else if (commandName === Command.Notice) {
-        msgType = MsgType.Notice;
-      } else if (commandName === Command.Shrug) {
-        plainText = `${SHRUG} ${plainText}`;
-        customHtml = `${SHRUG} ${customHtml}`;
-      } else if (commandName === Command.TableFlip) {
-        plainText = `${TABLEFLIP} ${plainText}`;
-        customHtml = `${TABLEFLIP} ${customHtml}`;
-      } else if (commandName === Command.UnFlip) {
-        plainText = `${UNFLIP} ${plainText}`;
-        customHtml = `${UNFLIP} ${customHtml}`;
-      } else if (commandName) {
-        const commandContent = commands[commandName as Command];
-        if (commandContent) {
-          commandContent.exe(plainText);
+        const commandName = getBeginCommand(editor);
+        let plainText = toPlainText(nodes, isMarkdown, groupMentions).trim();
+        let customHtml = trimCustomHtml(
+          toMatrixCustomHTML(nodes, {
+            groupMentions,
+            allowTextFormatting: true,
+            allowBlockMarkdown: isMarkdown,
+            allowInlineMarkdown: isMarkdown,
+          })
+        );
+        let msgType = MsgType.Text;
+
+        if (commandName) {
+          plainText = trimCommand(commandName, plainText);
+          customHtml = trimCommand(commandName, customHtml);
         }
+        if (commandName === Command.Me) {
+          msgType = MsgType.Emote;
+        } else if (commandName === Command.Notice) {
+          msgType = MsgType.Notice;
+        } else if (commandName === Command.Shrug) {
+          plainText = `${SHRUG} ${plainText}`;
+          customHtml = `${SHRUG} ${customHtml}`;
+        } else if (commandName === Command.TableFlip) {
+          plainText = `${TABLEFLIP} ${plainText}`;
+          customHtml = `${TABLEFLIP} ${customHtml}`;
+        } else if (commandName === Command.UnFlip) {
+          plainText = `${UNFLIP} ${plainText}`;
+          customHtml = `${UNFLIP} ${customHtml}`;
+        } else if (commandName) {
+          const commandContent = commands[commandName as Command];
+          if (commandContent) {
+            commandContent.exe(plainText);
+          }
+          resetEditor(editor);
+          resetEditorHistory(editor);
+          sendTypingStatus(false);
+          return;
+        }
+
+        if (plainText === '') return;
+
+        const body = plainText;
+        const formattedBody = customHtml;
+        const mentionData = getMentions(mx, roomId, sendEditor, groupMentions, customHtml);
+
+        const content: IContent = {
+          msgtype: msgType,
+          body,
+        };
+
+        if (replyDraft && replyDraft.userId !== mx.getUserId()) {
+          mentionData.users.add(replyDraft.userId);
+        }
+
+        const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
+        content['m.mentions'] = mMentions;
+
+        if (replyDraft || !customHtmlEqualsPlainText(formattedBody, body)) {
+          content.format = 'org.matrix.custom.html';
+          content.formatted_body = formattedBody;
+        }
+        if (replyDraft) {
+          content['m.relates_to'] = {
+            'm.in_reply_to': {
+              event_id: replyDraft.eventId,
+            },
+          };
+          if (!threadId && replyDraft.relation?.rel_type === RelationType.Thread) {
+            content['m.relates_to'].event_id = replyDraft.relation.event_id;
+            content['m.relates_to'].rel_type = RelationType.Thread;
+            content['m.relates_to'].is_falling_back = false;
+          }
+        }
+        assertMentionContentSize(
+          content,
+          !!room.currentState.getStateEvents('m.room.encryption', '')
+        );
+        await mx.sendMessage(roomId, threadId, content as any);
+        if (JSON.stringify(editor.children) !== original) return;
         resetEditor(editor);
         resetEditorHistory(editor);
+        setReplyDraft(undefined);
         sendTypingStatus(false);
-        return;
+      } catch (error) {
+        setSendError(
+          error instanceof Error
+            ? error.message
+            : 'Не удалось отправить сообщение. Повторите попытку.'
+        );
+      } finally {
+        sendingRef.current = false;
+        setSending(false);
       }
-
-      if (plainText === '') return;
-
-      const body = plainText;
-      const formattedBody = customHtml;
-      const mentionData = getMentions(mx, roomId, editor);
-
-      const content: IContent = {
-        msgtype: msgType,
-        body,
-      };
-
-      if (replyDraft && replyDraft.userId !== mx.getUserId()) {
-        mentionData.users.add(replyDraft.userId);
-      }
-
-      const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
-      content['m.mentions'] = mMentions;
-
-      if (replyDraft || !customHtmlEqualsPlainText(formattedBody, body)) {
-        content.format = 'org.matrix.custom.html';
-        content.formatted_body = formattedBody;
-      }
-      if (replyDraft) {
-        content['m.relates_to'] = {
-          'm.in_reply_to': {
-            event_id: replyDraft.eventId,
-          },
-        };
-        if (!threadId && replyDraft.relation?.rel_type === RelationType.Thread) {
-          content['m.relates_to'].event_id = replyDraft.relation.event_id;
-          content['m.relates_to'].rel_type = RelationType.Thread;
-          content['m.relates_to'].is_falling_back = false;
-        }
-      }
-      // Для треда SDK сам добавит связь m.thread и ответ-заглушку на последнее сообщение.
-      mx.sendMessage(roomId, threadId, content as any);
-      resetEditor(editor);
-      resetEditorHistory(editor);
-      setReplyDraft(undefined);
-      sendTypingStatus(false);
     }, [
       mx,
+      room,
       roomId,
       threadId,
       editor,
@@ -462,20 +499,34 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       moveCursor(editor);
     };
 
-    const handleStickerSelect = async (mxc: string, shortcode: string, label: string) => {
-      const stickerUrl = mxcUrlToHttp(mx, mxc, useAuthentication);
-      if (!stickerUrl) return;
-
-      const info = await getImageInfo(
-        await loadImageElement(stickerUrl),
-        await getImageUrlBlob(stickerUrl)
-      );
-
-      mx.sendEvent(roomId, threadId, EventType.Sticker, {
-        body: label,
-        url: mxc,
-        info,
-      });
+    const handleStickerSelect = async (
+      url: string,
+      shortcode: string,
+      label: string,
+      info?: IImageInfo
+    ) => {
+      setSendError('');
+      try {
+        if (!room.currentState.maySendEvent(EventType.Sticker, mx.getSafeUserId())) {
+          throw new Error('У вас нет разрешения отправлять стикеры в этой комнате.');
+        }
+        const stickerMxc = await resolveSticker(mx, url, import.meta.env.BASE_URL);
+        // Packs already contain ImageInfo. Fetching the image again before
+        // sending made stickers fail on slow networks and authenticated media.
+        await mx.sendEvent(roomId, threadId, EventType.Sticker, {
+          body: label || shortcode,
+          url: stickerMxc,
+          info: {
+            ...info,
+            w: Number.isFinite(info?.w) && (info?.w ?? 0) > 0 ? info?.w : 256,
+            h: Number.isFinite(info?.h) && (info?.h ?? 0) > 0 ? info?.h : 256,
+          },
+        });
+      } catch (error) {
+        setSendError(
+          error instanceof Error ? error.message : 'Не удалось отправить стикер. Повторите попытку.'
+        );
+      }
     };
 
     return (
@@ -568,7 +619,19 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             requestClose={handleCloseAutocomplete}
           />
         )}
+        {sendError && (
+          <Text role="alert" size="T300" style={{ padding: config.space.S300 }}>
+            {sendError}
+          </Text>
+        )}
         <CustomEditor
+          readOnly={sending}
+          onChange={() => {
+            const range = getPrevWordRange(editor);
+            setAutocompleteQuery(
+              range ? getAutocompleteQuery(editor, range, AUTOCOMPLETE_PREFIXES) : undefined
+            );
+          }}
           editableName={editableName}
           editor={editor}
           placeholder={placeholder}
@@ -698,7 +761,13 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                   </PopOut>
                 )}
               </UseStateProvider>
-              <IconButton onClick={submit} variant="SurfaceVariant" size="300" radii="300">
+              <IconButton
+                disabled={sending}
+                onClick={submit}
+                variant="SurfaceVariant"
+                size="300"
+                radii="300"
+              >
                 <Icon src={Icons.Send} />
               </IconButton>
             </>

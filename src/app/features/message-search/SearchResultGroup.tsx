@@ -52,6 +52,9 @@ import {
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoomCreatorsTag } from '../../hooks/useRoomCreatorsTag';
 
+import { useSetting } from '../../state/hooks/settings';
+import { settingsAtom } from '../../state/settings';
+
 type SearchResultGroupProps = {
   room: Room;
   highlights: string[];
@@ -75,6 +78,8 @@ export function SearchResultGroup({
   dateFormatString,
 }: SearchResultGroupProps) {
   const mx = useMatrixClient();
+  const [encUrlPreview] = useSetting(settingsAtom, 'encUrlPreview');
+  const showUrlPreview = room.hasEncryptionStateEvent() ? encUrlPreview : urlPreview;
   const useAuthentication = useMediaAuthentication();
   const highlightRegex = useMemo(() => makeHighlightRegex(highlights), [highlights]);
 
@@ -134,7 +139,7 @@ export function SearchResultGroup({
             ts={event.origin_server_ts}
             getContent={getContent}
             mediaAutoLoad={mediaAutoLoad}
-            urlPreview={urlPreview}
+            urlPreview={showUrlPreview}
             htmlReactParserOptions={htmlReactParserOptions}
             linkifyOpts={linkifyOpts}
             highlightRegex={highlightRegex}

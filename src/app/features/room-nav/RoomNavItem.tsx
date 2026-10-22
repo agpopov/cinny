@@ -260,7 +260,8 @@ export function RoomNavItem({
   const useAuthentication = useMediaAuthentication();
   const [hover, setHover] = useState(false);
   const { hoverProps } = useHover({ onHoverChange: setHover });
-  const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
+  const [focusWithin, setFocusWithin] = useState(false);
+  const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocusWithin });
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
   const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
   const typingMember = useRoomTypingMember(room.roomId).filter(
@@ -285,7 +286,7 @@ export function RoomNavItem({
     setMenuAnchor(evt.currentTarget.getBoundingClientRect());
   };
 
-  const optionsVisible = hover || !!menuAnchor;
+  const optionsVisible = hover || focusWithin || !!menuAnchor;
   const callSession = useCallSession(room);
   const callMembers = useCallMembers(callSession);
   const startCall = useCallStart(direct);
@@ -406,6 +407,9 @@ export function RoomNavItem({
             {selected && (callEmbed?.roomId === room.roomId || room.isCallRoom()) && (
               <CallChatToggle />
             )}
+            {threadsNav.threads.length > 0 && (
+              <ThreadsToggle collapsed={threadsNav.collapsed} onToggle={threadsNav.toggle} />
+            )}
             <PopOut
               id={`menu-${room.roomId}`}
               aria-expanded={!!menuAnchor}
@@ -448,14 +452,6 @@ export function RoomNavItem({
               </IconButton>
             </PopOut>
           </NavItemOptions>
-        )}
-        {threadsNav.threads.length > 0 && (
-          <ThreadsToggle
-            room={room}
-            threads={threadsNav.threads}
-            collapsed={threadsNav.collapsed}
-            onToggle={threadsNav.toggle}
-          />
         )}
       </NavItem>
       <RoomNavThreads

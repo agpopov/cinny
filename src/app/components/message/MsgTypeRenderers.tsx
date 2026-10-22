@@ -25,7 +25,7 @@ import {
   MATRIX_SPOILER_PROPERTY_NAME,
   MATRIX_SPOILER_REASON_PROPERTY_NAME,
 } from '../../../types/matrix/common';
-import { FALLBACK_MIMETYPE, getBlobSafeMimeType } from '../../utils/mimeTypes';
+import { FALLBACK_MIMETYPE, getBlobSafeMimeType, getMediaMimeType } from '../../utils/mimeTypes';
 import { parseGeoUri, scaleYDimension } from '../../utils/common';
 import { Attachment, AttachmentBox, AttachmentContent, AttachmentHeader } from './attachment';
 import { FileHeader, FileDownloadButton } from './FileHeader';
@@ -200,6 +200,7 @@ export function MImage({ content, renderImageContent, outlined }: MImageProps) {
   return (
     <Attachment outlined={outlined}>
       <AttachmentBox
+        key={mxcUrl}
         style={{
           height: toRem(height < 48 ? 48 : height),
         }}
@@ -234,11 +235,13 @@ type MVideoProps = {
   outlined?: boolean;
 };
 export function MVideo({ content, renderAsFile, renderVideoContent, outlined }: MVideoProps) {
-  const videoInfo = content?.info;
+  const videoInfo = content?.info ?? {};
   const mxcUrl = content.file?.url ?? content.url;
-  const safeMimeType = getBlobSafeMimeType(videoInfo?.mimetype ?? '');
+  const safeMimeType = getBlobSafeMimeType(
+    getMediaMimeType(content.filename ?? content.body ?? '', videoInfo.mimetype)
+  );
 
-  if (!videoInfo || !safeMimeType.startsWith('video') || typeof mxcUrl !== 'string') {
+  if (!safeMimeType.startsWith('video/') || typeof mxcUrl !== 'string') {
     if (mxcUrl) {
       return renderAsFile();
     }
@@ -266,6 +269,7 @@ export function MVideo({ content, renderAsFile, renderVideoContent, outlined }: 
         />
       </AttachmentHeader>
       <AttachmentBox
+        key={mxcUrl}
         style={{
           height: toRem(height < 48 ? 48 : height),
         }}
@@ -424,6 +428,7 @@ export function MSticker({ content, renderImageContent }: MStickerProps) {
 
   return (
     <AttachmentBox
+      key={mxcUrl}
       style={{
         height: toRem(height < 48 ? 48 : height),
         width: toRem(152),

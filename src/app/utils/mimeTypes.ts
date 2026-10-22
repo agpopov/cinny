@@ -106,9 +106,34 @@ export const ALLOWED_BLOB_MIME_TYPES = [
 
 export const FALLBACK_MIMETYPE = 'application/octet-stream';
 
+// Some desktop/mobile file pickers leave File.type empty (or use octet-stream).
+// Only infer formats we can actually display, and never override an explicit type.
+export const getMediaMimeType = (filename: string, mimeType = ''): string => {
+  const type = mimeType.split(';')[0].trim().toLowerCase();
+  if (type && type !== FALLBACK_MIMETYPE) return type;
+  const extension = filename.split('.').pop()?.toLowerCase();
+  const types: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    apng: 'image/apng',
+    webp: 'image/webp',
+    avif: 'image/avif',
+    mp4: 'video/mp4',
+    m4v: 'video/mp4',
+    webm: 'video/webm',
+    ogv: 'video/ogg',
+    mov: 'video/quicktime',
+  };
+  return extension && Object.prototype.hasOwnProperty.call(types, extension)
+    ? types[extension]
+    : FALLBACK_MIMETYPE;
+};
+
 export const getBlobSafeMimeType = (mimeType: string) => {
   if (typeof mimeType !== 'string') return FALLBACK_MIMETYPE;
-  const [type] = mimeType.split(';');
+  const type = mimeType.split(';')[0].trim().toLowerCase();
   if (!ALLOWED_BLOB_MIME_TYPES.includes(type)) {
     return FALLBACK_MIMETYPE;
   }
@@ -124,9 +149,9 @@ export const getBlobSafeMimeType = (mimeType: string) => {
 };
 
 export const safeFile = (f: File) => {
-  const safeType = getBlobSafeMimeType(f.type);
+  const safeType = getBlobSafeMimeType(getMediaMimeType(f.name, f.type));
   if (safeType !== f.type) {
-    return new File([f], f.name, { type: safeType });
+    return new File([f], f.name, { type: safeType, lastModified: f.lastModified });
   }
   return f;
 };

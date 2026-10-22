@@ -1,5 +1,5 @@
 import { PackImageReader } from './PackImageReader';
-import { PackImages } from './types';
+import type { PackImages } from './types';
 
 export class PackImagesReader {
   private readonly rawImages: PackImages;
@@ -8,6 +8,12 @@ export class PackImagesReader {
 
   constructor(images: PackImages) {
     this.rawImages = images;
+  }
+
+  static fromImages(images: PackImageReader[]): PackImagesReader {
+    const reader = new PackImagesReader({});
+    reader.shortcodeToImages = new Map(images.map((image) => [image.shortcode, image]));
+    return reader;
   }
 
   get collection(): Map<string, PackImageReader> {

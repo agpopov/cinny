@@ -24,19 +24,16 @@ import * as css from './style.css';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { bytesToSize, millisecondsToMinutesAndSeconds } from '../../../utils/common';
-import {
-  decryptFile,
-  downloadEncryptedMedia,
-  downloadMedia,
-  mxcUrlToHttp,
-} from '../../../utils/matrix';
+import { decryptFile, downloadEncryptedMedia, mxcUrlToHttp } from '../../../utils/matrix';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
+import { useObjectURL } from '../../../hooks/useObjectURL';
 import { validBlurHash } from '../../../utils/blurHash';
 
 type RenderVideoProps = {
   title: string;
   src: string;
   onLoadedMetadata: () => void;
+  playsInline: boolean;
   onError: () => void;
   autoPlay: boolean;
   controls: boolean;
@@ -83,14 +80,19 @@ export const VideoContent = as<'div', VideoContentProps>(
       useCallback(async () => {
         const mediaUrl = mxcUrlToHttp(mx, url, useAuthentication);
         if (!mediaUrl) throw new Error('Invalid media URL');
-        const fileContent = encInfo
-          ? await downloadEncryptedMedia(mediaUrl, (encBuf) =>
-              decryptFile(encBuf, mimeType, encInfo)
-            )
-          : await downloadMedia(mediaUrl);
-        return URL.createObjectURL(fileContent);
+        if (encInfo) {
+          return downloadEncryptedMedia(mediaUrl, (encBuf) =>
+            decryptFile(encBuf, mimeType, encInfo)
+          );
+        }
+        // Let the browser stream and seek unencrypted video using Range requests.
+        return mediaUrl;
       }, [mx, url, useAuthentication, mimeType, encInfo])
     );
+
+    const media = srcState.status === AsyncStatus.Success ? srcState.data : undefined;
+    const objectUrl = useObjectURL(media instanceof Blob ? media : undefined);
+    const src = typeof media === 'string' ? media : objectUrl;
 
     const handleLoad = () => {
       setLoad(true);
@@ -102,11 +104,11 @@ export const VideoContent = as<'div', VideoContentProps>(
 
     const handleRetry = () => {
       setError(false);
-      loadSrc();
+      loadSrc().catch(() => undefined);
     };
 
     useEffect(() => {
-      if (autoPlay) loadSrc();
+      if (autoPlay) loadSrc().catch(() => undefined);
     }, [autoPlay, loadSrc]);
 
     return (
@@ -136,21 +138,24 @@ export const VideoContent = as<'div', VideoContentProps>(
               fill="Solid"
               radii="300"
               size="300"
-              onClick={loadSrc}
+              onClick={() => {
+                loadSrc().catch(() => undefined);
+              }}
               before={<Icon size="Inherit" src={Icons.Play} filled />}
             >
               <Text size="B300">Watch</Text>
             </Button>
           </Box>
         )}
-        {srcState.status === AsyncStatus.Success && (
+        {src && srcState.status === AsyncStatus.Success && (
           <Box className={classNames(css.AbsoluteContainer, blurred && css.Blur)}>
             {renderVideo({
               title: body,
-              src: srcState.data,
+              src,
               onLoadedMetadata: handleLoad,
               onError: handleError,
-              autoPlay: true,
+              autoPlay: !blurred,
+              playsInline: true,
               controls: true,
             })}
           </Box>
@@ -177,6 +182,7 @@ export const VideoContent = as<'div', VideoContentProps>(
                   outlined
                   onClick={() => {
                     setBlurred(false);
+                    if (srcState.status === AsyncStatus.Idle) loadSrc().catch(() => undefined);
                   }}
                 >
                   <Text size="B300">Spoiler</Text>

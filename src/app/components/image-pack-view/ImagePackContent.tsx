@@ -22,7 +22,7 @@ import { UploadSuccess } from '../../state/upload';
 import { getImageInfo, TUploadContent } from '../../utils/matrix';
 import { getImageFileUrl, loadImageElement, renameFile } from '../../utils/dom';
 import { replaceSpaceWithDash, suffixRename } from '../../utils/common';
-import { getFileNameWithoutExt } from '../../utils/mimeTypes';
+import { getFileNameWithoutExt, safeFile } from '../../utils/mimeTypes';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 
 export type ImagePackContentProps = {
@@ -63,18 +63,24 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
     const pickFiles = useFilePicker(
       useCallback(
         (pickedFiles: File[]) => {
-          const uniqueFiles = pickedFiles.map((file) => {
-            const fileName = replaceSpaceWithDash(file.name);
-            if (hasImageWithShortcode(fileName)) {
-              const uniqueName = suffixRename(fileName, hasImageWithShortcode);
-              return renameFile(file, uniqueName);
-            }
-            return fileName !== file.name ? renameFile(file, fileName) : file;
-          });
+          const reserved = new Set(files.map((file) => getFileNameWithoutExt(file.name)));
+          const uniqueFiles = pickedFiles
+            .map(safeFile)
+            .filter((file) => file.type.startsWith('image/'))
+            .map((file) => {
+              const fileName = replaceSpaceWithDash(file.name);
+              const base = getFileNameWithoutExt(fileName);
+              const extension = fileName.slice(base.length);
+              const taken = (shortcode: string) =>
+                reserved.has(shortcode) || hasImageWithShortcode(shortcode);
+              const shortcode = taken(base) ? suffixRename(base, taken) : base;
+              reserved.add(shortcode);
+              return renameFile(file, `${shortcode}${extension}`);
+            });
 
           setFiles((f) => [...f, ...uniqueFiles]);
         },
-        [hasImageWithShortcode]
+        [hasImageWithShortcode, files]
       ),
       true
     );
@@ -116,11 +122,20 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
 
     const handleUploadComplete = useCallback(
       async (data: UploadSuccess) => {
-        const imgEl = await loadImageElement(getImageFileUrl(data.file));
+        const objectUrl = getImageFileUrl(data.file);
         const packImage: PackImage = {
           url: data.mxc,
-          info: getImageInfo(imgEl, data.file),
+          info: { mimetype: data.file.type, size: data.file.size },
         };
+        try {
+          const imgEl = await loadImageElement(objectUrl);
+          packImage.info = getImageInfo(imgEl, data.file);
+        } catch (error) {
+          // Unsupported image dimensions should not discard a successful upload.
+          console.warn(error);
+        } finally {
+          URL.revokeObjectURL(objectUrl);
+        }
         const image = PackImageReader.fromPackImage(
           getFileNameWithoutExt(data.file.name),
           packImage

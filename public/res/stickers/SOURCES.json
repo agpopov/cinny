@@ -1,0 +1,633 @@
+{
+  "project": "Microsoft Fluent Emoji",
+  "source": "https://github.com/microsoft/fluentui-emoji",
+  "revision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc",
+  "license": "MIT",
+  "modifications": "None. Original PNG files redistributed unchanged.",
+  "files": [
+    {
+      "id": "cat_face",
+      "label": "Котик",
+      "asset": "res/stickers/cats/cat_face.png",
+      "source": "assets/Cat face/3D/cat_face_3d.png",
+      "sha256": "d930f2aee8ae47cb3ca26f2594ddd15df42345d952b5903b776adf4a728860b5",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37653
+      }
+    },
+    {
+      "id": "cat_smile",
+      "label": "Кот улыбается",
+      "asset": "res/stickers/cats/cat_smile.png",
+      "source": "assets/Grinning cat/3D/grinning_cat_3d.png",
+      "sha256": "d930f2aee8ae47cb3ca26f2594ddd15df42345d952b5903b776adf4a728860b5",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37653
+      }
+    },
+    {
+      "id": "cat_happy",
+      "label": "Кот радуется",
+      "asset": "res/stickers/cats/cat_happy.png",
+      "source": "assets/Grinning cat with smiling eyes/3D/grinning_cat_with_smiling_eyes_3d.png",
+      "sha256": "b8eb3151d342b7b459f1401998300a915125a3d87a44136449b1d9e884f022d7",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39090
+      }
+    },
+    {
+      "id": "cat_laugh",
+      "label": "Кот смеётся до слёз",
+      "asset": "res/stickers/cats/cat_laugh.png",
+      "source": "assets/Cat with tears of joy/3D/cat_with_tears_of_joy_3d.png",
+      "sha256": "ef898754403fe81aece4059a32a1aeba623ce6404df2868e6ba848757541f251",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41847
+      }
+    },
+    {
+      "id": "cat_love",
+      "label": "Влюблённый кот",
+      "asset": "res/stickers/cats/cat_love.png",
+      "source": "assets/Smiling cat with heart-eyes/3D/smiling_cat_with_heart-eyes_3d.png",
+      "sha256": "7f5ca63e7231af11a6aba486bcca01785cca2f724f34b728ffc141c961986ebf",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 43380
+      }
+    },
+    {
+      "id": "cat_kiss",
+      "label": "Кот целует",
+      "asset": "res/stickers/cats/cat_kiss.png",
+      "source": "assets/Kissing cat/3D/kissing_cat_3d.png",
+      "sha256": "d31ec3990e7989fa64d96514e9f78c4be16481fa387990b217987e7660ab3ad0",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41893
+      }
+    },
+    {
+      "id": "cat_smirk",
+      "label": "Хитрый кот",
+      "asset": "res/stickers/cats/cat_smirk.png",
+      "source": "assets/Cat with wry smile/3D/cat_with_wry_smile_3d.png",
+      "sha256": "c0f18ad8b5805d10e8e0fcc86edce6764bbcb56b0f707bb1c9e66b10f2474358",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39551
+      }
+    },
+    {
+      "id": "cat_cry",
+      "label": "Кот плачет",
+      "asset": "res/stickers/cats/cat_cry.png",
+      "source": "assets/Crying cat/3D/crying_cat_3d.png",
+      "sha256": "bc68537a49704dd065f935c1c78efc63ab826a980c2ff112cf4c241ce5955b14",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39555
+      }
+    },
+    {
+      "id": "cat_angry",
+      "label": "Сердитый кот",
+      "asset": "res/stickers/cats/cat_angry.png",
+      "source": "assets/Pouting cat/3D/pouting_cat_3d.png",
+      "sha256": "5d123bec7e472cf71508ddd2c413bbc4635da223410d5e2119a10f5974e886ba",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39284
+      }
+    },
+    {
+      "id": "cat_shock",
+      "label": "Кот в шоке",
+      "asset": "res/stickers/cats/cat_shock.png",
+      "source": "assets/Weary cat/3D/weary_cat_3d.png",
+      "sha256": "05e67896364a223f2cde2b1d0a1159f11ae1626ebd0ab79a147aa6c496876ca4",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 36246
+      }
+    },
+    {
+      "id": "cat",
+      "label": "Кошка",
+      "asset": "res/stickers/cats/cat.png",
+      "source": "assets/Cat/3D/cat_3d.png",
+      "sha256": "5d3fcbbfb0be45d9be0ade47fe4eb1b97d33130fe67d46a8db697e434f13289b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 33603
+      }
+    },
+    {
+      "id": "cat_black",
+      "label": "Чёрный кот",
+      "asset": "res/stickers/cats/cat_black.png",
+      "source": "assets/Black cat/3D/black_cat_3d.png",
+      "sha256": "fdfca4afdc8f2b771ada8ffa5efd848fd9dcab747b8fe9ca8f7e806557648ce8",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32580
+      }
+    },
+    {
+      "id": "laugh",
+      "label": "Смешно до слёз",
+      "asset": "res/stickers/reactions/laugh.png",
+      "source": "assets/Face with tears of joy/3D/face_with_tears_of_joy_3d.png",
+      "sha256": "8af20fb0c64c44a8d8c8d047c1410c5e529a37c3158d496832b380198ed2e9c3",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44153
+      }
+    },
+    {
+      "id": "rofl",
+      "label": "Катаюсь от смеха",
+      "asset": "res/stickers/reactions/rofl.png",
+      "source": "assets/Rolling on the floor laughing/3D/rolling_on_the_floor_laughing_3d.png",
+      "sha256": "22ebfd950c4df297e784babe1e31bc1713144615f78cb0262c8dc2ce0da90ca0",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 45925
+      }
+    },
+    {
+      "id": "think",
+      "label": "Думаю",
+      "asset": "res/stickers/reactions/think.png",
+      "source": "assets/Thinking face/3D/thinking_face_3d.png",
+      "sha256": "cd29da5c3886e1e25726d3cf6ff79faa2f0d631b1c0873b115be287d358fc4be",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 45573
+      }
+    },
+    {
+      "id": "melt",
+      "label": "Плавлюсь",
+      "asset": "res/stickers/reactions/melt.png",
+      "source": "assets/Melting face/3D/melting_face_3d.png",
+      "sha256": "39967c77e124e7f1e44043b3b98c634b2c09aca01b1cc5b52b7a6b563f7c99d8",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41542
+      }
+    },
+    {
+      "id": "eyeroll",
+      "label": "Закатываю глаза",
+      "asset": "res/stickers/reactions/eyeroll.png",
+      "source": "assets/Face with rolling eyes/3D/face_with_rolling_eyes_3d.png",
+      "sha256": "2c1d7babfd5b788a90d960bf3690c39fcdc9cad37b0c7cad6c4b5d6d1b79d8c4",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 33793
+      }
+    },
+    {
+      "id": "oops",
+      "label": "Ой, неловко",
+      "asset": "res/stickers/reactions/oops.png",
+      "source": "assets/Face with open eyes and hand over mouth/3D/face_with_open_eyes_and_hand_over_mouth_3d.png",
+      "sha256": "85d30dc2e232f14ec9fc09ca8d8c1639251ee40e1f61e9f9c3fc5319777f2b25",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44456
+      }
+    },
+    {
+      "id": "cry",
+      "label": "Рыдаю",
+      "asset": "res/stickers/reactions/cry.png",
+      "source": "assets/Loudly crying face/3D/loudly_crying_face_3d.png",
+      "sha256": "9e7b740110d12731e7416c8958b88bfadd75e0e7121ab0245e581e8f70491e02",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38405
+      }
+    },
+    {
+      "id": "mind_blown",
+      "label": "Взрыв мозга",
+      "asset": "res/stickers/reactions/mind_blown.png",
+      "source": "assets/Exploding head/3D/exploding_head_3d.png",
+      "sha256": "a915d5b325dbe3130fed54ebaf793777ab88b54c130560f8f3c17ad1af2bcdaf",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 47230
+      }
+    },
+    {
+      "id": "cool",
+      "label": "Круто",
+      "asset": "res/stickers/reactions/cool.png",
+      "source": "assets/Smiling face with sunglasses/3D/smiling_face_with_sunglasses_3d.png",
+      "sha256": "e98cb43a7a531289c82eb57441eb20cd88cb53b895c212d8e3abf05dd2647da1",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 47859
+      }
+    },
+    {
+      "id": "disguise",
+      "label": "Инкогнито",
+      "asset": "res/stickers/reactions/disguise.png",
+      "source": "assets/Disguised face/3D/disguised_face_3d.png",
+      "sha256": "0a0848bf71468635f752d46be66d8c292b400ec6502f5b8f9e1898d55c41ae90",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 49564
+      }
+    },
+    {
+      "id": "shush",
+      "label": "Тихо",
+      "asset": "res/stickers/reactions/shush.png",
+      "source": "assets/Shushing face/3D/shushing_face_3d.png",
+      "sha256": "0045661e6269e01b454cf9c54aea5c81e00891b76f36932046dc2a77502fe95b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41453
+      }
+    },
+    {
+      "id": "sleep",
+      "label": "Сплю",
+      "asset": "res/stickers/reactions/sleep.png",
+      "source": "assets/Sleeping face/3D/sleeping_face_3d.png",
+      "sha256": "c7d1cd5d04ae7214b6ae92b9802b6c860729c755da0020ccec22c7c8171f18fa",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44597
+      }
+    },
+    {
+      "id": "vomit",
+      "label": "Тошнит",
+      "asset": "res/stickers/reactions/vomit.png",
+      "source": "assets/Face vomiting/3D/face_vomiting_3d.png",
+      "sha256": "2b0d77d6614cd611dcc614da1f6e919996a796482d3cf9aa8a5c8577a332612c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 46439
+      }
+    },
+    {
+      "id": "dead",
+      "label": "Умер со смеху",
+      "asset": "res/stickers/reactions/dead.png",
+      "source": "assets/Skull/3D/skull_3d.png",
+      "sha256": "9920d9e79017306b7af9eef09117070ff7fde28d7711fdb4861c14c446b5bf45",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32764
+      }
+    },
+    {
+      "id": "poop",
+      "label": "Ну и дела",
+      "asset": "res/stickers/reactions/poop.png",
+      "source": "assets/Pile of poo/3D/pile_of_poo_3d.png",
+      "sha256": "4cef7c6d6f48b0a96f9cd803417b7d63161c19e8247520b6a8a2ebe286237da8",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 35754
+      }
+    },
+    {
+      "id": "clown",
+      "label": "Клоун",
+      "asset": "res/stickers/reactions/clown.png",
+      "source": "assets/Clown face/3D/clown_face_3d.png",
+      "sha256": "9a4c1f94b7bc3fa43ce6695213dd8a001d972d4609bbd58d988bd7f9128db9c7",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 62705
+      }
+    },
+    {
+      "id": "eyes",
+      "label": "Смотрю, интересно",
+      "asset": "res/stickers/reactions/eyes.png",
+      "source": "assets/Eyes/3D/eyes_3d.png",
+      "sha256": "b3049f399cb0947b423610f5876077efa86bc640fba5cb9d138b149773d4c793",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38982
+      }
+    },
+    {
+      "id": "fire",
+      "label": "Огонь",
+      "asset": "res/stickers/reactions/fire.png",
+      "source": "assets/Fire/3D/fire_3d.png",
+      "sha256": "d56355132d73df1741edcf37cb4e21ad54f1c46eeb76fa17224607abf4128c3f",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 26826
+      }
+    },
+    {
+      "id": "party",
+      "label": "Вечеринка",
+      "asset": "res/stickers/reactions/party.png",
+      "source": "assets/Partying face/3D/partying_face_3d.png",
+      "sha256": "e01bd94de6b85468f6e59da55d380985c363f6bc300b412d18290f143f7e44a9",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 50583
+      }
+    },
+    {
+      "id": "celebrate",
+      "label": "Поздравляю",
+      "asset": "res/stickers/reactions/celebrate.png",
+      "source": "assets/Party popper/3D/party_popper_3d.png",
+      "sha256": "70a8e2f9daf1646be9e773751b7f3b6b281a2415cf29c3c3aeebd9c923cdc3e0",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 42512
+      }
+    },
+    {
+      "id": "fox",
+      "label": "Лиса",
+      "asset": "res/stickers/animals/fox.png",
+      "source": "assets/Fox/3D/fox_3d.png",
+      "sha256": "1a3bc43212405fb03d8d2bcc709c7f39c99d4a19af06d406cae4724e5fe2b0ad",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41966
+      }
+    },
+    {
+      "id": "dog",
+      "label": "Собака",
+      "asset": "res/stickers/animals/dog.png",
+      "source": "assets/Dog face/3D/dog_face_3d.png",
+      "sha256": "7db4c311218a47053e490ec53e7b3995bb83246b0d6992e135868a5220bb32e7",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 43188
+      }
+    },
+    {
+      "id": "panda",
+      "label": "Панда",
+      "asset": "res/stickers/animals/panda.png",
+      "source": "assets/Panda/3D/panda_3d.png",
+      "sha256": "31524ed035f8d769bc7d437268f30a65eb309ea216e84c09823d4f36c2f97070",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 43603
+      }
+    },
+    {
+      "id": "rabbit",
+      "label": "Кролик",
+      "asset": "res/stickers/animals/rabbit.png",
+      "source": "assets/Rabbit face/3D/rabbit_face_3d.png",
+      "sha256": "49e3894d0e17c2eeea2b81f50d36ff407731d8b1983f3b5d71a7f7304dcbd5b3",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31679
+      }
+    },
+    {
+      "id": "bear",
+      "label": "Медведь",
+      "asset": "res/stickers/animals/bear.png",
+      "source": "assets/Bear/3D/bear_3d.png",
+      "sha256": "8f108a036c28d25378e3970eea68d00fbf155228b349707f0456e557013a87c9",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41872
+      }
+    },
+    {
+      "id": "teddy",
+      "label": "Плюшевый мишка",
+      "asset": "res/stickers/animals/teddy.png",
+      "source": "assets/Teddy bear/3D/teddy_bear_3d.png",
+      "sha256": "149fc51d489ec22d2054576293a1135d5c86efcd7cbc262b55cdb94d569d0a23",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44142
+      }
+    },
+    {
+      "id": "frog",
+      "label": "Лягушка",
+      "asset": "res/stickers/animals/frog.png",
+      "source": "assets/Frog/3D/frog_3d.png",
+      "sha256": "c7926ce26b08536982d021237b10024fd5dd0153fd8bd0334a4eb8e457fb2111",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38651
+      }
+    },
+    {
+      "id": "hamster",
+      "label": "Хомяк",
+      "asset": "res/stickers/animals/hamster.png",
+      "source": "assets/Hamster/3D/hamster_3d.png",
+      "sha256": "36a63a367b1d4e1bbba74284f5b2c4c741a3ff611bfec764f377ae4da4e2d51c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37781
+      }
+    },
+    {
+      "id": "mouse",
+      "label": "Мышка",
+      "asset": "res/stickers/animals/mouse.png",
+      "source": "assets/Mouse face/3D/mouse_face_3d.png",
+      "sha256": "a14db12e1c223a3b87d0813310e83ae0f2f17e48cd748b18fe43b013282c7494",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34704
+      }
+    },
+    {
+      "id": "raccoon",
+      "label": "Енот",
+      "asset": "res/stickers/animals/raccoon.png",
+      "source": "assets/Raccoon/3D/raccoon_3d.png",
+      "sha256": "bb91e722ccf85fda99ab79e77b6afc97c183a8a4e1eaec69f02cbc653deed46c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38434
+      }
+    },
+    {
+      "id": "koala",
+      "label": "Коала",
+      "asset": "res/stickers/animals/koala.png",
+      "source": "assets/Koala/3D/koala_3d.png",
+      "sha256": "e5ec59d366cffe5e0f7d49144264633c71af2e50961d5cfe011f155a7ddfce1a",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 36244
+      }
+    },
+    {
+      "id": "otter",
+      "label": "Выдра",
+      "asset": "res/stickers/animals/otter.png",
+      "source": "assets/Otter/3D/otter_3d.png",
+      "sha256": "5fad606187601e377e6ae70a981e5c4d0e58652ab32d321ae4764b38901dd579",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 33767
+      }
+    },
+    {
+      "id": "penguin",
+      "label": "Пингвин",
+      "asset": "res/stickers/animals/penguin.png",
+      "source": "assets/Penguin/3D/penguin_3d.png",
+      "sha256": "c513a326631f3758e3ef9729ed2aa3bba46432340657ae63f32fd0332f648341",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32955
+      }
+    },
+    {
+      "id": "unicorn",
+      "label": "Единорог",
+      "asset": "res/stickers/animals/unicorn.png",
+      "source": "assets/Unicorn/3D/unicorn_3d.png",
+      "sha256": "7d4a8a3e1040e9ba2b5a562413e258ebacc812e5c6d87946b3de53a66d1736b4",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 35413
+      }
+    },
+    {
+      "id": "sloth",
+      "label": "Ленивец",
+      "asset": "res/stickers/animals/sloth.png",
+      "source": "assets/Sloth/3D/sloth_3d.png",
+      "sha256": "000f1e461dfec9d43991b424b3d0ea4ccb6c342b7f8a1f507f716a460c662d64",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38149
+      }
+    },
+    {
+      "id": "duck",
+      "label": "Утка",
+      "asset": "res/stickers/animals/duck.png",
+      "source": "assets/Duck/3D/duck_3d.png",
+      "sha256": "c45934c5d609fc03e9713d66ada5e08034b0b27bf29a37a39c726633b5c2d2e4",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32162
+      }
+    }
+  ]
+}

@@ -29,6 +29,7 @@ import { FALLBACK_MIMETYPE } from '../../../utils/mimeTypes';
 import { stopPropagation } from '../../../utils/keyboard';
 import { decryptFile, downloadEncryptedMedia, mxcUrlToHttp } from '../../../utils/matrix';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
+import { useObjectURL } from '../../../hooks/useObjectURL';
 import { ModalWide } from '../../../styles/Modal.css';
 import { validBlurHash } from '../../../utils/blurHash';
 
@@ -93,11 +94,15 @@ export const ImageContent = as<'div', ImageContentProps>(
           const fileContent = await downloadEncryptedMedia(mediaUrl, (encBuf) =>
             decryptFile(encBuf, mimeType ?? FALLBACK_MIMETYPE, encInfo)
           );
-          return URL.createObjectURL(fileContent);
+          return fileContent;
         }
         return mediaUrl;
       }, [mx, url, useAuthentication, mimeType, encInfo])
     );
+
+    const media = srcState.status === AsyncStatus.Success ? srcState.data : undefined;
+    const objectUrl = useObjectURL(media instanceof Blob ? media : undefined);
+    const src = typeof media === 'string' ? media : objectUrl;
 
     const handleLoad = () => {
       setLoad(true);
@@ -109,16 +114,16 @@ export const ImageContent = as<'div', ImageContentProps>(
 
     const handleRetry = () => {
       setError(false);
-      loadSrc();
+      loadSrc().catch(() => undefined);
     };
 
     useEffect(() => {
-      if (autoPlay) loadSrc();
+      if (autoPlay) loadSrc().catch(() => undefined);
     }, [autoPlay, loadSrc]);
 
     return (
       <Box className={classNames(css.RelativeBase, className)} {...props} ref={ref}>
-        {srcState.status === AsyncStatus.Success && (
+        {src && srcState.status === AsyncStatus.Success && (
           <Overlay open={viewer} backdrop={<OverlayBackdrop />}>
             <OverlayCenter>
               <FocusTrap
@@ -135,7 +140,7 @@ export const ImageContent = as<'div', ImageContentProps>(
                   onContextMenu={(evt: any) => evt.stopPropagation()}
                 >
                   {renderViewer({
-                    src: srcState.data,
+                    src,
                     alt: body,
                     requestClose: () => setViewer(false),
                   })}
@@ -160,19 +165,21 @@ export const ImageContent = as<'div', ImageContentProps>(
               fill="Solid"
               radii="300"
               size="300"
-              onClick={loadSrc}
+              onClick={() => {
+                loadSrc().catch(() => undefined);
+              }}
               before={<Icon size="Inherit" src={Icons.Photo} filled />}
             >
               <Text size="B300">View</Text>
             </Button>
           </Box>
         )}
-        {srcState.status === AsyncStatus.Success && (
+        {src && srcState.status === AsyncStatus.Success && (
           <Box className={classNames(css.AbsoluteContainer, blurred && css.Blur)}>
             {renderImage({
               alt: body,
               title: body,
-              src: srcState.data,
+              src,
               onLoad: handleLoad,
               onError: handleError,
               onClick: () => setViewer(true),
@@ -203,7 +210,7 @@ export const ImageContent = as<'div', ImageContentProps>(
                   onClick={() => {
                     setBlurred(false);
                     if (srcState.status === AsyncStatus.Idle) {
-                      loadSrc();
+                      loadSrc().catch(() => undefined);
                     }
                   }}
                 >

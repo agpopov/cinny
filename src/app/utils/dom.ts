@@ -102,29 +102,60 @@ export const getVideoFileUrl = (fileOrBlob: File | Blob) => URL.createObjectURL(
 export const loadImageElement = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const img = document.createElement('img');
-    img.onload = () => resolve(img);
-    img.onerror = (err) => reject(err);
+    let timeout: ReturnType<typeof setTimeout>;
+    const cleanup = () => {
+      clearTimeout(timeout);
+      img.onload = null;
+      img.onerror = null;
+    };
+    timeout = setTimeout(() => {
+      cleanup();
+      img.removeAttribute('src');
+      reject(new Error('Image preview timed out'));
+    }, 15000);
+    img.onload = () => {
+      cleanup();
+      resolve(img);
+    };
+    img.onerror = () => {
+      cleanup();
+      reject(new Error('Unable to load image'));
+    };
     img.src = url;
   });
 
 export const loadVideoElement = (url: string): Promise<HTMLVideoElement> =>
   new Promise((resolve, reject) => {
     const video = document.createElement('video');
-    video.preload = 'metadata';
+    // loadeddata requires a decoded frame. Asking for metadata and calling
+    // play() could hang forever when autoplay is blocked (especially on mobile).
+    video.preload = 'auto';
     video.playsInline = true;
     video.muted = true;
 
-    video.onloadeddata = () => {
-      resolve(video);
-      video.pause();
+    let timeout: ReturnType<typeof setTimeout>;
+    const cleanup = () => {
+      clearTimeout(timeout);
+      video.onloadeddata = null;
+      video.onerror = null;
     };
-    video.onerror = (e) => {
-      reject(e);
+    timeout = setTimeout(() => {
+      cleanup();
+      video.removeAttribute('src');
+      video.load();
+      reject(new Error('Video preview timed out'));
+    }, 15000);
+    video.onloadeddata = () => {
+      cleanup();
+      resolve(video);
+    };
+    video.onerror = () => {
+      cleanup();
+      reject(new Error('Unable to load video'));
     };
 
     video.src = url;
     video.load();
-    video.play();
   });
 
 export const getThumbnailDimensions = (width: number, height: number): [number, number] => {

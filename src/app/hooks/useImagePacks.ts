@@ -1,5 +1,5 @@
-import { Room } from 'matrix-js-sdk';
-import { useCallback, useMemo, useState } from 'react';
+import { ClientEvent, Room } from 'matrix-js-sdk';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AccountDataEvent } from '../../types/matrix/accountData';
 import { StateEvent } from '../../types/matrix/room';
 import {
@@ -13,6 +13,7 @@ import {
 import { useMatrixClient } from './useMatrixClient';
 import { useAccountDataCallback } from './useAccountDataCallback';
 import { useStateEventCallback } from './useStateEventCallback';
+import { builtinStickerPacks } from '../plugins/custom-emoji/builtinStickers';
 
 export const useUserImagePack = (): ImagePack | undefined => {
   const mx = useMatrixClient();
@@ -29,6 +30,8 @@ export const useUserImagePack = (): ImagePack | undefined => {
       [mx]
     )
   );
+
+  useEffect(() => setUserPack(getUserImagePack(mx)), [mx]);
 
   return userPack;
 };
@@ -54,21 +57,23 @@ export const useGlobalImagePacks = (): ImagePack[] => {
     useCallback(
       (mEvent) => {
         const eventType = mEvent.getType();
-        const roomId = mEvent.getRoomId();
-        const stateKey = mEvent.getStateKey();
-        if (eventType === StateEvent.PoniesRoomEmotes && roomId && typeof stateKey === 'string') {
-          const global = !!globalPacks.find(
-            (pack) =>
-              pack.address && pack.address.roomId === roomId && pack.address.stateKey === stateKey
-          );
-          if (global) {
-            setGlobalPacks(getGlobalImagePacks(mx));
-          }
+        if (eventType === StateEvent.PoniesRoomEmotes) {
+          // A subscribed pack may arrive after account data during initial sync.
+          setGlobalPacks(getGlobalImagePacks(mx));
         }
       },
-      [mx, globalPacks]
+      [mx]
     )
   );
+
+  useEffect(() => {
+    const refresh = () => setGlobalPacks(getGlobalImagePacks(mx));
+    refresh();
+    mx.on(ClientEvent.Room, refresh);
+    return () => {
+      mx.removeListener(ClientEvent.Room, refresh);
+    };
+  }, [mx]);
 
   return globalPacks;
 };
@@ -93,6 +98,8 @@ export const useRoomImagePack = (room: Room, stateKey: string): ImagePack | unde
     )
   );
 
+  useEffect(() => setRoomPack(getRoomImagePack(room, stateKey)), [room, stateKey]);
+
   return roomPack;
 };
 
@@ -114,6 +121,8 @@ export const useRoomImagePacks = (room: Room): ImagePack[] => {
       [room]
     )
   );
+
+  useEffect(() => setRoomPacks(getRoomImagePacks(room)), [room]);
 
   return roomPacks;
 };
@@ -137,6 +146,8 @@ export const useRoomsImagePacks = (rooms: Room[]) => {
     )
   );
 
+  useEffect(() => setRoomPacks(rooms.flatMap(getRoomImagePacks)), [rooms]);
+
   return roomPacks;
 };
 
@@ -151,7 +162,8 @@ export const useRelevantImagePacks = (usage: ImageUsage, rooms: Room[]): ImagePa
 
     const relPacks = packs.concat(
       globalPacks,
-      roomsPacks.filter((pack) => !globalPackIds.has(pack.id))
+      roomsPacks.filter((pack) => !globalPackIds.has(pack.id)),
+      usage === ImageUsage.Sticker ? builtinStickerPacks : []
     );
 
     return relPacks.filter((pack) => pack.getImages(usage).length > 0);

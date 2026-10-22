@@ -1,4 +1,4 @@
-import React, { MutableRefObject, ReactNode, useImperativeHandle, useRef } from 'react';
+import React, { MutableRefObject, ReactNode, useImperativeHandle, useRef, useState } from 'react';
 import { Badge, Box, Chip, Header, Icon, Icons, Spinner, Text, as, percent } from 'folds';
 import classNames from 'classnames';
 import { useAtomValue } from 'jotai';
@@ -44,6 +44,7 @@ export function UploadBoardHeader({
   imperativeHandlerRef,
 }: UploadBoardHeaderProps) {
   const sendingRef = useRef(false);
+  const [sending, setSending] = useState(false);
   const uploads = useAtomValue(uploadFamilyObserverAtom);
 
   const isSuccess = uploads.every((upload) => upload.status === UploadStatus.Success);
@@ -64,11 +65,15 @@ export function UploadBoardHeader({
 
   const handleSend = async () => {
     if (sendingRef.current) return;
+    if (!uploads.length || !isSuccess) return;
     sendingRef.current = true;
-    await onSend(
-      uploads.filter((upload) => upload.status === UploadStatus.Success) as UploadSuccess[]
-    );
-    sendingRef.current = false;
+    setSending(true);
+    try {
+      await onSend(uploads as UploadSuccess[]);
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
+    }
   };
 
   useImperativeHandle(imperativeHandlerRef, () => ({
@@ -95,6 +100,7 @@ export function UploadBoardHeader({
           <Chip
             as="button"
             onClick={handleSend}
+            disabled={sending}
             variant="Primary"
             radii="Pill"
             outlined

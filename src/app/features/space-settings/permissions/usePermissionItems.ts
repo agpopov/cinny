@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { StateEvent } from '../../../../types/matrix/room';
 import { PermissionGroup } from '../../common-settings/permissions';
+import { MENTION_GROUP_EVENT } from '../../../utils/mentionGroups';
 
 export const usePermissionGroups = (): PermissionGroup[] => {
   const groups: PermissionGroup[] = useMemo(() => {
@@ -13,6 +14,14 @@ export const usePermissionGroups = (): PermissionGroup[] => {
             key: StateEvent.SpaceChild,
           },
           name: 'Manage space rooms',
+        },
+        {
+          location: {
+            state: true,
+            key: MENTION_GROUP_EVENT,
+          },
+          name: 'Управление группами упоминаний',
+          description: 'Кто может создавать, редактировать и удалять группы пространства.',
         },
         {
           location: {},

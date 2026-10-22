@@ -31,6 +31,7 @@ import { PdfViewer } from './Pdf-viewer';
 import { TextViewer } from './text-viewer';
 import { testMatrixTo } from '../plugins/matrix-to';
 import { IImageContent } from '../../types/matrix/common';
+import { getBlobSafeMimeType, getMediaMimeType } from '../utils/mimeTypes';
 
 type RenderMessageContentProps = {
   displayName: string;
@@ -58,13 +59,19 @@ export function RenderMessageContent({
   linkifyOpts,
   outlineAttachment,
 }: RenderMessageContentProps) {
+  const fileContent = msgType === MsgType.File ? getContent<IImageContent>() : undefined;
+  const fileMimeType = fileContent
+    ? getBlobSafeMimeType(
+        getMediaMimeType(fileContent.filename ?? fileContent.body ?? '', fileContent.info?.mimetype)
+      )
+    : '';
   const renderUrlsPreview = (urls: string[]) => {
-    const filteredUrls = urls.filter((url) => !testMatrixTo(url));
+    const filteredUrls = urls.filter((url) => !testMatrixTo(url)).slice(0, 5);
     if (filteredUrls.length === 0) return undefined;
     return (
       <UrlPreviewHolder>
         {filteredUrls.map((url) => (
-          <UrlPreviewCard key={url} url={url} ts={ts} />
+          <UrlPreviewCard key={url} url={url} ts={ts} mediaAutoLoad={mediaAutoLoad} />
         ))}
       </UrlPreviewHolder>
     );
@@ -183,7 +190,7 @@ export function RenderMessageContent({
     );
   }
 
-  if (msgType === MsgType.Image) {
+  if (msgType === MsgType.Image || fileMimeType.startsWith('image/')) {
     return (
       <>
         <MImage
@@ -203,7 +210,7 @@ export function RenderMessageContent({
     );
   }
 
-  if (msgType === MsgType.Video) {
+  if (msgType === MsgType.Video || fileMimeType.startsWith('video/')) {
     return (
       <>
         <MVideo

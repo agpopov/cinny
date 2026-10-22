@@ -3,6 +3,7 @@ import { Descendant, Text } from 'slate';
 import parse from 'html-dom-parser';
 import { ChildNode, Element, isText, isTag } from 'domhandler';
 
+import { readGroupMentionNode } from '../../utils/groupMentionHtml';
 import { sanitizeCustomHtml } from '../../utils/sanitize';
 import { BlockType, MarkType } from './types';
 import {
@@ -95,6 +96,8 @@ const getInlineMarkElement = (
 };
 
 const getInlineNonMarkElement = (node: Element): MentionElement | EmoticonElement | undefined => {
+  const group = readGroupMentionNode(node);
+  if (group) return { ...createMentionElement(group.id, `@${group.name}`, false), group };
   if (node.name === 'img' && node.attribs['data-mx-emoticon'] !== undefined) {
     const { src, alt } = node.attribs;
     if (!src) return undefined;

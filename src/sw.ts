@@ -1,5 +1,11 @@
 /// <reference lib="WebWorker" />
 
+import {
+  authenticatedMediaRequest,
+  isAuthenticatedMediaUrl,
+  isHomeserverMediaUrl,
+} from './util/mediaRequest';
+
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
@@ -104,53 +110,26 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
   }
 });
 
-const MEDIA_PATHS = ['/_matrix/client/v1/media/download', '/_matrix/client/v1/media/thumbnail'];
-
-function mediaPath(url: string): boolean {
-  try {
-    const { pathname } = new URL(url);
-    return MEDIA_PATHS.some((p) => pathname.startsWith(p));
-  } catch {
-    return false;
-  }
-}
-
-function validMediaRequest(url: string, baseUrl: string): boolean {
-  return MEDIA_PATHS.some((p) => {
-    const validUrl = new URL(p, baseUrl);
-    return url.startsWith(validUrl.href);
-  });
-}
-
-function fetchConfig(token: string): RequestInit {
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: 'default',
-  };
-}
-
 self.addEventListener('fetch', (event: FetchEvent) => {
   const { url, method } = event.request;
 
-  if (method !== 'GET' || !mediaPath(url)) return;
+  if (method !== 'GET' || !isAuthenticatedMediaUrl(url)) return;
 
   const { clientId } = event;
   if (!clientId) return;
 
   const session = sessions.get(clientId);
   if (session) {
-    if (validMediaRequest(url, session.baseUrl)) {
-      event.respondWith(fetch(url, fetchConfig(session.accessToken)));
+    if (isHomeserverMediaUrl(url, session.baseUrl)) {
+      event.respondWith(fetch(authenticatedMediaRequest(event.request, session.accessToken)));
     }
     return;
   }
 
   event.respondWith(
     requestSessionWithTimeout(clientId).then((s) => {
-      if (s && validMediaRequest(url, s.baseUrl)) {
-        return fetch(url, fetchConfig(s.accessToken));
+      if (s && isHomeserverMediaUrl(url, s.baseUrl)) {
+        return fetch(authenticatedMediaRequest(event.request, s.accessToken));
       }
       return fetch(event.request);
     })

@@ -42,6 +42,8 @@ import { onEnterOrSpace } from '../utils/keyboard';
 import { copyToClipboard, tryDecodeURIComponent } from '../utils/dom';
 import { useTimeoutToggle } from '../hooks/useTimeoutToggle';
 
+import { readGroupMentionNode } from '../utils/groupMentionHtml';
+
 const ReactPrism = lazy(() => import('./react-prism/ReactPrism'));
 
 const EMOJI_REG_G = new RegExp(`${URL_NEG_LB}(${EMOJI_PATTERN})`, 'g');
@@ -326,6 +328,31 @@ export const getReactCustomHtmlParser = (
       if (domNode instanceof Element && 'name' in domNode) {
         const { name, attribs, children, parent } = domNode;
         const props = attributesToProps(attribs);
+        const group = readGroupMentionNode(domNode);
+        let ancestor = parent;
+        while (
+          ancestor &&
+          (!(ancestor instanceof Element) || !['code', 'pre'].includes(ancestor.name))
+        )
+          ancestor = ancestor.parent;
+        if (group && !ancestor) {
+          return (
+            <span
+              className={css.Mention({
+                highlight: group.members.some((m) => m.id === mx.getUserId()),
+              })}
+              style={{ color: group.color, overflowWrap: 'anywhere' }}
+              data-mention-group={group.id}
+              title={
+                group.members.length
+                  ? group.members.map((m) => `${m.name} (${m.id})`).join('\n')
+                  : 'В этом канале нет участников группы'
+              }
+            >
+              {`@${group.name}`}
+            </span>
+          );
+        }
 
         if (name === 'h1') {
           return (

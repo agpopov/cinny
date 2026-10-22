@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Room, Thread } from 'matrix-js-sdk';
 import { useNavigate } from 'react-router-dom';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { Box, Chip, Icon, Icons, Text, color, config } from 'folds';
+import { Box, IconButton, Icon, Icons, Text, config } from 'folds';
 import { NavItem, NavItemContent, NavButton } from '../../components/nav';
 import { UnreadBadge, UnreadBadgeCenter } from '../../components/unread-badge';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
@@ -13,6 +13,7 @@ import { makeNavCategoryId } from '../../state/closedNavCategories';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { getEventPreviewText } from '../../utils/notificationContent';
+import * as css from './styles.css';
 
 const COLLAPSED_LIMIT = 3;
 
@@ -84,37 +85,26 @@ export const useThreadsNav = (room: Room) => {
 };
 
 type ThreadsToggleProps = {
-  room: Room;
-  threads: Thread[];
   collapsed: boolean;
   onToggle: () => void;
 };
-/** Компактная кнопка в строке комнаты: сворачивает и разворачивает её треды. */
-export function ThreadsToggle({ room, threads, collapsed, onToggle }: ThreadsToggleProps) {
-  const mx = useMatrixClient();
-  const hasUnread = collapsed && threads.some((t) => getThreadUnread(mx, room, t).unread);
-
+/** Кнопка рядом с меню комнаты: сворачивает и разворачивает её треды. */
+export function ThreadsToggle({ collapsed, onToggle }: ThreadsToggleProps) {
+  const label = collapsed ? 'Показать треды' : 'Свернуть треды';
   return (
-    <Box shrink="No" alignItems="Center" style={{ paddingRight: config.space.S100 }}>
-      <Chip
-        variant="Background"
-        radii="Pill"
-        size="400"
-        aria-expanded={!collapsed}
-        aria-label={collapsed ? 'Показать треды' : 'Свернуть треды'}
-        title={collapsed ? 'Показать треды' : 'Свернуть треды'}
-        before={<Icon size="50" src={collapsed ? Icons.ChevronRight : Icons.ChevronBottom} />}
-        onClick={onToggle}
-      >
-        <Text
-          size="T200"
-          priority={hasUnread ? '500' : '300'}
-          style={hasUnread ? { color: color.Primary.Main } : undefined}
-        >
-          {threads.length}
-        </Text>
-      </Chip>
-    </Box>
+    <IconButton
+      type="button"
+      variant="Background"
+      fill="None"
+      radii="300"
+      size="300"
+      aria-expanded={!collapsed}
+      aria-label={label}
+      title={label}
+      onClick={onToggle}
+    >
+      <Icon size="50" src={collapsed ? Icons.ChevronRight : Icons.ChevronBottom} />
+    </IconButton>
   );
 }
 
@@ -160,15 +150,16 @@ export function RoomNavThreads({
         />
       ))}
       {threads.length > COLLAPSED_LIMIT && (
-        <NavItem variant="Background" radii="400">
-          <NavButton onClick={() => setExpanded(!expanded)}>
-            <NavItemContent>
-              <Text as="span" size="T200" priority="300" style={{ paddingLeft: config.space.S500 }}>
-                {expanded ? 'Свернуть' : `Показать ещё ${hidden}`}
-              </Text>
-            </NavItemContent>
-          </NavButton>
-        </NavItem>
+        <button
+          type="button"
+          className={css.ThreadsMoreButton}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          <Text as="span" size="T200" truncate>
+            {expanded ? 'Свернуть' : `Показать ещё ${hidden}`}
+          </Text>
+        </button>
       )}
     </Box>
   );

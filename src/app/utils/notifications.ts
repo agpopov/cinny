@@ -1,12 +1,5 @@
-import {
-  Direction,
-  MatrixClient,
-  MatrixEvent,
-  NotificationCountType,
-  ReceiptType,
-  Room,
-  Thread,
-} from 'matrix-js-sdk';
+import { Direction, MatrixEvent, NotificationCountType, ReceiptType } from 'matrix-js-sdk';
+import type { MatrixClient, Room, Thread } from 'matrix-js-sdk';
 import { getLatestReceiptEvent } from './room';
 
 export { isThreadUnread } from './room';

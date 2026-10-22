@@ -226,6 +226,9 @@ function RoomNotificationsGroupComp({
   const useAuthentication = useMediaAuthentication();
   const unread = useRoomUnread(room.roomId, roomToUnreadAtom);
 
+  const [encUrlPreview] = useSetting(settingsAtom, 'encUrlPreview');
+  const showUrlPreview = room.hasEncryptionStateEvent() ? encUrlPreview : urlPreview;
+
   const powerLevels = usePowerLevels(room);
   const creators = useRoomCreators(room);
 
@@ -273,7 +276,7 @@ function RoomNotificationsGroupComp({
             ts={event.origin_server_ts}
             getContent={getContent}
             mediaAutoLoad={mediaAutoLoad}
-            urlPreview={urlPreview}
+            urlPreview={showUrlPreview}
             htmlReactParserOptions={htmlReactParserOptions}
             linkifyOpts={linkifyOpts}
             outlineAttachment
@@ -332,7 +335,7 @@ function RoomNotificationsGroupComp({
                     edited={!!editedEvent}
                     getContent={getContent}
                     mediaAutoLoad={mediaAutoLoad}
-                    urlPreview={urlPreview}
+                    urlPreview={showUrlPreview}
                     htmlReactParserOptions={htmlReactParserOptions}
                     linkifyOpts={linkifyOpts}
                   />

@@ -4,6 +4,7 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { decryptFile, downloadEncryptedMedia, mxcUrlToHttp } from '../../../utils/matrix';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
+import { useObjectURL } from '../../../hooks/useObjectURL';
 import { FALLBACK_MIMETYPE } from '../../../utils/mimeTypes';
 
 export type ThumbnailContentProps = {
@@ -19,7 +20,7 @@ export function ThumbnailContent({ info, renderImage }: ThumbnailContentProps) {
       const thumbInfo = info.thumbnail_info;
       const thumbMxcUrl = info.thumbnail_file?.url ?? info.thumbnail_url;
       const encInfo = info.thumbnail_file;
-      if (typeof thumbMxcUrl !== 'string' || typeof thumbInfo?.mimetype !== 'string') {
+      if (typeof thumbMxcUrl !== 'string') {
         throw new Error('Failed to load thumbnail');
       }
 
@@ -27,18 +28,22 @@ export function ThumbnailContent({ info, renderImage }: ThumbnailContentProps) {
       if (!mediaUrl) throw new Error('Invalid media URL');
       if (encInfo) {
         const fileContent = await downloadEncryptedMedia(mediaUrl, (encBuf) =>
-          decryptFile(encBuf, thumbInfo.mimetype ?? FALLBACK_MIMETYPE, encInfo)
+          decryptFile(encBuf, thumbInfo?.mimetype ?? FALLBACK_MIMETYPE, encInfo)
         );
-        return URL.createObjectURL(fileContent);
+        return fileContent;
       }
 
       return mediaUrl;
     }, [mx, info, useAuthentication])
   );
 
+  const media = thumbSrcState.status === AsyncStatus.Success ? thumbSrcState.data : undefined;
+  const objectUrl = useObjectURL(media instanceof Blob ? media : undefined);
+  const src = typeof media === 'string' ? media : objectUrl;
+
   useEffect(() => {
-    loadThumbSrc();
+    loadThumbSrc().catch(() => undefined);
   }, [loadThumbSrc]);
 
-  return thumbSrcState.status === AsyncStatus.Success ? renderImage(thumbSrcState.data) : null;
+  return src ? renderImage(src) : null;
 }

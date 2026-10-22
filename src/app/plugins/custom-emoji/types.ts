@@ -1,4 +1,4 @@
-import { IImageInfo } from '../../../types/matrix/common';
+import type { IImageInfo } from '../../../types/matrix/common';
 
 // https://github.com/Sorunome/matrix-doc/blob/soru/emotes/proposals/2545-emotes.md
 
@@ -14,10 +14,12 @@ export type EmoteRoomsContent = {
 /**
  * Pack
  */
-export enum ImageUsage {
-  Emoticon = 'emoticon',
-  Sticker = 'sticker',
-}
+export const ImageUsage = {
+  Emoticon: 'emoticon',
+  Sticker: 'sticker',
+} as const;
+// eslint-disable-next-line no-redeclare
+export type ImageUsage = typeof ImageUsage[keyof typeof ImageUsage];
 
 export type PackImage = {
   url: string;

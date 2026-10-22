@@ -6,6 +6,7 @@ import * as css from './styles.css';
 import { PackImageReader } from '../../../plugins/custom-emoji';
 import { IEmoji } from '../../../plugins/emoji';
 import { mxcUrlToHttp } from '../../../utils/matrix';
+import { getBuiltinStickerAssetUrl } from '../../../plugins/custom-emoji/builtinStickers';
 
 export const getEmojiItemInfo = (element: Element): EmojiItemInfo | undefined => {
   const label = element.getAttribute('title');
@@ -81,6 +82,10 @@ type StickerItemProps = {
 };
 
 export function StickerItem({ mx, useAuthentication, image }: StickerItemProps) {
+  const imageUrl =
+    getBuiltinStickerAssetUrl(image.url, import.meta.env.BASE_URL) ??
+    mxcUrlToHttp(mx, image.url, useAuthentication) ??
+    '';
   return (
     <Box
       as="button"
@@ -89,7 +94,7 @@ export function StickerItem({ mx, useAuthentication, image }: StickerItemProps) 
       justifyContent="Center"
       className={css.StickerItem}
       title={image.body || image.shortcode}
-      aria-label={`${image.body || image.shortcode} emoji`}
+      aria-label={`${image.body || image.shortcode} sticker`}
       data-emoji-type={EmojiType.Sticker}
       data-emoji-data={image.url}
       data-emoji-shortcode={image.shortcode}
@@ -98,7 +103,7 @@ export function StickerItem({ mx, useAuthentication, image }: StickerItemProps) 
         loading="lazy"
         className={css.StickerImg}
         alt={image.body || image.shortcode}
-        src={mxcUrlToHttp(mx, image.url, useAuthentication) ?? ''}
+        src={imageUrl}
       />
     </Box>
   );

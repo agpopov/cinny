@@ -8,9 +8,19 @@ import React, {
   useState,
 } from 'react';
 import { Box, Scroll, Text } from 'folds';
-import { Descendant, Editor, createEditor } from 'slate';
+import {
+  Descendant,
+  Editor,
+  Element as SlateElement,
+  Range,
+  Transforms,
+  createEditor,
+} from 'slate';
+import { flushSync } from 'react-dom';
+import { IS_FIREFOX } from 'slate-dom';
 import {
   Slate,
+  ReactEditor,
   Editable,
   withReact,
   RenderLeafProps,
@@ -63,6 +73,7 @@ export const useEditor = (): Editor => {
 export type EditorChangeHandler = (value: Descendant[]) => void;
 type CustomEditorProps = {
   editableName?: string;
+  readOnly?: boolean;
   top?: ReactNode;
   bottom?: ReactNode;
   before?: ReactNode;
@@ -79,6 +90,7 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
   (
     {
       editableName,
+      readOnly,
       top,
       bottom,
       before,
@@ -109,6 +121,28 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
       },
       [editor, onKeyDown]
     );
+
+    // Firefox replaces native DOM nodes during IME composition before React's
+    // batched removal of selected void pills. Commit that removal first so React
+    // never tries to remove a pill which the browser has already detached.
+    const handleCompositionStart = useCallback(() => {
+      if (!IS_FIREFOX || readOnly) return;
+      const selection = window.getSelection();
+      const range =
+        selection &&
+        ReactEditor.toSlateRange(editor, selection, { exactMatch: false, suppressThrow: true });
+      if (!range || Range.isCollapsed(range)) return;
+      const [voidNode] = Editor.nodes(editor, {
+        at: range,
+        match: (node) => SlateElement.isElement(node) && editor.isVoid(node),
+      });
+      if (!voidNode) return;
+      flushSync(() => {
+        Transforms.select(editor, range);
+        Editor.deleteFragment(editor);
+        editor.onChange();
+      });
+    }, [editor, readOnly]);
 
     const renderPlaceholder = useCallback(
       ({ attributes, children }: RenderPlaceholderProps) => (
@@ -141,6 +175,8 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
               hideTrack
             >
               <Editable
+                readOnly={readOnly}
+                onCompositionStart={handleCompositionStart}
                 data-editable-name={editableName}
                 className={css.EditorTextarea}
                 placeholder={placeholder}

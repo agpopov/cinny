@@ -1,5 +1,7 @@
 import { Descendant, Editor, Text } from 'slate';
 import { MatrixClient } from 'matrix-js-sdk';
+import { htmlToEditorInput } from './input';
+import { mentionsOutsideMarkdownCode } from './markdownCode';
 import { sanitizeText } from '../../utils/sanitize';
 import { BlockType } from './types';
 import { CustomElement } from './slate';
@@ -13,7 +15,15 @@ import { findAndReplace } from '../../utils/findAndReplace';
 import { sanitizeForRegex } from '../../utils/regex';
 import { isUserId } from '../../utils/matrix';
 
+import {
+  GroupMentionMap,
+  getResolvedGroup,
+  groupMentionHtml,
+  groupMentionText,
+} from '../../utils/mentionGroups';
+
 export type OutputOptions = {
+  groupMentions?: GroupMentionMap;
   allowTextFormatting?: boolean;
   allowInlineMarkdown?: boolean;
   allowBlockMarkdown?: boolean;
@@ -37,7 +47,11 @@ const textToCustomHtml = (node: Text, opts: OutputOptions): string => {
   return string;
 };
 
-const elementToCustomHtml = (node: CustomElement, children: string): string => {
+const elementToCustomHtml = (
+  node: CustomElement,
+  children: string,
+  opts: OutputOptions
+): string => {
   switch (node.type) {
     case BlockType.Paragraph:
       return `${children}<br/>`;
@@ -59,6 +73,7 @@ const elementToCustomHtml = (node: CustomElement, children: string): string => {
       return `<ul>${children}</ul>`;
 
     case BlockType.Mention: {
+      if (node.group) return groupMentionHtml(getResolvedGroup(node.group, opts.groupMentions));
       let fragment = node.id;
 
       if (node.eventId) {
@@ -95,14 +110,14 @@ const ignoreHTMLParseInlineMD = (text: string): string =>
     (txt) => parseInlineMD(txt)
   ).join('');
 
-export const toMatrixCustomHTML = (
+const serializeMatrixCustomHTML = (
   node: Descendant | Descendant[],
   opts: OutputOptions
 ): string => {
   let markdownLines = '';
   const parseNode = (n: Descendant, index: number, targetNodes: Descendant[]) => {
     if (opts.allowBlockMarkdown && 'type' in n && n.type === BlockType.Paragraph) {
-      const line = toMatrixCustomHTML(n, {
+      const line = serializeMatrixCustomHTML(n, {
         ...opts,
         allowInlineMarkdown: false,
         allowBlockMarkdown: false,
@@ -120,18 +135,43 @@ export const toMatrixCustomHTML = (
     const parsedMarkdown = parseBlockMD(markdownLines, ignoreHTMLParseInlineMD);
     markdownLines = '';
     const isCodeLine = 'type' in n && n.type === BlockType.CodeLine;
-    if (isCodeLine) return `${parsedMarkdown}${toMatrixCustomHTML(n, {})}`;
+    if (isCodeLine)
+      return `${parsedMarkdown}${serializeMatrixCustomHTML(n, {
+        groupMentions: opts.groupMentions,
+      })}`;
 
-    return `${parsedMarkdown}${toMatrixCustomHTML(n, { ...opts, allowBlockMarkdown: false })}`;
+    return `${parsedMarkdown}${serializeMatrixCustomHTML(n, {
+      ...opts,
+      allowBlockMarkdown: false,
+    })}`;
   };
   if (Array.isArray(node)) return node.map(parseNode).join('');
   if (Text.isText(node)) return textToCustomHtml(node, opts);
 
   const children = node.children.map(parseNode).join('');
-  return elementToCustomHtml(node, children);
+  return elementToCustomHtml(node, children, opts);
 };
 
-const elementToPlainText = (node: CustomElement, children: string): string => {
+export const toMatrixCustomHTML = (
+  node: Descendant | Descendant[],
+  opts: OutputOptions
+): string => {
+  const nodes = Array.isArray(node) ? node : [node];
+  return serializeMatrixCustomHTML(
+    mentionsOutsideMarkdownCode(
+      nodes,
+      opts.groupMentions,
+      !!(opts.allowBlockMarkdown || opts.allowInlineMarkdown)
+    ),
+    opts
+  );
+};
+
+const elementToPlainText = (
+  node: CustomElement,
+  children: string,
+  groups?: GroupMentionMap
+): string => {
   switch (node.type) {
     case BlockType.Paragraph:
       return `${children}\n`;
@@ -152,7 +192,11 @@ const elementToPlainText = (node: CustomElement, children: string): string => {
     case BlockType.UnorderedList:
       return `${children}\n`;
     case BlockType.Mention:
-      return node.id;
+      return node.group
+        ? groupMentionText(
+            groups || node.group.members ? getResolvedGroup(node.group, groups) : node.group
+          )
+        : node.id;
     case BlockType.Emoticon:
       return node.key.startsWith('mxc://') ? `:${node.shortcode}:` : node.key;
     case BlockType.Link:
@@ -164,15 +208,33 @@ const elementToPlainText = (node: CustomElement, children: string): string => {
   }
 };
 
-export const toPlainText = (node: Descendant | Descendant[], isMarkdown: boolean): string => {
-  if (Array.isArray(node)) return node.map((n) => toPlainText(n, isMarkdown)).join('');
+const serializePlainText = (
+  node: Descendant | Descendant[],
+  isMarkdown: boolean,
+  groups?: GroupMentionMap
+): string => {
+  if (Array.isArray(node))
+    return node.map((n) => serializePlainText(n, isMarkdown, groups)).join('');
   if (Text.isText(node))
     return isMarkdown
       ? unescapeMarkdownBlockSequences(node.text, unescapeMarkdownInlineSequences)
       : node.text;
 
-  const children = node.children.map((n) => toPlainText(n, isMarkdown)).join('');
-  return elementToPlainText(node, children);
+  const children = node.children.map((n) => serializePlainText(n, isMarkdown, groups)).join('');
+  return elementToPlainText(node, children, groups);
+};
+
+export const toPlainText = (
+  node: Descendant | Descendant[],
+  isMarkdown: boolean,
+  groups?: GroupMentionMap
+): string => {
+  const nodes = Array.isArray(node) ? node : [node];
+  return serializePlainText(
+    mentionsOutsideMarkdownCode(nodes, groups, isMarkdown),
+    isMarkdown,
+    groups
+  );
 };
 
 /**
@@ -201,7 +263,16 @@ export type MentionsData = {
   room: boolean;
   users: Set<string>;
 };
-export const getMentions = (mx: MatrixClient, roomId: string, editor: Editor): MentionsData => {
+export const getMentions = (
+  mx: MatrixClient,
+  roomId: string,
+  editor: Editor,
+  groups?: GroupMentionMap,
+  renderedHtml?: string
+): MentionsData => {
+  if (renderedHtml !== undefined) {
+    return getMentions(mx, roomId, { ...editor, children: htmlToEditorInput(renderedHtml, false) });
+  }
   const mentionData: MentionsData = {
     room: false,
     users: new Set(),
@@ -212,7 +283,17 @@ export const getMentions = (mx: MatrixClient, roomId: string, editor: Editor): M
     if (node.type === BlockType.CodeBlock) return;
 
     if (node.type === BlockType.Mention) {
-      if (node.name === '@room') {
+      if (node.group) {
+        getResolvedGroup(node.group, groups).members.forEach((member) => {
+          if (member.id !== mx.getUserId()) mentionData.users.add(member.id);
+        });
+        return;
+      }
+      if (
+        node.name === '@room' &&
+        !node.eventId &&
+        (node.id === roomId || node.id === mx.getRoom(roomId)?.getCanonicalAlias())
+      ) {
         mentionData.room = true;
       }
 

@@ -3,11 +3,11 @@ import { atom, useSetAtom } from 'jotai';
 import {
   ClientEvent,
   MatrixClient,
+  MatrixEvent,
+  MatrixEventEvent,
   Room,
   RoomEvent,
   SyncState,
-  MatrixEventEvent,
-  ThreadEvent,
 } from 'matrix-js-sdk';
 import { useCallback, useEffect } from 'react';
 import {
@@ -29,6 +29,7 @@ import { roomToParentsAtom } from './roomToParents';
 import { useStateEventCallback } from '../../hooks/useStateEventCallback';
 import { useSyncState } from '../../hooks/useSyncState';
 import { useRoomsNotificationPreferencesContext } from '../../hooks/useRoomsNotificationPreferences';
+import { subscribeRoomUnread } from './subscribeRoomUnread';
 
 export type RoomToUnreadAction =
   | {
@@ -196,69 +197,36 @@ export const useBindRoomToUnreadAtom = (mx: MatrixClient, unreadAtom: typeof roo
   );
 
   useEffect(() => {
-    const cleanups: (() => void)[] = [];
-    const bound = new Set<Room>();
-    const bindRoom = (room: Room) => {
-      if (bound.has(room)) return;
-      bound.add(room);
-      const refresh = () => {
-        if (room.isSpaceRoom()) return;
-        if (
-          room.getMyMembership() !== Membership.Join ||
-          getNotificationType(mx, room.roomId) === NotificationType.Mute
-        ) {
-          setUnreadAtom({ type: 'DELETE', roomId: room.roomId });
-          return;
-        }
-        const unreadInfo = getUnreadInfo(room);
-        if (unreadInfo.total > 0 || unreadInfo.highlight > 0 || roomHaveUnread(mx, room)) {
-          setUnreadAtom({ type: 'PUT', unreadInfo });
-        } else {
-          setUnreadAtom({ type: 'DELETE', roomId: room.roomId });
-        }
-      };
-      // SDK updates receipts, counts and thread models at different points in
-      // one sync. Reconcile their final state, including receipts from other devices.
-      let queued = false;
-      let active = true;
-      const schedule = () => {
-        if (queued) return;
-        queued = true;
-        queueMicrotask(() => {
-          queued = false;
-          if (active) refresh();
-        });
-      };
-      room.on(RoomEvent.Timeline, schedule);
-      room.on(RoomEvent.Receipt, schedule);
-      room.on(RoomEvent.UnreadNotifications, schedule);
-      room.on(RoomEvent.Redaction, schedule);
-      room.on(ThreadEvent.New, schedule);
-      room.on(ThreadEvent.Update, schedule);
-      room.on(ThreadEvent.NewReply, schedule);
-      room.on(ThreadEvent.Delete, schedule);
-      cleanups.push(() => {
-        active = false;
-        room.removeListener(RoomEvent.Timeline, schedule);
-        room.removeListener(RoomEvent.Receipt, schedule);
-        room.removeListener(RoomEvent.UnreadNotifications, schedule);
-        room.removeListener(RoomEvent.Redaction, schedule);
-        room.removeListener(ThreadEvent.New, schedule);
-        room.removeListener(ThreadEvent.Update, schedule);
-        room.removeListener(ThreadEvent.NewReply, schedule);
-        room.removeListener(ThreadEvent.Delete, schedule);
-      });
-      schedule();
+    const cleanups = new Map<Room, () => void>();
+    const refreshRoom = (room: Room) => {
+      const unreadInfo = getUnreadInfo(room);
+      if (
+        room.getMyMembership() === Membership.Join &&
+        getNotificationType(mx, room.roomId) !== NotificationType.Mute &&
+        (unreadInfo.total > 0 || unreadInfo.highlight > 0 || roomHaveUnread(mx, room))
+      ) {
+        setUnreadAtom({ type: 'PUT', unreadInfo });
+      } else {
+        setUnreadAtom({ type: 'DELETE', roomId: room.roomId });
+      }
     };
-    const refreshAll = () => {
-      setUnreadAtom({ type: 'RESET', unreadInfos: getUnreadInfos(mx) });
+    const bindRoom = (room: Room) => {
+      if (cleanups.has(room) || room.isSpaceRoom()) return;
+      cleanups.set(
+        room,
+        subscribeRoomUnread(room, () => refreshRoom(room))
+      );
+    };
+    const handleDecrypted = (event: MatrixEvent) => {
+      const room = mx.getRoom(event.getRoomId());
+      if (room && cleanups.has(room)) refreshRoom(room);
     };
     mx.getRooms().forEach(bindRoom);
     mx.on(ClientEvent.Room, bindRoom);
-    mx.on(MatrixEventEvent.Decrypted, refreshAll);
+    mx.on(MatrixEventEvent.Decrypted, handleDecrypted);
     return () => {
       mx.removeListener(ClientEvent.Room, bindRoom);
-      mx.removeListener(MatrixEventEvent.Decrypted, refreshAll);
+      mx.removeListener(MatrixEventEvent.Decrypted, handleDecrypted);
       cleanups.forEach((cleanup) => cleanup());
     };
   }, [mx, setUnreadAtom, roomsNotificationPreferences]);

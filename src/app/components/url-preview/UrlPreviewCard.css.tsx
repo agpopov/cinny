@@ -1,5 +1,25 @@
 import { recipe } from '@vanilla-extract/recipes';
+import { style } from '@vanilla-extract/css';
 import { DefaultReset, color, toRem } from 'folds';
+
+export const PreviewMedia = style({
+  display: 'block',
+  width: '100%',
+  maxHeight: toRem(400),
+  objectFit: 'contain',
+});
+
+export const PreviewImageButton = style([
+  DefaultReset,
+  {
+    display: 'block',
+    width: '100%',
+    border: 0,
+    padding: 0,
+    background: 'transparent',
+    cursor: 'pointer',
+  },
+]);
 
 export const UrlPreviewHolderGradient = recipe({
   base: [

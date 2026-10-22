@@ -1,11 +1,11 @@
 {
   "name": "cinny",
-  "version": "4.12.10",
+  "version": "4.12.11",
   "description": "Yet another matrix client",
   "main": "index.js",
   "type": "module",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "start": "vite",
@@ -19,7 +19,11 @@
     "prepare": "husky install",
     "commit": "git-cz",
     "bump": "node scripts/update-version.js",
-    "test:unread": "esbuild tests/unread.test.ts --bundle --platform=node --format=esm --packages=external --outfile=tests/.unread.test.mjs && node tests/.unread.test.mjs"
+    "test:unread": "esbuild tests/unread.test.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/cinny-unread.test.mjs && node node_modules/.cache/cinny-unread.test.mjs",
+    "test:media": "node tests/media.test.mjs",
+    "test:stickers": "node tests/stickers.test.mjs",
+    "test:mentions": "esbuild tests/mention-groups.test.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/cinny-mentions.test.mjs && node node_modules/.cache/cinny-mentions.test.mjs",
+    "test:unread:source": "node --import ./tests/register-unread-source.mjs tests/unread.test.ts && node --import ./tests/register-unread-source.mjs tests/unread-regressions.test.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": "eslint",
@@ -121,7 +125,7 @@
     "husky": "9.1.7",
     "lint-staged": "16.3.2",
     "prettier": "2.8.1",
-    "typescript": "4.9.4",
+    "typescript": "5.9.3",
     "vite": "5.4.19",
     "vite-plugin-pwa": "0.20.5",
     "vite-plugin-static-copy": "1.0.4",

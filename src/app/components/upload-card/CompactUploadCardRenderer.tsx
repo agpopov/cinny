@@ -25,7 +25,7 @@ export function CompactUploadCardRenderer({
 
   const { upload, startUpload, cancelUpload } = useBindUploadAtom(mx, uploadAtom, isEncrypted);
   const { file } = upload;
-  const fileSizeExceeded = file.size >= allowSize;
+  const fileSizeExceeded = file.size > allowSize;
 
   if (upload.status === UploadStatus.Idle && !fileSizeExceeded) {
     startUpload();
