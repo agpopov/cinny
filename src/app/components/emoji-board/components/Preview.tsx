@@ -24,7 +24,18 @@ export function Preview({ previewAtom }: PreviewProps) {
 
   const { key, shortcode } = useAtomValue(previewAtom) ?? {};
 
-  if (!shortcode) return null;
+  // Reserve this space before the first hover/focus as well. Otherwise the
+  // preview resizes the scroll area between pointerdown and click, moving the
+  // selected sticker out from under the pointer on narrow screens.
+  if (!shortcode) {
+    return (
+      <Box shrink="No" className={css.Preview} alignItems="Center">
+        <Text size="T300" priority="300">
+          Выберите стикер
+        </Text>
+      </Box>
+    );
+  }
   const imageUrl = key
     ? getBuiltinStickerAssetUrl(key, import.meta.env.BASE_URL) ??
       (key.startsWith('mxc://') ? mxcUrlToHttp(mx, key, useAuthentication) : undefined)
