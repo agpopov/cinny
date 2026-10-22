@@ -19,6 +19,10 @@ export const isHomeserverMediaUrl = (url: string, baseUrl: string): boolean => {
 export const authenticatedMediaRequest = (request: Request, accessToken: string): Request => {
   const headers = new Headers(request.headers);
   headers.set('Authorization', `Bearer ${accessToken}`);
-  // Keep Range/If-Range and all other request properties so video can stream/seek.
-  return new Request(request, { headers });
+  // Images/video initiate no-cors requests. That header guard silently drops
+  // Authorization, so the authenticated fetch must use cors mode. Preserve
+  // Range/If-Range and the remaining request properties for streaming/seeking.
+  // Bearer auth does not need cookies; media elements otherwise use "include",
+  // which conflicts with Matrix's Access-Control-Allow-Origin: * response.
+  return new Request(request, { headers, mode: 'cors', credentials: 'omit' });
 };

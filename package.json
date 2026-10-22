@@ -1,6 +1,6 @@
 {
   "name": "cinny",
-  "version": "4.12.11",
+  "version": "4.12.12",
   "description": "Yet another matrix client",
   "main": "index.js",
   "type": "module",
@@ -23,7 +23,8 @@
     "test:media": "node tests/media.test.mjs",
     "test:stickers": "node tests/stickers.test.mjs",
     "test:mentions": "esbuild tests/mention-groups.test.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/cinny-mentions.test.mjs && node node_modules/.cache/cinny-mentions.test.mjs",
-    "test:unread:source": "node --import ./tests/register-unread-source.mjs tests/unread.test.ts && node --import ./tests/register-unread-source.mjs tests/unread-regressions.test.ts"
+    "test:unread:source": "node --import ./tests/register-unread-source.mjs tests/unread.test.ts && node --import ./tests/register-unread-source.mjs tests/unread-regressions.test.ts",
+    "test:key-export": "node tests/key-export.test.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": "eslint",

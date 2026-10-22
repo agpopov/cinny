@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { Box, config, Icons, Scroll } from 'folds';
 import FocusTrap from 'focus-trap-react';
@@ -18,14 +19,13 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { IEmoji, emojiGroups, emojis } from '../../plugins/emoji';
 import { useEmojiGroupLabels } from './useEmojiGroupLabels';
 import { useEmojiGroupIcons } from './useEmojiGroupIcons';
-import { preventScrollWithArrowKey, stopPropagation } from '../../utils/keyboard';
+import { preventScrollWithArrowKey } from '../../utils/keyboard';
 import { useRelevantImagePacks } from '../../hooks/useImagePacks';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useRecentEmoji } from '../../hooks/useRecentEmoji';
 import { isUserId, mxcUrlToHttp } from '../../utils/matrix';
 import { editableActiveElement, targetFromEvent } from '../../utils/dom';
 import { useAsyncSearch, UseAsyncSearchOptions } from '../../hooks/useAsyncSearch';
-import { useDebounce } from '../../hooks/useDebounce';
 import { useThrottle } from '../../hooks/useThrottle';
 import { addRecentEmoji } from '../../plugins/recent-emoji';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
@@ -410,18 +410,23 @@ export function EmojiBoard({
   );
 
   const searchedItems = result?.items.slice(0, 100);
+  let searchLabel = 'Searching...';
+  if (searchedItems) searchLabel = searchedItems.length ? 'Search Results' : 'No Results found';
+  const [query, setQuery] = useState('');
+  const [pendingGroupId, setPendingGroupId] = useState<string>();
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = (evt) =>
+    setQuery(evt.currentTarget.value);
 
-  const handleOnChange: ChangeEventHandler<HTMLInputElement> = useDebounce(
-    useCallback(
-      (evt) => {
-        const term = evt.target.value;
-        if (term) search(term);
-        else resetSearch();
-      },
-      [search, resetSearch]
-    ),
-    { wait: 200 }
-  );
+  useEffect(() => {
+    if (!query.trim()) {
+      resetSearch();
+      return undefined;
+    }
+    const timer = setTimeout(() => search(query), 200);
+    return () => clearTimeout(timer);
+  }, [query, search, resetSearch]);
+
+  useEffect(() => setQuery(''), [tab]);
 
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const virtualBaseRef = useRef<HTMLDivElement>(null);
@@ -462,8 +467,9 @@ export function EmojiBoard({
   };
 
   const handleScrollToGroup = (groupId: string) => {
-    const groupIndex = groups.findIndex((group) => group.id === groupId);
-    virtualizer.scrollToIndex(groupIndex, { align: 'start' });
+    setQuery('');
+    resetSearch();
+    setPendingGroupId(groupId);
   };
 
   // sync active sidebar tab with scroll
@@ -494,6 +500,13 @@ export function EmojiBoard({
     }
   }, [tab, virtualizer, groups]);
 
+  useEffect(() => {
+    if (!pendingGroupId || query) return;
+    const groupIndex = groups.findIndex((group) => group.id === pendingGroupId);
+    if (groupIndex >= 0) virtualizer.scrollToIndex(groupIndex, { align: 'start' });
+    setPendingGroupId(undefined);
+  }, [pendingGroupId, query, groups, virtualizer]);
+
   return (
     <FocusTrap
       focusTrapOptions={{
@@ -506,7 +519,10 @@ export function EmojiBoard({
           !editableActiveElement() && isKeyHotkey(['arrowdown', 'arrowright'], evt),
         isKeyBackward: (evt: KeyboardEvent) =>
           !editableActiveElement() && isKeyHotkey(['arrowup', 'arrowleft'], evt),
-        escapeDeactivates: stopPropagation,
+        escapeDeactivates: (evt: KeyboardEvent) => {
+          evt.stopPropagation();
+          return true;
+        },
       }}
     >
       <EmojiBoardLayout
@@ -515,7 +531,7 @@ export function EmojiBoard({
             {onTabChange && <EmojiBoardTabs tab={tab} onTabChange={onTabChange} />}
             <SearchInput
               key={tab}
-              query={result?.query}
+              query={query}
               onChange={handleOnChange}
               allowTextCustomEmoji={allowTextCustomEmoji}
               onTextCustomEmojiSelect={handleTextCustomEmojiSelect}
@@ -545,17 +561,15 @@ export function EmojiBoard({
             previewAtom={previewAtom}
             onGroupItemClick={handleGroupItemClick}
           >
-            {searchedItems && (
-              <EmojiGroup
-                id={SEARCH_GROUP_ID}
-                label={searchedItems.length ? 'Search Results' : 'No Results found'}
-              >
-                {searchedItems.map(renderItem)}
+            {query.trim() && (
+              <EmojiGroup id={SEARCH_GROUP_ID} label={searchLabel}>
+                {searchedItems?.map(renderItem)}
               </EmojiGroup>
             )}
             <div
               ref={virtualBaseRef}
               style={{
+                display: query.trim() ? 'none' : undefined,
                 position: 'relative',
                 height: virtualizer.getTotalSize(),
               }}

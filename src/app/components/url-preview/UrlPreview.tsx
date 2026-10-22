@@ -4,7 +4,13 @@ import { Box, as } from 'folds';
 import * as css from './UrlPreview.css';
 
 export const UrlPreview = as<'div'>(({ className, ...props }, ref) => (
-  <Box shrink="No" className={classNames(css.UrlPreview, className)} {...props} ref={ref} />
+  <Box
+    shrink="No"
+    direction="Column"
+    className={classNames(css.UrlPreview, className)}
+    {...props}
+    ref={ref}
+  />
 ));
 
 export const UrlPreviewImg = as<'img'>(({ className, alt, ...props }, ref) => (

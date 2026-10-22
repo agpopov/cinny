@@ -32,7 +32,10 @@ if ('serviceWorker' in navigator) {
     pushSessionToSW(session?.baseUrl, session?.accessToken);
   };
 
-  navigator.serviceWorker.register(swUrl).then(sendSessionToSW);
+  navigator.serviceWorker
+    .register(swUrl, { type: import.meta.env.DEV ? 'module' : 'classic' })
+    .then(sendSessionToSW)
+    .catch((error) => console.error('Service worker registration failed', error));
   navigator.serviceWorker.ready.then(sendSessionToSW);
 
   navigator.serviceWorker.addEventListener('message', (ev) => {

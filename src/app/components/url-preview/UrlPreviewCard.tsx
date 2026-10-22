@@ -184,7 +184,7 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
       previewContent = renderContent(previewStatus.data);
 
     return (
-      <UrlPreview direction="Column" {...props} ref={ref}>
+      <UrlPreview {...props} ref={ref}>
         {previewContent}
       </UrlPreview>
     );

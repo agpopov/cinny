@@ -181,11 +181,13 @@ test('media authentication preserves video ranges and request properties', () =>
     'https://matrix.example/_matrix/client/v1/media/download/server/id',
     {
       headers: { Range: 'bytes=4096-', 'If-Range': 'etag' },
-      credentials: 'omit',
+      mode: 'no-cors',
+      credentials: 'include',
       cache: 'no-cache',
     }
   );
   const authenticated = authenticatedMediaRequest(original, 'test-token');
+  assert.equal(authenticated.mode, 'cors');
   assert.equal(authenticated.headers.get('Authorization'), 'Bearer test-token');
   assert.equal(authenticated.headers.get('Range'), 'bytes=4096-');
   assert.equal(authenticated.headers.get('If-Range'), 'etag');

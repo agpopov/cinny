@@ -729,6 +729,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                   >
                     {!hideStickerBtn && (
                       <IconButton
+                        aria-label="Stickers"
                         aria-pressed={emojiBoardTab === EmojiBoardTab.Sticker}
                         onClick={() => setEmojiBoardTab(EmojiBoardTab.Sticker)}
                         variant="SurfaceVariant"
@@ -743,6 +744,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                     )}
                     <IconButton
                       ref={emojiBtnRef}
+                      aria-label="Emoji"
                       aria-pressed={
                         hideStickerBtn ? !!emojiBoardTab : emojiBoardTab === EmojiBoardTab.Emoji
                       }
@@ -762,6 +764,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                 )}
               </UseStateProvider>
               <IconButton
+                aria-label="Send message"
                 disabled={sending}
                 onClick={submit}
                 variant="SurfaceVariant"

@@ -29,6 +29,7 @@ export function SearchInput({
       size="400"
       placeholder={allowTextCustomEmoji ? 'Search or Text Reaction ' : 'Search'}
       maxLength={50}
+      value={query ?? ''}
       after={
         allowTextCustomEmoji && query ? (
           <Chip
