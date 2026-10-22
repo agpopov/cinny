@@ -35,6 +35,8 @@ with sync_playwright() as p:
             checks.append(engine + ': ' + phase + ', saved session, IndexedDB, Rust crypto and rendered room without global alias')
             page.screenshot(path=str(OUT / (engine + '-' + phase + '.png')))
             print('PASS ' + checks[-1], flush=True)
+            # Let startup key queries finish before navigation aborts the page.
+            page.wait_for_timeout(1500)
         assert any(r['path'].endswith('/sync') for r in requests), requests
         assert any(r['path'].endswith('/keys/upload') for r in requests), requests
         assert not errors, errors

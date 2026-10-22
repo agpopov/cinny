@@ -17,6 +17,7 @@ MESSAGE = 'Saved session restored with real Matrix SDK and Rust crypto'
 
 def install_session_fixture(page):
     requests = []
+    device_keys = {}
     sync_count = 0
     now = int(time.time() * 1000)
 
@@ -64,9 +65,12 @@ def install_session_fixture(page):
         elif path.endswith('/account/whoami'):
             body = {'user_id': USER, 'device_id': DEVICE}
         elif path.endswith('/keys/upload'):
+            uploaded = request.post_data_json or {}
+            if uploaded.get('device_keys'):
+                device_keys[DEVICE] = uploaded['device_keys']
             body = {'one_time_key_counts': {'signed_curve25519': 50}}
         elif path.endswith('/keys/query'):
-            body = {'device_keys': {}, 'failures': {}}
+            body = {'device_keys': {USER: device_keys}, 'failures': {}}
         elif path.endswith('/keys/claim'):
             body = {'one_time_keys': {}, 'failures': {}}
         elif path.endswith('/room_keys/version'):
