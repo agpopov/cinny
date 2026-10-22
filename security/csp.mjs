@@ -2,11 +2,16 @@ import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const inlineHashes = (html) =>
+export const inlineHashes = (html) =>
   [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
     .map((match) => match[1])
     .filter((source) => source.trim())
-    .map((source) => `'sha256-${createHash('sha256').update(source).digest('base64')}'`);
+    // HTML parsing normalizes CRLF and lone CR before CSP hashes are checked.
+    // Windows checkouts must produce the same policy as Linux/macOS builds.
+    .map(
+      (source) =>
+        `'sha256-${createHash('sha256').update(source.replace(/\r\n?/g, '\n')).digest('base64')}'`
+    );
 
 /** Hash only known bootstrap scripts. Recomputed when embedded Call is updated. */
 export const productionCsp = () => {

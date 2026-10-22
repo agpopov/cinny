@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { mkdtemp, mkdir, readFile, writeFile, rm, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { copyStaticAssets, serveStaticAssets, staticAssets } from '../scripts/static-assets.mjs';
 import { commitMessage } from '../scripts/commit.mjs';
-import { productionCsp, injectCsp, contentSecurityPolicyPlugin } from '../security/csp.mjs';
+import {
+  productionCsp,
+  injectCsp,
+  contentSecurityPolicyPlugin,
+  inlineHashes,
+} from '../security/csp.mjs';
 const temporary = async (t) => {
   const path = await mkdtemp(resolve(tmpdir(), 'cinny-p1-tools-'));
   t.after(() => rm(path, { recursive: true, force: true }));
@@ -70,9 +76,19 @@ test('CSP permits pinned bootstrap hashes and WASM without universal script or e
   ])
     assert.equal(scripts.includes(unsafe), false, unsafe);
   assert.ok(scripts.includes("'wasm-unsafe-eval'"));
-  assert.equal([...scripts.matchAll(/sha256-/g)].length, 3);
+  assert.equal([...scripts.matchAll(/sha256-/g)].length, 2);
   const html = injectCsp('<html><head><script src="test.js"></script></head></html>');
   assert.ok(html.indexOf('Content-Security-Policy') < html.indexOf('<script'));
+});
+test('CSP hashes match HTML parser normalization for Windows CRLF and lone CR', () => {
+  const source = '\n      window.bootstrapReady = true;\n    ';
+  const expected = `'sha256-${createHash('sha256').update(source).digest('base64')}'`;
+  for (const lineEnding of ['\n', '\r\n', '\r']) {
+    const html = `<script>${source.replaceAll('\n', lineEnding)}</script>`;
+    assert.deepEqual(inlineHashes(html), [expected]);
+  }
+  assert.deepEqual(inlineHashes('<script src="main.js"></script><script> \r\n </script>'), []);
+  assert.notDeepEqual(inlineHashes('<script>window.bootstrapReady=false;</script>'), [expected]);
 });
 test('CSP hook secures copied Call and exports consistent Netlify/nginx headers', async (t) => {
   const output = await temporary(t);

@@ -14,12 +14,11 @@ from urllib.parse import urlsplit
 from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[2]
 POLICY=subprocess.check_output(['node','--input-type=module','-e',"import {productionCsp} from './security/csp.mjs';process.stdout.write(productionCsp());"],cwd=ROOT,text=True)
-BOOTSTRAP='\n      window.global ||= window;\n    '
-PAGE=f'<!doctype html><script>{BOOTSTRAP}</script><script type="module" src="/probe.js"></script><canvas id="pdf"></canvas><iframe title="Call" src="/call/index.html?intent=join_existing_voice"></iframe>'
+PAGE='<!doctype html><script type="module" src="/probe.js"></script><canvas id="pdf"></canvas><iframe title="Call" src="/call/index.html?intent=join_existing_voice"></iframe>'
 PROBE="""
 window.violations=[];
 document.addEventListener('securitypolicyviolation',event=>violations.push({directive:event.effectiveDirective,blocked:event.blockedURI}));
-window.probe={bootstrap:window.global===window};
+window.probe={bootstrap:globalThis===window};
 try {new Function('window.dynamicScriptRan=true')();probe.evalBlocked=false;}catch{probe.evalBlocked=true;}
 const injected=document.createElement('script');injected.textContent='window.inlineScriptRan=true';document.head.append(injected);
 const external=document.createElement('script');external.src=location.origin.replace('127.0.0.1','localhost')+'/forbidden.js';document.head.append(external);

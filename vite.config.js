@@ -45,6 +45,11 @@ export default defineConfig({
   appType: 'spa',
   publicDir: false,
   base: buildConfig.base,
+  // Resolve Node-compatible dependencies in production as well as dev prebundles.
+  // Client startup must not depend on an inline script creating window.global.
+  define: {
+    global: 'globalThis',
+  },
   server: {
     port: 8080,
     host: true,

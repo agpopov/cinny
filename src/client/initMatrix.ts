@@ -18,7 +18,7 @@ const SYNC_STORE_DB_NAME = 'web-sync-store';
 
 const deleteSyncStoreDatabase = () =>
   new Promise<void>((resolve) => {
-    const req = global.indexedDB.deleteDatabase(`matrix-js-sdk:${SYNC_STORE_DB_NAME}`);
+    const req = globalThis.indexedDB.deleteDatabase(`matrix-js-sdk:${SYNC_STORE_DB_NAME}`);
     req.onsuccess = () => resolve();
     req.onerror = () => resolve();
     req.onblocked = () => resolve();
@@ -32,19 +32,19 @@ type Session = {
 };
 
 export const initClient = async (session: Session): Promise<MatrixClient> => {
-  if (global.localStorage.getItem(SYNC_STORE_SCHEMA_KEY) !== SYNC_STORE_SCHEMA) {
+  if (globalThis.localStorage.getItem(SYNC_STORE_SCHEMA_KEY) !== SYNC_STORE_SCHEMA) {
     // Только кэш синхронизации: ключи шифрования и сессия не затрагиваются.
     await deleteSyncStoreDatabase();
-    global.localStorage.setItem(SYNC_STORE_SCHEMA_KEY, SYNC_STORE_SCHEMA);
+    globalThis.localStorage.setItem(SYNC_STORE_SCHEMA_KEY, SYNC_STORE_SCHEMA);
   }
 
   const indexedDBStore = new IndexedDBStore({
-    indexedDB: global.indexedDB,
-    localStorage: global.localStorage,
+    indexedDB: globalThis.indexedDB,
+    localStorage: globalThis.localStorage,
     dbName: SYNC_STORE_DB_NAME,
   });
 
-  const legacyCryptoStore = new IndexedDBCryptoStore(global.indexedDB, 'crypto-store');
+  const legacyCryptoStore = new IndexedDBCryptoStore(globalThis.indexedDB, 'crypto-store');
 
   const mx = createClient({
     baseUrl: session.baseUrl,
