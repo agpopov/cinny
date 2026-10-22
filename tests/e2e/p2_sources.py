@@ -18,6 +18,8 @@ HARNESS = Path('/tmp/cinny-p2-harness')
 HARNESS.mkdir(exist_ok=True)
 entry = '''
 import React from 'react';
+import chroma from 'chroma-js';
+import { accessibleColor } from './src/app/plugins/color';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { useUserProfile } from './src/app/hooks/useUserProfile';
@@ -47,7 +49,7 @@ function Probe(){
  return <div><button id="room" onClick={()=>setRoom(true)}>Room</button><button id="thread" onClick={()=>setThread(true)}>Thread</button><button id="menu" onClick={()=>setMenu(true)}>Menu</button><button id="dismiss" onClick={()=>{setMenu(false);setThread(false);setRoom(false)}}>Dismiss</button><div id="touch" {...press}>Hold<button id="interactive">Interactive</button></div><output id="state">{JSON.stringify({room,thread,menu})}</output></div>
 }
 function Owner(){const owner=useNotificationOwner('@p2:localhost');return <output id="owner">{String(owner)}</output>;}
-Object.assign(window,{getNotificationAvatar,createClient,Room,MatrixEvent,RoomEvent,
+Object.assign(window,{accessibleColor,chroma,getNotificationAvatar,createClient,Room,MatrixEvent,RoomEvent,
  mountProfile:(mx,userId)=>flushSync(()=>root.render(<MatrixClientProvider value={mx}><ProfileProbe userId={userId}/></MatrixClientProvider>)),
  mountReset:room=>{window.resetCount=0;flushSync(()=>root.render(<ResetProbe room={room}/>));},
  mountThread:room=>flushSync(()=>root.render(<ThreadProbe room={room}/>)),flush:flushSync,
@@ -99,6 +101,11 @@ with sync_playwright() as p:
             assert page.evaluate(expression), engine + ': ' + name
             checks.append(engine + ': ' + name)
             print('PASS ' + checks[-1], flush=True)
+        check('role text colors meet WCAG AA on raised light and dark surfaces', """() => {
+          for(const theme of ['light','dark'])for(const color of ['#955dff','#fff','#000','#ff0000','#00ff00','#0000ff','rgba(10,20,30,.2)']) {
+            const result=accessibleColor(theme,color);if(chroma.contrast(result,theme==='dark'?'#3b3b3b':'#dedede')<4.5)return false;
+          }return accessibleColor('light','var(--custom)')==='var(--custom)';
+        }""")
         check('1000 mounted clocks share one timer and release it', '''() => {mountClocks(1000);const one=timers.size===1;unmount();return one&&timers.size===0}''')
         check('abandoned React render never starts an interval', '() => {mountAbandoned();const safe=timers.size===0;unmount();return safe&&timers.size===0}')
         check('receipts update thread badges without re-sorting the list', """() => {

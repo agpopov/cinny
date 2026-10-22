@@ -49,7 +49,7 @@ function LinkForm({ editor, selection, requestClose }: LinkFormProps) {
         </Box>
         <IconButton
           size="300"
-          aria-label="Close link editor"
+          aria-label="Закрыть редактор ссылки"
           onClick={() => {
             restoreSelection();
             requestClose();
@@ -145,7 +145,7 @@ export function LinkButton() {
     <>
       <IconButton
         variant="SurfaceVariant"
-        aria-label="Link"
+        aria-label="Ссылка"
         title={link ? 'Edit link' : 'Insert link'}
         aria-pressed={!!link}
         size="400"

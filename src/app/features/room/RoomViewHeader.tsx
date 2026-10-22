@@ -346,6 +346,7 @@ function CallButton() {
             variant="Surface"
             fill="None"
             ref={triggerRef}
+            aria-label="Начать звонок"
             onClick={handleOpenMenu}
             onContextMenu={(evt) => {
               evt.preventDefault();

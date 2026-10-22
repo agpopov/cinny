@@ -141,7 +141,7 @@ export function AuthLayout() {
           </Header>
           <Box className={css.AuthCardContent} direction="Column">
             <Box direction="Column" gap="100">
-              <Text as="label" size="L400" priority="300">
+              <Text as="label" htmlFor="authServer" size="L400" priority="300">
                 {t('Homeserver')}
               </Text>
               <ServerPicker

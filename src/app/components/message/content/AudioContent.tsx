@@ -161,6 +161,7 @@ export function AudioContent({
           variant="SurfaceVariant"
           size="300"
           radii="Pill"
+          aria-label={mute ? 'Включить звук' : 'Выключить звук'}
           onClick={() => setMute(!mute)}
           aria-pressed={mute}
         >

@@ -127,6 +127,11 @@ with sync_playwright() as p:
             expect(page.get_by_role('button', name='Скопировать текст', exact=True)).to_be_visible()
             page.keyboard.press('Escape')
             check(label + ' keyboard message menu and Escape')
+            page.get_by_role('button', name='Показать панель форматирования', exact=True).click()
+            audit_accessibility(page, label + '-formatting')
+            page.get_by_role('button', name='Жирный', exact=True).wait_for()
+            page.get_by_role('button', name='Скрыть панель форматирования', exact=True).click()
+            check(label + ' formatting controls have accessible names')
 
             if width == 390:
                 # A touch hold opens the menu; moving more than 10px cancels it.

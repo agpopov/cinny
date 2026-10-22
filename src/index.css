@@ -6,17 +6,17 @@
 }
 
 :root {
-  --tc-link: hsl(213deg 100% 45%);
+  --tc-link: hsl(213deg 100% 35%);
 
   /* user mxid colors */
-  --mx-uc-1: hsl(208, 100%, 45%);
-  --mx-uc-2: hsl(302, 100%, 30%);
-  --mx-uc-3: hsl(163, 100%, 30%);
-  --mx-uc-4: hsl(343, 100%, 45%);
-  --mx-uc-5: hsl(24, 100%, 45%);
-  --mx-uc-6: hsl(181, 100%, 30%);
-  --mx-uc-7: hsl(242, 100%, 45%);
-  --mx-uc-8: hsl(94, 100%, 35%);
+  --mx-uc-1: #005fc6;
+  --mx-uc-2: #990094;
+  --mx-uc-3: #006f48;
+  --mx-uc-4: #c30029;
+  --mx-uc-5: #b63300;
+  --mx-uc-6: #006d70;
+  --mx-uc-7: #0800e6;
+  --mx-uc-8: #007100;
 
   --font-emoji: 'Twemoji_DISABLED';
   --font-secondary: 'InterVariable', var(--font-emoji), sans-serif;

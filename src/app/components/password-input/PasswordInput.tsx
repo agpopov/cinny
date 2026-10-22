@@ -13,6 +13,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       <UseStateProvider initial={false}>
         {(visible, setVisible) => (
           <Input
+            aria-label={props.id ? undefined : 'Пароль'}
             {...props}
             ref={ref}
             style={{ paddingRight, ...style }}
@@ -23,6 +24,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               <>
                 {after}
                 <IconButton
+                  aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'}
+                  aria-pressed={visible}
                   onClick={() => setVisible(!visible)}
                   type="button"
                   variant={visible ? 'Warning' : variant}

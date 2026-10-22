@@ -80,6 +80,7 @@ export function ServerPicker({
 
   return (
     <Input
+      id="authServer"
       ref={serverInputRef}
       style={{ paddingRight: config.space.S200 }}
       variant={allowCustomServer ? 'Background' : 'Surface'}

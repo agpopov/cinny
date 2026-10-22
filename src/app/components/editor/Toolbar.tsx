@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import FocusTrap from 'focus-trap-react';
 import {
   Badge,
@@ -38,11 +39,24 @@ import { settingsAtom } from '../../state/settings';
 import { stopPropagation } from '../../utils/keyboard';
 import { LinkButton } from './LinkButton';
 
+const formatLabels: Partial<Record<MarkType | BlockType, string>> = {
+  bold: 'Жирный',
+  italic: 'Курсив',
+  underline: 'Подчёркнутый',
+  strikeThrough: 'Зачёркнутый',
+  code: 'Код в строке',
+  spoiler: 'Спойлер',
+  'block-quote': 'Цитата',
+  'code-block': 'Блок кода',
+  'ordered-list': 'Нумерованный список',
+  'unordered-list': 'Маркированный список',
+};
+
 function BtnTooltip({ text, shortCode }: { text: string; shortCode?: string }) {
   return (
     <Tooltip style={{ padding: config.space.S300 }}>
       <Box gap="200" direction="Column" alignItems="Center">
-        <Text align="Center">{text}</Text>
+        <Text align="Center">{t(text)}</Text>
         {shortCode && (
           <Badge as="kbd" radii="300" size="500">
             <Text size="T200" align="Center">
@@ -76,6 +90,7 @@ export function MarkButton({ format, icon, tooltip }: MarkButtonProps) {
           ref={triggerRef}
           variant="SurfaceVariant"
           onClick={handleClick}
+          aria-label={formatLabels[format] ?? format}
           aria-pressed={isMarkActive(editor, format)}
           size="400"
           radii="300"
@@ -108,6 +123,7 @@ export function BlockButton({ format, icon, tooltip }: BlockButtonProps) {
           ref={triggerRef}
           variant="SurfaceVariant"
           onClick={handleClick}
+          aria-label={formatLabels[format] ?? format}
           aria-pressed={isBlockActive(editor, format)}
           size="400"
           radii="300"
@@ -165,6 +181,7 @@ export function HeadingBlockButton() {
                 {(triggerRef) => (
                   <IconButton
                     ref={triggerRef}
+                    aria-label="Заголовок 1"
                     onClick={() => handleMenuSelect(1)}
                     size="400"
                     radii="300"
@@ -180,6 +197,7 @@ export function HeadingBlockButton() {
                 {(triggerRef) => (
                   <IconButton
                     ref={triggerRef}
+                    aria-label="Заголовок 2"
                     onClick={() => handleMenuSelect(2)}
                     size="400"
                     radii="300"
@@ -195,6 +213,7 @@ export function HeadingBlockButton() {
                 {(triggerRef) => (
                   <IconButton
                     ref={triggerRef}
+                    aria-label="Заголовок 3"
                     onClick={() => handleMenuSelect(3)}
                     size="400"
                     radii="300"
@@ -211,6 +230,7 @@ export function HeadingBlockButton() {
       <IconButton
         style={{ width: 'unset' }}
         variant="SurfaceVariant"
+        aria-label="Заголовок"
         onClick={handleMenuOpen}
         aria-pressed={isActive}
         size="400"
@@ -246,7 +266,7 @@ export function ExitFormatting({ tooltip }: ExitFormattingProps) {
           size="400"
           radii="300"
         >
-          <Text size="B400">{`Exit ${KeySymbol.Hyper}`}</Text>
+          <Text size="B400">{`Готово ${KeySymbol.Hyper}`}</Text>
         </IconButton>
       )}
     </TooltipProvider>
@@ -348,6 +368,7 @@ export function Toolbar() {
                 <IconButton
                   ref={triggerRef}
                   variant="SurfaceVariant"
+                  aria-label={isMarkdown ? 'Выключить Markdown' : 'Включить Markdown'}
                   onClick={() => setIsMarkdown(!isMarkdown)}
                   aria-pressed={isMarkdown}
                   size="300"

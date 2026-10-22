@@ -322,6 +322,7 @@ export const MessageEditor = as<'div', MessageEditorProps>(
                     variant="SurfaceVariant"
                     size="300"
                     radii="300"
+                    aria-label={toolbar ? 'Скрыть форматирование' : 'Показать форматирование'}
                     onClick={() => setToolbar(!toolbar)}
                   >
                     <Icon size="400" src={toolbar ? Icons.AlphabetUnderline : Icons.Alphabet} />

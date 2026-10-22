@@ -259,12 +259,13 @@ export function PasswordRegisterForm({
     <>
       <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
         <Box direction="Column" gap="100">
-          <Text as="label" size="L400" priority="300">
+          <Text as="label" htmlFor="register-usernameInput" size="L400" priority="300">
             {t('Username')}
           </Text>
           <Input
             variant="Background"
             defaultValue={defaultUsername}
+            id="register-usernameInput"
             name="usernameInput"
             size="500"
             outlined
@@ -284,12 +285,13 @@ export function PasswordRegisterForm({
           {(match, doMatch, passRef, confPassRef) => (
             <>
               <Box direction="Column" gap="100">
-                <Text as="label" size="L400" priority="300">
+                <Text as="label" htmlFor="register-passwordInput" size="L400" priority="300">
                   {t('Password')}
                 </Text>
                 <PasswordInput
                   ref={passRef}
                   onChange={doMatch}
+                  id="register-passwordInput"
                   name="passwordInput"
                   variant="Background"
                   size="500"
@@ -314,12 +316,13 @@ export function PasswordRegisterForm({
                 )}
               </Box>
               <Box direction="Column" gap="100">
-                <Text as="label" size="L400" priority="300">
+                <Text as="label" htmlFor="register-confirmPasswordInput" size="L400" priority="300">
                   {t('Confirm Password')}
                 </Text>
                 <PasswordInput
                   ref={confPassRef}
                   onChange={doMatch}
+                  id="register-confirmPasswordInput"
                   name="confirmPasswordInput"
                   variant="Background"
                   size="500"
@@ -335,12 +338,13 @@ export function PasswordRegisterForm({
           <Box direction="Column" gap="100">
             <Text as="label" size="L400" priority="300">
               {requiredStageInFlows(uiaFlows, AuthType.RegistrationToken)
-                ? 'Registration Token'
-                : 'Registration Token (Optional)'}
+                ? t('Registration Token')
+                : t('Registration Token (Optional)')}
             </Text>
             <Input
               variant="Background"
               defaultValue={defaultRegisterToken}
+              aria-label="Код регистрации"
               name="tokenInput"
               size="500"
               required={requiredStageInFlows(uiaFlows, AuthType.RegistrationToken)}
@@ -351,11 +355,12 @@ export function PasswordRegisterForm({
         {hasStageInFlows(uiaFlows, AuthType.Email) && (
           <Box direction="Column" gap="100">
             <Text as="label" size="L400" priority="300">
-              {requiredStageInFlows(uiaFlows, AuthType.Email) ? t('Email') : 'Email (Optional)'}
+              {requiredStageInFlows(uiaFlows, AuthType.Email) ? t('Email') : t('Email (Optional)')}
             </Text>
             <Input
               variant="Background"
               defaultValue={defaultEmail}
+              aria-label="Электронная почта"
               name="emailInput"
               type="email"
               size="500"
@@ -367,7 +372,13 @@ export function PasswordRegisterForm({
 
         {hasStageInFlows(uiaFlows, AuthType.Terms) && termUrl && (
           <Box alignItems="Center" gap="200">
-            <Checkbox name="termsInput" size="300" variant="Primary" required />
+            <Checkbox
+              aria-label="Принимаю условия сервера"
+              name="termsInput"
+              size="300"
+              variant="Primary"
+              required
+            />
             <Text size="T300">
               {t('I accept server')}{' '}
               <a href={termUrl} target="_blank" rel="noreferrer">

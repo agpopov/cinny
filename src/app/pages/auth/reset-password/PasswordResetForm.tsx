@@ -169,15 +169,16 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
       <Text size="T300" priority="400">
         {t('Homeserver')}
-        <strong>{server}</strong> will send you an email to let you reset your password.
+        <strong>{server}</strong> отправит письмо для сброса пароля.
       </Text>
       <Box direction="Column" gap="100">
-        <Text as="label" size="L400" priority="300">
+        <Text as="label" htmlFor="reset-emailInput" size="L400" priority="300">
           {t('Email')}
         </Text>
         <Input
           defaultValue={defaultEmail}
           type="email"
+          id="reset-emailInput"
           name="emailInput"
           variant="Background"
           size="500"
@@ -194,12 +195,13 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
         {(match, doMatch, passRef, confPassRef) => (
           <>
             <Box direction="Column" gap="100">
-              <Text as="label" size="L400" priority="300">
+              <Text as="label" htmlFor="reset-passwordInput" size="L400" priority="300">
                 {t('New Password')}
               </Text>
               <PasswordInput
                 ref={passRef}
                 onChange={doMatch}
+                id="reset-passwordInput"
                 name="passwordInput"
                 variant="Background"
                 size="500"
@@ -208,12 +210,13 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
               />
             </Box>
             <Box direction="Column" gap="100">
-              <Text as="label" size="L400" priority="300">
+              <Text as="label" htmlFor="reset-confirmPasswordInput" size="L400" priority="300">
                 {t('Confirm Password')}
               </Text>
               <PasswordInput
                 ref={confPassRef}
                 onChange={doMatch}
+                id="reset-confirmPasswordInput"
                 name="confirmPasswordInput"
                 variant="Background"
                 size="500"

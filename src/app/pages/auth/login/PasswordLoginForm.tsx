@@ -201,12 +201,13 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
       <Box direction="Column" gap="100">
-        <Text as="label" size="L400" priority="300">
+        <Text as="label" htmlFor="login-usernameInput" size="L400" priority="300">
           {t('Username')}
         </Text>
         <Input
           defaultValue={defaultUsername ?? defaultEmail}
           style={{ paddingRight: config.space.S300 }}
+          id="login-usernameInput"
           name="usernameInput"
           variant="Background"
           size="500"
@@ -226,10 +227,17 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
         )}
       </Box>
       <Box direction="Column" gap="100">
-        <Text as="label" size="L400" priority="300">
+        <Text as="label" htmlFor="login-passwordInput" size="L400" priority="300">
           {t('Password')}
         </Text>
-        <PasswordInput name="passwordInput" variant="Background" size="500" outlined required />
+        <PasswordInput
+          id="login-passwordInput"
+          name="passwordInput"
+          variant="Background"
+          size="500"
+          outlined
+          required
+        />
         <Box alignItems="Start" justifyContent="SpaceBetween" gap="200">
           {loginState.status === AsyncStatus.Error && (
             <>

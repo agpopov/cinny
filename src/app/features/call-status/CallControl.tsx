@@ -33,7 +33,7 @@ function MicrophoneButton({ enabled, onToggle, disabled }: MicrophoneButtonProps
           size="300"
           onClick={toggleMic}
           outlined
-          aria-label={enabled ? 'Выключить устройство' : 'Включить устройство'}
+          aria-label={enabled ? 'Выключить микрофон' : 'Включить микрофон'}
           disabled={disabled || loading}
         >
           <Icon size="100" src={enabled ? Icons.Mic : Icons.MicMute} filled={!enabled} />
@@ -54,12 +54,13 @@ function SoundButton({ enabled, onToggle, disabled }: SoundButtonProps) {
       position="Top"
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Turn Off Sound' : 'Turn On Sound'}</Text>
+          <Text size="T200">{enabled ? 'Выключить звук' : 'Включить звук'}</Text>
         </Tooltip>
       }
     >
       {(anchorRef) => (
         <IconButton
+          aria-label={enabled ? 'Выключить звук' : 'Включить звук'}
           ref={anchorRef}
           variant={enabled ? 'Surface' : 'Warning'}
           fill="Soft"
@@ -94,7 +95,7 @@ function VideoButton({ enabled, onToggle, disabled }: VideoButtonProps) {
       position="Top"
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Stop Camera' : 'Start Camera'}</Text>
+          <Text size="T200">{enabled ? 'Выключить камеру' : 'Включить камеру'}</Text>
         </Tooltip>
       }
     >
@@ -107,7 +108,7 @@ function VideoButton({ enabled, onToggle, disabled }: VideoButtonProps) {
           size="300"
           onClick={toggleVideo}
           outlined
-          aria-label={enabled ? 'Выключить устройство' : 'Включить устройство'}
+          aria-label={enabled ? 'Выключить камеру' : 'Включить камеру'}
           disabled={disabled || loading}
         >
           <Icon
