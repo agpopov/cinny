@@ -1015,12 +1015,14 @@ export const Message = as<'div', MessageProps>(
                   content={
                     <FocusTrap
                       focusTrapOptions={{
-                        initialFocus: false,
                         onDeactivate: () => setMenuAnchor(undefined),
                         clickOutsideDeactivates: true,
                         isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
                         isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
-                        escapeDeactivates: stopPropagation,
+                        escapeDeactivates: (evt) => {
+                          evt.stopPropagation();
+                          return true;
+                        },
                       }}
                     >
                       <Menu>
@@ -1304,12 +1306,14 @@ export const Event = as<'div', EventProps>(
                 content={
                   <FocusTrap
                     focusTrapOptions={{
-                      initialFocus: false,
                       onDeactivate: () => setMenuAnchor(undefined),
                       clickOutsideDeactivates: true,
                       isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
                       isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
-                      escapeDeactivates: stopPropagation,
+                      escapeDeactivates: (evt) => {
+                        evt.stopPropagation();
+                        return true;
+                      },
                     }}
                   >
                     <Menu {...props} ref={ref}>

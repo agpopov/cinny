@@ -178,6 +178,14 @@ with sync_playwright() as p:
         page.locator('#interactive').dispatch_event('pointerdown', {'pointerType': 'touch', 'isPrimary': True, 'clientX': 10, 'clientY': 10})
         page.wait_for_timeout(620)
         check('interactive descendants keep their native long-press behavior', '() => !JSON.parse(document.querySelector("#state").textContent).menu')
+        check('a new hash deep link reaches the router without dismissing the room', """async () => {
+          unmount();mountProbe();document.querySelector('#room').click();await new Promise(r=>setTimeout(r,30));
+          const original=location.href;let delivered=false;const listener=()=>{delivered=true};
+          window.addEventListener('popstate',listener);location.hash='new-route';await new Promise(r=>setTimeout(r,100));
+          const state=JSON.parse(document.querySelector('#state').textContent);
+          window.removeEventListener('popstate',listener);unmount();history.replaceState(null,'',original);
+          return delivered&&state.room;
+        }""")
         check('oversized file is rejected before arrayBuffer is called', '''async () => {
           let read=false;try{await encryptFile({size:129*1024*1024,arrayBuffer:()=>{read=true;throw Error('read')}})}catch(error){return !read&&error.message.includes('128')};return false;
         }''')

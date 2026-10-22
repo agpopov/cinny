@@ -1,3 +1,4 @@
+import { shouldFocusMessageField } from '../src/app/utils/editorFocus.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -313,4 +314,33 @@ test('pagination requires a token and never fetches forward into an SDK live tim
   const historical = room.getUnfilteredTimelineSet().addTimeline();
   historical.setPaginationToken('next', Direction.Forward);
   assert.equal(canPaginateTimeline(historical, false), true);
+});
+
+test('composer auto-focus accepts text while preserving navigation and handled keys', () => {
+  const event = {
+    key: 'a',
+    metaKey: false,
+    altKey: false,
+    ctrlKey: false,
+    isComposing: false,
+    defaultPrevented: false,
+  };
+  for (const key of ['a', 'я', '7', '!'])
+    assert.equal(shouldFocusMessageField({ ...event, key }), true, key);
+  for (const key of [
+    'Escape',
+    'ContextMenu',
+    'F10',
+    'Enter',
+    'Tab',
+    'Backspace',
+    'Delete',
+    'ArrowDown',
+    ' ',
+    'Dead',
+    'Process',
+  ])
+    assert.equal(shouldFocusMessageField({ ...event, key }), false, key);
+  for (const flag of ['metaKey', 'altKey', 'ctrlKey', 'isComposing', 'defaultPrevented'])
+    assert.equal(shouldFocusMessageField({ ...event, [flag]: true }), false, flag);
 });

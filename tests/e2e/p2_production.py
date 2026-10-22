@@ -89,9 +89,9 @@ with sync_playwright() as p:
                     close() {}
                 };''')
             page.route('**/config.json', lambda route: route.fulfill(json={
-                'homeserverList': [HS], 'allowCustomHomeservers': True, 'hashRouter': {'enabled': False, 'basename': '/'},
+                'homeserverList': [HS], 'allowCustomHomeservers': True, 'hashRouter': {'enabled': '/#' in APP, 'basename': '/'},
             }))
-            page.goto(APP + '/config.json')
+            page.goto(APP.split('/#', 1)[0] + '/config.json')
             page.evaluate('s => {for (const [key,value] of Object.entries(s)) localStorage.setItem("cinny_"+key,value)}', {
                 'access_token': token, 'device_id': a['device_id'], 'user_id': a['user_id'], 'hs_base_url': HS,
             })
@@ -125,7 +125,10 @@ with sync_playwright() as p:
             row.focus()
             row.press('Shift+F10')
             expect(page.get_by_role('button', name='Скопировать текст', exact=True)).to_be_visible()
+            # FocusTrap activates after the positioned popup mounts.
+            page.wait_for_timeout(150)
             page.keyboard.press('Escape')
+            expect(page.get_by_role('button', name='Скопировать текст', exact=True)).to_be_hidden()
             check(label + ' keyboard message menu and Escape')
             page.get_by_role('button', name='Показать панель форматирования', exact=True).click()
             audit_accessibility(page, label + '-formatting')
@@ -270,6 +273,21 @@ with sync_playwright() as p:
                 assert len(notices) == 1, notices
                 assert '3 новых сообщений' in notices[0].get('body', ''), notices
                 check(label + ' live message burst makes one grouped system notification')
+
+            # The window handler must not focus an editor removed after permission changes.
+            readonly = api('POST', '/_matrix/client/v3/createRoom', b['access_token'], {'name':'P2 readonly '+run, 'invite':[a['user_id']]})['room_id']
+            api('POST', f'/_matrix/client/v3/join/{readonly}', token, {})
+            page.goto(APP + '/home/' + readonly + '/')
+            page.locator('[data-editable-name="RoomInput"]').wait_for(timeout=30000)
+            levels = api('GET', f'/_matrix/client/v3/rooms/{readonly}/state/m.room.power_levels', b['access_token'])
+            levels.setdefault('events', {})['m.room.message'] = 1
+            api('PUT', f'/_matrix/client/v3/rooms/{readonly}/state/m.room.power_levels', b['access_token'], levels)
+            expect(page.get_by_text('У вас нет права отправлять сообщения в эту комнату', exact=True)).to_be_visible(timeout=20000)
+            page.evaluate('document.activeElement?.blur()')
+            for key in ['a', 'Escape', 'F10', 'ContextMenu']: page.keyboard.press(key)
+            page.wait_for_timeout(200)
+            assert page.locator('[data-editable-name="RoomInput"]').count() == 0
+            check(label + ' removed composer preserves control keys without Slate focus errors')
 
             assert not errors, errors
             check(label + ' no uncaught application errors')

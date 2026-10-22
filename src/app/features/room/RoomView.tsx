@@ -4,6 +4,7 @@ import { EventType } from 'matrix-js-sdk';
 import { useSetAtom } from 'jotai';
 import { ReactEditor } from 'slate-react';
 import { isKeyHotkey } from 'is-hotkey';
+import { shouldFocusMessageField } from '../../utils/editorFocus';
 import { useStateEvent } from '../../hooks/useStateEvent';
 import { StateEvent } from '../../../types/matrix/room';
 import { usePowerLevelsContext } from '../../hooks/usePowerLevels';
@@ -24,37 +25,6 @@ import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoom } from '../../hooks/useRoom';
 import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
-
-const FN_KEYS_REGEX = /^F\d+$/;
-const shouldFocusMessageField = (evt: KeyboardEvent): boolean => {
-  const { code } = evt;
-  if (evt.metaKey || evt.altKey || evt.ctrlKey) {
-    return false;
-  }
-
-  if (FN_KEYS_REGEX.test(code)) return false;
-
-  if (
-    code.startsWith('OS') ||
-    code.startsWith('Meta') ||
-    code.startsWith('Shift') ||
-    code.startsWith('Alt') ||
-    code.startsWith('Control') ||
-    code.startsWith('Arrow') ||
-    code.startsWith('Page') ||
-    code.startsWith('End') ||
-    code.startsWith('Home') ||
-    code === 'Tab' ||
-    code === 'Space' ||
-    code === 'Enter' ||
-    code === 'NumLock' ||
-    code === 'ScrollLock'
-  ) {
-    return false;
-  }
-
-  return true;
-};
 
 export function RoomView({ eventId }: { eventId?: string }) {
   const roomInputRef = useRef<HTMLDivElement>(null);
@@ -85,7 +55,11 @@ export function RoomView({ eventId }: { eventId?: string }) {
     window,
     useCallback(
       (evt) => {
-        if (editableActiveElement()) return;
+        if (evt.defaultPrevented || editableActiveElement()) return;
+        const composer = roomInputRef.current?.querySelector<HTMLElement>(
+          '[data-slate-editor="true"]'
+        );
+        if (!composer || composer.getClientRects().length === 0) return;
         const portalContainer = document.getElementById('portalContainer');
         if (portalContainer && portalContainer.children.length > 0) {
           return;
@@ -136,7 +110,7 @@ export function RoomView({ eventId }: { eventId?: string }) {
                   alignItems="Center"
                   justifyContent="Center"
                 >
-                  <Text align="Center">You do not have permission to post in this room</Text>
+                  <Text align="Center">У вас нет права отправлять сообщения в эту комнату</Text>
                 </RoomInputPlaceholder>
               )}
             </>
