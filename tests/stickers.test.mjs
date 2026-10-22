@@ -49,15 +49,29 @@ for (const pack of builtinStickerPacks) {
     }
   });
 }
-test('48 bundled stickers are available without user, room or account data', () => {
-  assert.equal(builtinStickerPacks.length, 3);
-  assert.equal(images.length, 48);
-  assert.equal(new Set(images.map((image) => image.url)).size, 48);
-  assert.equal(new Set(builtinStickerPacks.map((pack) => pack.id)).size, 3);
+test('144 bundled stickers in nine packs are available without user, room or account data', () => {
+  assert.equal(builtinStickerPacks.length, 9);
+  assert.equal(images.length, 144);
+  assert.equal(new Set(images.map((image) => image.url)).size, 144);
+  assert.equal(new Set(builtinStickerPacks.map((pack) => pack.id)).size, 9);
   assert.equal(
     builtinStickerManifest.reduce((total, pack) => total + pack.stickers.length, 0),
-    48
+    144
   );
+});
+test('new themed packs have distinct artwork and searchable Russian labels', () => {
+  const sources = JSON.parse(
+    readFileSync(new URL('../public/res/stickers/SOURCES.json', import.meta.url), 'utf8')
+  );
+  for (const id of ['gestures', 'moods', 'hearts', 'snacks', 'work', 'celebration']) {
+    const pack = builtinStickerManifest.find((item) => item.id === id);
+    assert.equal(pack.stickers.length, 16);
+    const files = sources.files.filter((file) => file.asset.startsWith(`res/stickers/${id}/`));
+    assert.equal(new Set(files.map((file) => file.sha256)).size, 16);
+    for (const sticker of pack.stickers) {
+      assert.match(sticker.label, /[а-яё]/i);
+    }
+  }
 });
 test('asset URLs respect installations at the root and under a subpath', () => {
   assert.equal(getBuiltinStickerAssetUrl(first.url, '/'), `/${firstAsset.asset}`);

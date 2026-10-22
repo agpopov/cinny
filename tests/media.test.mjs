@@ -24,9 +24,8 @@ registerHooks({
   },
 });
 const mime = await import('../src/app/utils/mimeTypes.ts');
-const { getDirectMedia, getPreviewMedia, getHttpUrl } = await import(
-  '../src/app/utils/urlPreview.ts'
-);
+const { getDirectMedia, getGifProviderEmbed, getProviderMedia, getPreviewMedia, getHttpUrl } =
+  await import('../src/app/utils/urlPreview.ts');
 const { ImagePack } = await import('../src/app/plugins/custom-emoji/ImagePack.ts');
 const { PackImageReader } = await import('../src/app/plugins/custom-emoji/PackImageReader.ts');
 const { ImageUsage } = await import('../src/app/plugins/custom-emoji/types.ts');
@@ -115,6 +114,107 @@ test('Open Graph media supports extensionless typed video, never HTML players', 
   );
   assert.equal(getPreviewMedia({ 'og:video': 'https://host/image.gif' }), undefined);
   assert.equal(getPreviewMedia({}), undefined);
+});
+
+test('GIFS.RU share URL resolves to its animation without Matrix preview metadata', () => {
+  // Actual share URL reported by a user. The ID is case-sensitive (O, not zero).
+  for (const url of [
+    'https://gifs.ru/gifs/rabota-rabotayu-pechatayu-4Oib7Z?utm_source=share&utm_medium=copy_link',
+    'https://www.gifs.ru/gifs/rabota-rabotayu-pechatayu-4Oib7Z/',
+    'https://gifs.ru/gifs/4Oib7Z',
+    'https://gifs.ru/embed/4Oib7Z#view',
+  ]) {
+    assert.equal(getGifProviderEmbed(url), 'https://gifs.ru/embed/4Oib7Z');
+  }
+});
+test('provider embeds preserve GIF ID case and remove tracking parameters', () => {
+  assert.equal(
+    getGifProviderEmbed('http://gifs.ru/gifs/cat-ABCdef?url=https://evil.example'),
+    'https://gifs.ru/embed/ABCdef'
+  );
+});
+test('provider embeds reject other sites, credentials, ports and unexpected paths', () => {
+  for (const url of [
+    'javascript:alert(1)',
+    'https://gifs.ru.evil.example/gifs/cat-4Oib7Z',
+    'https://evil.example/gifs/cat-4Oib7Z',
+    'https://gifs.ru@evil.example/gifs/cat-4Oib7Z',
+    'https://evil.example@gifs.ru/gifs/cat-4Oib7Z',
+    'https://gifs.ru:8443/gifs/cat-4Oib7Z',
+    'https://gifs.ru/search/cat-4Oib7Z',
+    'https://gifs.ru/gifs/cat-4Oib7Z/extra',
+    'https://gifs.ru/gifs/cat-%344Oib7Z',
+    'https://gifs.ru/gifs/cat-4Oib7ZZ',
+    'https://gifs.ru/gifs/cat-4Oib7',
+    'https://gifs.ru/',
+    null,
+  ]) {
+    assert.equal(getGifProviderEmbed(url), undefined, String(url));
+  }
+});
+
+for (const [urls, media] of [
+  [
+    [
+      'https://giphy.com/gifs/3oriO0OEd9QIDdllqo',
+      'https://www.giphy.com/gifs/cat-typing-3oriO0OEd9QIDdllqo?utm_source=share',
+      'https://giphy.com/stickers/cat-3oriO0OEd9QIDdllqo',
+      'https://giphy.com/embed/3oriO0OEd9QIDdllqo',
+    ],
+    { url: 'https://i.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif', kind: 'image' },
+  ],
+  [
+    [
+      'https://tenor.com/view/cat-typing-gif-18240062',
+      'https://www.tenor.com/view/18240062',
+      'https://tenor.com/embed/18240062',
+      'https://tenor.com/boHeI.gif',
+      'https://tenor.com/view/cat-typing-gif-18240062.gif?utm_source=share',
+    ],
+    { url: 'https://tenor.com/view/18240062.gif', kind: 'image' },
+  ],
+  [
+    ['https://i.imgur.com/llGqCrR.gifv', 'https://imgur.com/llGqCrR.gifv?utm_source=share'],
+    { url: 'https://i.imgur.com/llGqCrR.mp4', kind: 'video', loop: true },
+  ],
+  [
+    ['https://imgur.com/llGqCrR', 'https://www.imgur.com/llGqCrR/?utm_source=share'],
+    { url: 'https://i.imgur.com/llGqCrR.gif', kind: 'image' },
+  ],
+]) {
+  for (const url of urls) {
+    test(`provider GIF share resolves locally: ${url}`, () => {
+      assert.deepEqual(getProviderMedia(url), media);
+    });
+  }
+}
+test('Tenor IDs keep full precision beyond JavaScript safe integers', () => {
+  assert.equal(
+    getProviderMedia('https://tenor.com/view/cat-gif-12345678901234567890')?.url,
+    'https://tenor.com/view/12345678901234567890.gif'
+  );
+});
+test('provider media rejects spoofed hosts, HTML pages, collections and arbitrary players', () => {
+  for (const url of [
+    'https://tenor.com.evil.example/view/cat-18240062',
+    'https://user:pass@tenor.com/view/cat-18240062',
+    'https://tenor.com:8443/view/cat-18240062',
+    'https://tenor.com/search/cat-gifs',
+    'https://tenor.com/search',
+    'https://tenor.com/about',
+    'https://tenor.com/view/cat-18240062/extra',
+    'https://giphy.com/explore/cat-typing',
+    'https://giphy.com/gifs/cat-123<script>',
+    'https://giphy.com/gifs/cat-123456/extra',
+    'https://imgur.com/a/llGqCrR',
+    'https://imgur.com/gallery/llGqCrR',
+    'https://imgur.com/about',
+    'https://imgur.com/privacy',
+    'https://evil.example/llGqCrR.gifv',
+    'javascript:alert(1)',
+    undefined,
+  ])
+    assert.equal(getProviderMedia(url), undefined, String(url));
 });
 
 const stickerUrl = 'mxc://example.org/sticker';

@@ -21,6 +21,13 @@ export const PreviewImageButton = style([
   },
 ]);
 
+export const ProviderEmbed = style({
+  display: 'block',
+  width: '100%',
+  aspectRatio: '1 / 1',
+  border: 0,
+});
+
 export const UrlPreviewHolderGradient = recipe({
   base: [
     DefaultReset,

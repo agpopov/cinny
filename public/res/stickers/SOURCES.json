@@ -628,6 +628,1254 @@
         "mimetype": "image/png",
         "size": 32162
       }
+    },
+    {
+      "id": "thumbs_up",
+      "label": "Одобряю, лайк",
+      "asset": "res/stickers/gestures/thumbs_up.png",
+      "source": "assets/Thumbs up/Default/3D/thumbs_up_3d_default.png",
+      "sha256": "a48dbe89a1a16969593db76f5bec45e9e537e0f090e7609caa8d9a3ff598d1d2",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29710
+      }
+    },
+    {
+      "id": "thumbs_down",
+      "label": "Не одобряю, дизлайк",
+      "asset": "res/stickers/gestures/thumbs_down.png",
+      "source": "assets/Thumbs down/Default/3D/thumbs_down_3d_default.png",
+      "sha256": "12020dc8a616138d0ab3daa94008b97d0ed35dbdb1f0d80d5f17657e8aee492f",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28132
+      }
+    },
+    {
+      "id": "clap",
+      "label": "Аплодисменты",
+      "asset": "res/stickers/gestures/clap.png",
+      "source": "assets/Clapping hands/Default/3D/clapping_hands_3d_default.png",
+      "sha256": "54075bd39fd3e1860ba39898d73e61096c0e0e633ac5e9840beefddaf1d75113",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34774
+      }
+    },
+    {
+      "id": "wave",
+      "label": "Привет, пока",
+      "asset": "res/stickers/gestures/wave.png",
+      "source": "assets/Waving hand/Default/3D/waving_hand_3d_default.png",
+      "sha256": "fd8d684a2dd4bca71b53eea530ffa226fdd9a17a50b9bebec2788447477f0d39",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34079
+      }
+    },
+    {
+      "id": "okay",
+      "label": "Окей, всё хорошо",
+      "asset": "res/stickers/gestures/okay.png",
+      "source": "assets/Ok hand/Default/3D/ok_hand_3d_default.png",
+      "sha256": "cb506278a6b54b1d60b7a9e513f1513aa1d1cd245f9cf7c14e930b3ee8cc8fa1",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28089
+      }
+    },
+    {
+      "id": "victory",
+      "label": "Победа",
+      "asset": "res/stickers/gestures/victory.png",
+      "source": "assets/Victory hand/Default/3D/victory_hand_3d_default.png",
+      "sha256": "8b2a28bc1662f54491dec60f2c8ac867aae56784a2cc33e8a7b444942c5c74f1",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 27342
+      }
+    },
+    {
+      "id": "fingers_crossed",
+      "label": "На удачу",
+      "asset": "res/stickers/gestures/fingers_crossed.png",
+      "source": "assets/Crossed fingers/Default/3D/crossed_fingers_3d_default.png",
+      "sha256": "cdbf02a0b55bf69c322578a35f55530f3e0cebec71bd274c53870d1e94bb3366",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31359
+      }
+    },
+    {
+      "id": "love_you",
+      "label": "Люблю тебя",
+      "asset": "res/stickers/gestures/love_you.png",
+      "source": "assets/Love-you gesture/Default/3D/love-you_gesture_3d_default.png",
+      "sha256": "0928e36d745c4ab87f7309f6738da444ced2a8bb33069653f053f8b57b167144",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28127
+      }
+    },
+    {
+      "id": "call_me",
+      "label": "Позвони мне",
+      "asset": "res/stickers/gestures/call_me.png",
+      "source": "assets/Call me hand/Default/3D/call_me_hand_3d_default.png",
+      "sha256": "e282b9f9b016cf12b9129ef0b8705c1fe854f56faeba906b32534019377f9902",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31178
+      }
+    },
+    {
+      "id": "fist_bump",
+      "label": "Кулачок",
+      "asset": "res/stickers/gestures/fist_bump.png",
+      "source": "assets/Oncoming fist/Default/3D/oncoming_fist_3d_default.png",
+      "sha256": "88806fa95230c09949b0746a279f65e417cd0a8527e4f8ad1629954881be23ff",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29913
+      }
+    },
+    {
+      "id": "raised_fist",
+      "label": "Держись",
+      "asset": "res/stickers/gestures/raised_fist.png",
+      "source": "assets/Raised fist/Default/3D/raised_fist_3d_default.png",
+      "sha256": "2418f8596cc79cebacc0ae73091d8ee965ca280f2087014bdd78da31474bd422",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34599
+      }
+    },
+    {
+      "id": "handshake",
+      "label": "Договорились",
+      "asset": "res/stickers/gestures/handshake.png",
+      "source": "assets/Handshake/3D/handshake_3d.png",
+      "sha256": "fd0c3ae54cf208f371636263f4c972b54ac929fef0455b9d15ce72c04fee0f2b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39374
+      }
+    },
+    {
+      "id": "thanks",
+      "label": "Спасибо, пожалуйста",
+      "asset": "res/stickers/gestures/thanks.png",
+      "source": "assets/Folded hands/Default/3D/folded_hands_3d_default.png",
+      "sha256": "69090ea19b7741e691f878fe3f1649a8d18f42fc59e1912ea799bf4e35045039",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 23407
+      }
+    },
+    {
+      "id": "hooray",
+      "label": "Ура",
+      "asset": "res/stickers/gestures/hooray.png",
+      "source": "assets/Raising hands/Default/3D/raising_hands_3d_default.png",
+      "sha256": "e645fbc6c7e174cb74ce168e4ad7d360d3aecc56bbadabbcb51a6d80c9375992",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32215
+      }
+    },
+    {
+      "id": "heart_hands",
+      "label": "Сердце руками",
+      "asset": "res/stickers/gestures/heart_hands.png",
+      "source": "assets/Heart hands/Default/3D/heart_hands_3d_default.png",
+      "sha256": "6bba515957b6068cff97b8ff99064694d4afb340b38795d782757373de868e22",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 30419
+      }
+    },
+    {
+      "id": "attention",
+      "label": "Внимание, важный момент",
+      "asset": "res/stickers/gestures/attention.png",
+      "source": "assets/Index pointing up/Default/3D/index_pointing_up_3d_default.png",
+      "sha256": "01c60cb58d08f446877022f90c4083e8e8c651947db26ff7c35c218f1e54f0bb",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 27235
+      }
+    },
+    {
+      "id": "smile",
+      "label": "Улыбаюсь",
+      "asset": "res/stickers/moods/smile.png",
+      "source": "assets/Slightly smiling face/3D/slightly_smiling_face_3d.png",
+      "sha256": "6d7afa319ea9acf5d260ef019434ee37c6333fd20dcfa7a0fef4bb573f84ec1a",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39041
+      }
+    },
+    {
+      "id": "wink",
+      "label": "Подмигиваю",
+      "asset": "res/stickers/moods/wink.png",
+      "source": "assets/Winking face/3D/winking_face_3d.png",
+      "sha256": "f14edbaa23f127ee6ee7c4a17b35969405a3c441b3f79c3356cc6406c1bf9ae4",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 43638
+      }
+    },
+    {
+      "id": "kiss",
+      "label": "Целую",
+      "asset": "res/stickers/moods/kiss.png",
+      "source": "assets/Kissing face/3D/kissing_face_3d.png",
+      "sha256": "eb1fdf9b01b484262c279791370d901bbc541b156d7ebf196c2c2a454f9c78a0",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38663
+      }
+    },
+    {
+      "id": "warm_hearts",
+      "label": "Тепло и любовь",
+      "asset": "res/stickers/moods/warm_hearts.png",
+      "source": "assets/Smiling face with hearts/3D/smiling_face_with_hearts_3d.png",
+      "sha256": "2b8c4abe57a81fe3805ec0c271f855984e9f4a7a1d10053050a4db7b6def778e",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 52432
+      }
+    },
+    {
+      "id": "heart_eyes",
+      "label": "Обожаю",
+      "asset": "res/stickers/moods/heart_eyes.png",
+      "source": "assets/Smiling face with heart-eyes/3D/smiling_face_with_heart-eyes_3d.png",
+      "sha256": "2b5ab00dd73673faa86463eac8787b7fc366935c4d82a54451df33443190b9cc",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 43664
+      }
+    },
+    {
+      "id": "angel",
+      "label": "Ангелочек",
+      "asset": "res/stickers/moods/angel.png",
+      "source": "assets/Smiling face with halo/3D/smiling_face_with_halo_3d.png",
+      "sha256": "e8f119ffa91001b094448ae148ee6d29fbbdbf6d718b5669b670c75b61e2f03b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 46477
+      }
+    },
+    {
+      "id": "peeking",
+      "label": "Подглядываю",
+      "asset": "res/stickers/moods/peeking.png",
+      "source": "assets/Face with peeking eye/3D/face_with_peeking_eye_3d.png",
+      "sha256": "f20bf09f252c389ba7908f26a2326e4f8a38ec4e58fb9d14bf5efb64191c0251",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 48834
+      }
+    },
+    {
+      "id": "salute",
+      "label": "Есть, принято",
+      "asset": "res/stickers/moods/salute.png",
+      "source": "assets/Saluting face/3D/saluting_face_3d.png",
+      "sha256": "3a18f67e9cb6edaa18e9331451f9b93527aca574c52f9e6d896cce691e737b5a",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 40146
+      }
+    },
+    {
+      "id": "invisible",
+      "label": "Меня здесь нет",
+      "asset": "res/stickers/moods/invisible.png",
+      "source": "assets/Dotted line face/3D/dotted_line_face_3d.png",
+      "sha256": "6fd65fa2d10a33b0ef46c79bd8188d69a3fe01537f77cd8cea2335f57f676f68",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37386
+      }
+    },
+    {
+      "id": "no_words",
+      "label": "Без слов",
+      "asset": "res/stickers/moods/no_words.png",
+      "source": "assets/Expressionless face/3D/expressionless_face_3d.png",
+      "sha256": "6e7bb93a79ad236ff2b79bc8d2b0f2b0e8b0ef4ac04d134cb09d79233c2c213c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34293
+      }
+    },
+    {
+      "id": "skeptical",
+      "label": "Сомневаюсь",
+      "asset": "res/stickers/moods/skeptical.png",
+      "source": "assets/Face with raised eyebrow/3D/face_with_raised_eyebrow_3d.png",
+      "sha256": "13e2bca9b7a3cc83c2a14214fb540e7f6ea0826750ecfdc0d1e9f8ee66567b53",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38919
+      }
+    },
+    {
+      "id": "monocle",
+      "label": "Изучаю внимательно",
+      "asset": "res/stickers/moods/monocle.png",
+      "source": "assets/Face with monocle/3D/face_with_monocle_3d.png",
+      "sha256": "de447e866d16da68cf6c87e88a35b3312b76b20492056604259bd16e2148570e",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 45911
+      }
+    },
+    {
+      "id": "please",
+      "label": "Ну пожалуйста",
+      "asset": "res/stickers/moods/please.png",
+      "source": "assets/Pleading face/3D/pleading_face_3d.png",
+      "sha256": "7dfc89c51118f0adecf886063b5eafce140a613075394ebe22ed9dd2bd9e9c4f",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44074
+      }
+    },
+    {
+      "id": "angry",
+      "label": "Злюсь",
+      "asset": "res/stickers/moods/angry.png",
+      "source": "assets/Angry face/3D/angry_face_3d.png",
+      "sha256": "7e1ae11f16a882e61391c42d860632525290d11d7e9bb5e8ecab02f63d305414",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 39074
+      }
+    },
+    {
+      "id": "swearing",
+      "label": "Киплю от злости",
+      "asset": "res/stickers/moods/swearing.png",
+      "source": "assets/Face with symbols on mouth/3D/face_with_symbols_on_mouth_3d.png",
+      "sha256": "94c3b5fe459640d3628667b607cb2b2a0d7df032da7322e3d0595a6b697cece7",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 40322
+      }
+    },
+    {
+      "id": "sick",
+      "label": "Болею",
+      "asset": "res/stickers/moods/sick.png",
+      "source": "assets/Face with thermometer/3D/face_with_thermometer_3d.png",
+      "sha256": "d3277e8900f877a16725314505f380075eb8588e073c410dd487d26491a38322",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44443
+      }
+    },
+    {
+      "id": "red_heart",
+      "label": "Красное сердце",
+      "asset": "res/stickers/hearts/red_heart.png",
+      "source": "assets/Red heart/3D/red_heart_3d.png",
+      "sha256": "7218cb9f08ed1ef38fcd83fe699a1125d07f50725f4c87a68cb7c9f4efb3c32b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29389
+      }
+    },
+    {
+      "id": "blue_heart",
+      "label": "Синее сердце",
+      "asset": "res/stickers/hearts/blue_heart.png",
+      "source": "assets/Blue heart/3D/blue_heart_3d.png",
+      "sha256": "8aa6e1c088684e048c32f23bf66b5a23a95d65cbfda4592e3530c7cae7593a34",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 27560
+      }
+    },
+    {
+      "id": "green_heart",
+      "label": "Зелёное сердце",
+      "asset": "res/stickers/hearts/green_heart.png",
+      "source": "assets/Green heart/3D/green_heart_3d.png",
+      "sha256": "0fd65dfc7eafc3006e78feacb45c18bcb52402385550b708679dd991c2f7d07f",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29297
+      }
+    },
+    {
+      "id": "yellow_heart",
+      "label": "Жёлтое сердце",
+      "asset": "res/stickers/hearts/yellow_heart.png",
+      "source": "assets/Yellow heart/3D/yellow_heart_3d.png",
+      "sha256": "5258d02eff2080ffd5b28cbac16b8a9f579ec692eee5e8051ab8c80dd4c04fc6",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28049
+      }
+    },
+    {
+      "id": "purple_heart",
+      "label": "Фиолетовое сердце",
+      "asset": "res/stickers/hearts/purple_heart.png",
+      "source": "assets/Purple heart/3D/purple_heart_3d.png",
+      "sha256": "183e6b57c851f7ede51732d61ddee9d36d2882c0e385c575da42553330d27619",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28534
+      }
+    },
+    {
+      "id": "orange_heart",
+      "label": "Оранжевое сердце",
+      "asset": "res/stickers/hearts/orange_heart.png",
+      "source": "assets/Orange heart/3D/orange_heart_3d.png",
+      "sha256": "623c508a92d4651817462f6ae0374c4ec62c2a88779b9306a95d80883b5618da",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 25143
+      }
+    },
+    {
+      "id": "pink_heart",
+      "label": "Розовое сердце",
+      "asset": "res/stickers/hearts/pink_heart.png",
+      "source": "assets/Pink heart/3D/pink_heart_3d.png",
+      "sha256": "6c9e6e30fe05575a7ef1499429f829f2384fafdfb6cadf5106d6c1ca49a0e4f9",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28066
+      }
+    },
+    {
+      "id": "black_heart",
+      "label": "Чёрное сердце",
+      "asset": "res/stickers/hearts/black_heart.png",
+      "source": "assets/Black heart/3D/black_heart_3d.png",
+      "sha256": "6d6fb494995ef95b146fd3d4a4ba6c85b4b08f658c606e7dd3760e5d51f9976e",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29210
+      }
+    },
+    {
+      "id": "white_heart",
+      "label": "Белое сердце",
+      "asset": "res/stickers/hearts/white_heart.png",
+      "source": "assets/White heart/3D/white_heart_3d.png",
+      "sha256": "653fc282b8cec750a170a75b32cb413d9c4fb8f90ed32b9360299f8a30a45a77",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28243
+      }
+    },
+    {
+      "id": "broken_heart",
+      "label": "Разбитое сердце",
+      "asset": "res/stickers/hearts/broken_heart.png",
+      "source": "assets/Broken heart/3D/broken_heart_3d.png",
+      "sha256": "d4f336d4cc70a2dd316ecb546995f9fbae3d80f3c9d236ad69046097bc80befb",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31662
+      }
+    },
+    {
+      "id": "heart_arrow",
+      "label": "Любовь со стрелой",
+      "asset": "res/stickers/hearts/heart_arrow.png",
+      "source": "assets/Heart with arrow/3D/heart_with_arrow_3d.png",
+      "sha256": "c77ac23723a738b4c2c289dc9c3ea2f36453075edaf1c08a94004ba73d648640",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 35217
+      }
+    },
+    {
+      "id": "heart_ribbon",
+      "label": "Сердце в подарок",
+      "asset": "res/stickers/hearts/heart_ribbon.png",
+      "source": "assets/Heart with ribbon/3D/heart_with_ribbon_3d.png",
+      "sha256": "12d143337d7cf23ab0c08d2afa6e479c2ba51334f179169fc763f0ec15f48c58",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 33642
+      }
+    },
+    {
+      "id": "two_hearts",
+      "label": "Два сердечка",
+      "asset": "res/stickers/hearts/two_hearts.png",
+      "source": "assets/Two hearts/3D/two_hearts_3d.png",
+      "sha256": "b882b5354fd3da839dfb0d2dc0481dfbedddd0d4e91eef43a4894580199dbad9",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 30346
+      }
+    },
+    {
+      "id": "sparkling_heart",
+      "label": "Сияющее сердце",
+      "asset": "res/stickers/hearts/sparkling_heart.png",
+      "source": "assets/Sparkling heart/3D/sparkling_heart_3d.png",
+      "sha256": "c458860ef79e7baedd7346104fb1f6cd27f2be165200c94fb3d7781c75269ae7",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 36392
+      }
+    },
+    {
+      "id": "growing_heart",
+      "label": "Любовь растёт",
+      "asset": "res/stickers/hearts/growing_heart.png",
+      "source": "assets/Growing heart/3D/growing_heart_3d.png",
+      "sha256": "12b81e40030817b9d58a9270d624bf805b8a006f75287c2f2e74817f278f4938",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 35439
+      }
+    },
+    {
+      "id": "beating_heart",
+      "label": "Сердце бьётся",
+      "asset": "res/stickers/hearts/beating_heart.png",
+      "source": "assets/Beating heart/3D/beating_heart_3d.png",
+      "sha256": "968b7b230e29fa9aec58b525b8c38035fb5c4a93300953127bfa0527605589e9",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34602
+      }
+    },
+    {
+      "id": "coffee",
+      "label": "Кофе и чай",
+      "asset": "res/stickers/snacks/coffee.png",
+      "source": "assets/Hot beverage/3D/hot_beverage_3d.png",
+      "sha256": "edeaa3fca5eace5f2546efcd3b3e42ef1fd389a0c51d374dbf7863731db8f314",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 44337
+      }
+    },
+    {
+      "id": "pizza",
+      "label": "Пицца",
+      "asset": "res/stickers/snacks/pizza.png",
+      "source": "assets/Pizza/3D/pizza_3d.png",
+      "sha256": "beb2d1ac000003d96711ea8364815641442523285fa59007dd5b589059c74b9a",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31368
+      }
+    },
+    {
+      "id": "burger",
+      "label": "Бургер",
+      "asset": "res/stickers/snacks/burger.png",
+      "source": "assets/Hamburger/3D/hamburger_3d.png",
+      "sha256": "5a078744b30da58e854ab7700c501180e0b11337c9d64e33b70585c8b98088a5",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 36673
+      }
+    },
+    {
+      "id": "fries",
+      "label": "Картошка фри",
+      "asset": "res/stickers/snacks/fries.png",
+      "source": "assets/French fries/3D/french_fries_3d.png",
+      "sha256": "b151bcc12de63b16a4cdb57a2cd71b7d3421d64550fb361bb849a3562ddedc52",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38649
+      }
+    },
+    {
+      "id": "popcorn",
+      "label": "Попкорн, наблюдаю",
+      "asset": "res/stickers/snacks/popcorn.png",
+      "source": "assets/Popcorn/3D/popcorn_3d.png",
+      "sha256": "28ef7634d377bd78856b9ce45ba252e4455bf82988ce7e468a89042a4d805f6c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 35200
+      }
+    },
+    {
+      "id": "donut",
+      "label": "Пончик",
+      "asset": "res/stickers/snacks/donut.png",
+      "source": "assets/Doughnut/3D/doughnut_3d.png",
+      "sha256": "5527fa6a366ad366a45f84b71432e8a54aa502debea3b53d3926c2823fcdf986",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 42247
+      }
+    },
+    {
+      "id": "cookie",
+      "label": "Печенька",
+      "asset": "res/stickers/snacks/cookie.png",
+      "source": "assets/Cookie/3D/cookie_3d.png",
+      "sha256": "d3c5f5e2864d3178bf2033074c0cf679b067192fa9b5e1aa136267c7ac95d376",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 38365
+      }
+    },
+    {
+      "id": "cake",
+      "label": "Кусочек торта",
+      "asset": "res/stickers/snacks/cake.png",
+      "source": "assets/Shortcake/3D/shortcake_3d.png",
+      "sha256": "0acebe0de7e4d5393c8825ee1a233ea8780e52bfec71ab52dd3e0135e8a9fb37",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34507
+      }
+    },
+    {
+      "id": "ice_cream",
+      "label": "Мороженое",
+      "asset": "res/stickers/snacks/ice_cream.png",
+      "source": "assets/Ice cream/3D/ice_cream_3d.png",
+      "sha256": "cbe49b092b8e38d86e353595c8c1ccfc8d7b9803307e893b43cfb970c113275f",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34802
+      }
+    },
+    {
+      "id": "watermelon",
+      "label": "Арбуз",
+      "asset": "res/stickers/snacks/watermelon.png",
+      "source": "assets/Watermelon/3D/watermelon_3d.png",
+      "sha256": "00bacc111ae855cf0621d35ba987d519c07fb4103500edc4af2152fa6d27177e",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29186
+      }
+    },
+    {
+      "id": "banana",
+      "label": "Банан",
+      "asset": "res/stickers/snacks/banana.png",
+      "source": "assets/Banana/3D/banana_3d.png",
+      "sha256": "b82cd3cc7e56e70026b599aeec5d811568b507adc96473bf854096f5e67d92a5",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 25891
+      }
+    },
+    {
+      "id": "avocado",
+      "label": "Авокадо",
+      "asset": "res/stickers/snacks/avocado.png",
+      "source": "assets/Avocado/3D/avocado_3d.png",
+      "sha256": "526f16895dee591111aa502e6a07e3a8cd6262b4189be7f670c82a76e702f4d2",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37151
+      }
+    },
+    {
+      "id": "sushi",
+      "label": "Суши",
+      "asset": "res/stickers/snacks/sushi.png",
+      "source": "assets/Sushi/3D/sushi_3d.png",
+      "sha256": "5992070c8e4af0af12643e16999606b891bfd5b49b0f8aa33e9bf9e7bba5ed68",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32700
+      }
+    },
+    {
+      "id": "ramen",
+      "label": "Горячая лапша",
+      "asset": "res/stickers/snacks/ramen.png",
+      "source": "assets/Steaming bowl/3D/steaming_bowl_3d.png",
+      "sha256": "753c2250ef9f60fe4933e21ee1d53e6820413486f75bffc29ef092957bae583b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28221
+      }
+    },
+    {
+      "id": "taco",
+      "label": "Тако",
+      "asset": "res/stickers/snacks/taco.png",
+      "source": "assets/Taco/3D/taco_3d.png",
+      "sha256": "33687d9e320233c811998633f5ff1ac95f82fba22d8f31a9af62cf49ea96fa44",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 27483
+      }
+    },
+    {
+      "id": "bubble_tea",
+      "label": "Бабл-ти",
+      "asset": "res/stickers/snacks/bubble_tea.png",
+      "source": "assets/Bubble tea/3D/bubble_tea_3d.png",
+      "sha256": "a641ba6510d10b00d861406412a3e72eecec2ad78b00dfbe570e441a54a22377",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 24622
+      }
+    },
+    {
+      "id": "laptop",
+      "label": "За работу, ноутбук",
+      "asset": "res/stickers/work/laptop.png",
+      "source": "assets/Laptop/3D/laptop_3d.png",
+      "sha256": "3b8a267f6c3d2721af925782bdbc11c4e1bc9ae806c5c875557b100393665aab",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 29028
+      }
+    },
+    {
+      "id": "computer",
+      "label": "Компьютер",
+      "asset": "res/stickers/work/computer.png",
+      "source": "assets/Desktop computer/3D/desktop_computer_3d.png",
+      "sha256": "f0ec12ccf1e9a2ff83f95cd8ba85e357e401d8dcdbc6bae596d23d77be7f74da",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 35207
+      }
+    },
+    {
+      "id": "keyboard",
+      "label": "Печатаю",
+      "asset": "res/stickers/work/keyboard.png",
+      "source": "assets/Keyboard/3D/keyboard_3d.png",
+      "sha256": "448ea066381ca784676b617c9c76a3ea175e93a025d3b1103a685996496521c0",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 27210
+      }
+    },
+    {
+      "id": "mouse",
+      "label": "Компьютерная мышка",
+      "asset": "res/stickers/work/mouse.png",
+      "source": "assets/Computer mouse/3D/computer_mouse_3d.png",
+      "sha256": "f3d221fe962db9828e7d70e9df964e65a0ed550bd86c944d645cfd8ef1bb6dc3",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 20206
+      }
+    },
+    {
+      "id": "brain",
+      "label": "Мозговой штурм",
+      "asset": "res/stickers/work/brain.png",
+      "source": "assets/Brain/3D/brain_3d.png",
+      "sha256": "37906c3f0b0495215df114d72565a389496dc4c5b2af02398abf9dc7dc5a2a43",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37483
+      }
+    },
+    {
+      "id": "idea",
+      "label": "Есть идея",
+      "asset": "res/stickers/work/idea.png",
+      "source": "assets/Light bulb/3D/light_bulb_3d.png",
+      "sha256": "df7b09aa18301507e6fb8c279df66d9afa465b6fed3e63d2efa84dacebdbbf79",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 22450
+      }
+    },
+    {
+      "id": "rocket",
+      "label": "Запускаем, ракета",
+      "asset": "res/stickers/work/rocket.png",
+      "source": "assets/Rocket/3D/rocket_3d.png",
+      "sha256": "4636925a1dfc76a45dc83c08b983699d39143a0978f794a4e2dfb6cbffdcd7ab",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 36274
+      }
+    },
+    {
+      "id": "waiting",
+      "label": "Ждём, песочные часы",
+      "asset": "res/stickers/work/waiting.png",
+      "source": "assets/Hourglass not done/3D/hourglass_not_done_3d.png",
+      "sha256": "ab4183328a0ec7a0440a6fb48113fdb9145f51235e960c7f17097ebb9f13af97",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34124
+      }
+    },
+    {
+      "id": "alarm",
+      "label": "Пора вставать",
+      "asset": "res/stickers/work/alarm.png",
+      "source": "assets/Alarm clock/3D/alarm_clock_3d.png",
+      "sha256": "1aa6929e1baa440db535fd321868dc76ddd888bf3e4f4333d37800ff2ec41c74",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 42751
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Планируем встречу",
+      "asset": "res/stickers/work/calendar.png",
+      "source": "assets/Calendar/3D/calendar_3d.png",
+      "sha256": "7c377466753d5c5062e60edec0258ac78c512df423add89b2dd359035592d8ef",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41180
+      }
+    },
+    {
+      "id": "memo",
+      "label": "Записал",
+      "asset": "res/stickers/work/memo.png",
+      "source": "assets/Memo/3D/memo_3d.png",
+      "sha256": "bddf602ea6a0988a77ef51187a3ac8b526791a614a8bb7123705359319a81dcd",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 30659
+      }
+    },
+    {
+      "id": "folder",
+      "label": "Документы",
+      "asset": "res/stickers/work/folder.png",
+      "source": "assets/File folder/3D/file_folder_3d.png",
+      "sha256": "d07ff91df2a4ad9f08e281e9b99ad66924b6db0c0afd2a938feca4dd6b7a9039",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 19579
+      }
+    },
+    {
+      "id": "growth",
+      "label": "Рост, всё идёт вверх",
+      "asset": "res/stickers/work/growth.png",
+      "source": "assets/Chart increasing/3D/chart_increasing_3d.png",
+      "sha256": "dd5e6b29aa4067c5a4d9e152119497832d70e094b380998e5f5b0c51abbb3a64",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 42157
+      }
+    },
+    {
+      "id": "warning",
+      "label": "Внимание, осторожно",
+      "asset": "res/stickers/work/warning.png",
+      "source": "assets/Warning/3D/warning_3d.png",
+      "sha256": "318f534c5d93100443f6e48defc47d76140473d797087af5821587f0feb8003c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 22076
+      }
+    },
+    {
+      "id": "done",
+      "label": "Готово, задача выполнена",
+      "asset": "res/stickers/work/done.png",
+      "source": "assets/Check mark button/3D/check_mark_button_3d.png",
+      "sha256": "256e3dd950cf1705ab72511ab242472b4bd7db519aa402a6182c1aaf8c58def9",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 34052
+      }
+    },
+    {
+      "id": "construction",
+      "label": "В процессе, идут работы",
+      "asset": "res/stickers/work/construction.png",
+      "source": "assets/Construction/3D/construction_3d.png",
+      "sha256": "935f7693f87b80f8aa62b4b5aa85639fef03b07a2c9b723c327aa27338f66531",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 26040
+      }
+    },
+    {
+      "id": "balloon",
+      "label": "Воздушный шарик",
+      "asset": "res/stickers/celebration/balloon.png",
+      "source": "assets/Balloon/3D/balloon_3d.png",
+      "sha256": "1f3ae11652b440750cfd3e724888b3827d8e9349367cea80e57e33fd45588215",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 23640
+      }
+    },
+    {
+      "id": "confetti",
+      "label": "Конфетти",
+      "asset": "res/stickers/celebration/confetti.png",
+      "source": "assets/Confetti ball/3D/confetti_ball_3d.png",
+      "sha256": "92dc91f0566a3e103c71bf8e96ef693aa7509cf810b239203ae2d8b66a11bf0b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 40564
+      }
+    },
+    {
+      "id": "gift",
+      "label": "Подарок",
+      "asset": "res/stickers/celebration/gift.png",
+      "source": "assets/Wrapped gift/3D/wrapped_gift_3d.png",
+      "sha256": "fc9c446401c9fb347f4e9f47e6023247208126047d9ec32059d5e14e127fb562",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31757
+      }
+    },
+    {
+      "id": "birthday",
+      "label": "С днём рождения",
+      "asset": "res/stickers/celebration/birthday.png",
+      "source": "assets/Birthday cake/3D/birthday_cake_3d.png",
+      "sha256": "5c5d6961fde0fa82d1aa2242f938ff10b0327e791674c625c912f13ff206933b",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 41229
+      }
+    },
+    {
+      "id": "cheers",
+      "label": "За нас",
+      "asset": "res/stickers/celebration/cheers.png",
+      "source": "assets/Clinking glasses/3D/clinking_glasses_3d.png",
+      "sha256": "9688066f55c78d6dee3f7f486b24b6c378b4af5e214b68fb8f2cd5d68c4ff20a",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 23475
+      }
+    },
+    {
+      "id": "beer",
+      "label": "По пиву",
+      "asset": "res/stickers/celebration/beer.png",
+      "source": "assets/Clinking beer mugs/3D/clinking_beer_mugs_3d.png",
+      "sha256": "10a5d71fcf8031ffb64e03a5df4f0bf48b97d7ee62cded393f0d2fa9cb736e7a",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37002
+      }
+    },
+    {
+      "id": "champagne",
+      "label": "Шампанское",
+      "asset": "res/stickers/celebration/champagne.png",
+      "source": "assets/Bottle with popping cork/3D/bottle_with_popping_cork_3d.png",
+      "sha256": "05e5126f15a1cb73fe27227100784e353140539aeccdd8d4808f900c0231a671",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 28043
+      }
+    },
+    {
+      "id": "fireworks",
+      "label": "Салют",
+      "asset": "res/stickers/celebration/fireworks.png",
+      "source": "assets/Fireworks/3D/fireworks_3d.png",
+      "sha256": "25838694c923a57e5c7912af18893d7eb031da0b1591a1c3e648a3e7807bfd2c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 55306
+      }
+    },
+    {
+      "id": "sparkler",
+      "label": "Бенгальский огонь",
+      "asset": "res/stickers/celebration/sparkler.png",
+      "source": "assets/Sparkler/3D/sparkler_3d.png",
+      "sha256": "972a621d1e903152335c62ee1210f54356e3b219f0685d32c4ad01f5276a7778",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 52388
+      }
+    },
+    {
+      "id": "disco",
+      "label": "Дискотека",
+      "asset": "res/stickers/celebration/disco.png",
+      "source": "assets/Mirror ball/3D/mirror_ball_3d.png",
+      "sha256": "128ceb2aee9555fd12ba2790f2f94d8ae89bd641fe6459857b9247bb6326fc77",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 32020
+      }
+    },
+    {
+      "id": "ribbon",
+      "label": "Праздничный бант",
+      "asset": "res/stickers/celebration/ribbon.png",
+      "source": "assets/Ribbon/3D/ribbon_3d.png",
+      "sha256": "c2612db2b5070992a67c56667e8b80e8344112c28ef668cbd554962b5bb63b42",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 37424
+      }
+    },
+    {
+      "id": "trophy",
+      "label": "Ты чемпион",
+      "asset": "res/stickers/celebration/trophy.png",
+      "source": "assets/Trophy/3D/trophy_3d.png",
+      "sha256": "7c4a9805f354eb2aec35063a95a4043306efc726324c0d128883f24497857bbc",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 31910
+      }
+    },
+    {
+      "id": "gold",
+      "label": "Первое место",
+      "asset": "res/stickers/celebration/gold.png",
+      "source": "assets/1st place medal/3D/1st_place_medal_3d.png",
+      "sha256": "3f4dc5626b0e9f62585d317572e9c11d8ec64856c3e82f03c16c40be3a31dae5",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 30635
+      }
+    },
+    {
+      "id": "medal",
+      "label": "Медаль за заслуги",
+      "asset": "res/stickers/celebration/medal.png",
+      "source": "assets/Sports medal/3D/sports_medal_3d.png",
+      "sha256": "7d62249a2978fb4be1bb6286d6dbd569e8cf1013d760ae89e7a38c63801c0f5c",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 17494
+      }
+    },
+    {
+      "id": "shooting_star",
+      "label": "Загадай желание",
+      "asset": "res/stickers/celebration/shooting_star.png",
+      "source": "assets/Shooting star/3D/shooting_star_3d.png",
+      "sha256": "780df133da58745c45b7da2f61e5fadba3c7eeb39ac8372d6703fd01190b47eb",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 40888
+      }
+    },
+    {
+      "id": "sparkles",
+      "label": "Волшебство, искры",
+      "asset": "res/stickers/celebration/sparkles.png",
+      "source": "assets/Sparkles/3D/sparkles_3d.png",
+      "sha256": "e4490c9ff74a3fd73a8f99c760d65b6ed51b8a3e4ad28da137fec050b77e1058",
+      "info": {
+        "w": 256,
+        "h": 256,
+        "mimetype": "image/png",
+        "size": 21948
+      }
     }
   ]
 }

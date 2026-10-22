@@ -3,7 +3,9 @@
 HS_URL=http://127.0.0.1:8008 APP_URL=http://127.0.0.1:18081 \
   python3 tests/e2e/media_stickers.py
 Requires Playwright browsers. Never use production accounts.
+Set LIVE_GIF_PROVIDERS=1 to check GIFS.RU, Tenor and GIPHY against real providers.
 """
+import base64
 import http.server
 import json
 import os
@@ -54,6 +56,16 @@ def wait_event(token, room, predicate):
 def check(name, condition=True):
     assert condition, name
     print('PASS ' + name, flush=True)
+
+
+def check_animation(label, image, page):
+    initial = image.screenshot()
+    for delay in [170, 310, 530, 790]:
+        page.wait_for_timeout(delay)
+        if image.screenshot() != initial:
+            check(label + ' animation changes frames')
+            return
+    raise AssertionError(label + ' animation remained static')
 
 
 run = uuid.uuid4().hex[:8]
@@ -158,6 +170,22 @@ with sync_playwright() as playwright:
                 'og:title': 'Playable video page', 'og:video': media_base + '/clip.webm',
                 'og:video:type': 'video/webm', 'og:image': media_base + '/loop.gif',
             }))
+            provider_requests = []
+            def provider_preview_error(route):
+                provider_requests.append(route.request.url)
+                route.fulfill(status=404, json={'errcode': 'M_UNRECOGNIZED', 'error': 'Unrecognized request'})
+            context.route(re.compile(r'/_matrix/.*/preview_url\?.*(gifs|tenor|giphy|imgur)'), provider_preview_error)
+            # Mirror the provider's static embed so this regression remains
+            # independent of external availability. Live embeds are checked separately.
+            if not os.environ.get('LIVE_GIF_PROVIDERS'):
+                context.route('https://gifs.ru/embed/4Oib7Z', lambda route: route.fulfill(
+                    content_type='text/html', body='<img src="data:image/gif;base64,' + base64.b64encode(gif).decode() + '" alt="Работа Работаю Печатаю">'))
+                context.route('https://i.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif', lambda route: route.fulfill(content_type='image/gif', body=gif))
+                context.route('https://tenor.com/view/18240062.gif', lambda route: route.fulfill(content_type='image/gif', body=gif))
+            # Imgur rate-limits this environment (HTTP 429), so keep its playback
+            # coverage deterministic, including in live-provider mode.
+            context.route('https://i.imgur.com/llGqCrR.mp4', lambda route: route.fulfill(content_type='video/webm', body=clip))
+            context.route('https://i.imgur.com/llGqCrR.gif', lambda route: route.fulfill(content_type='image/gif', body=gif))
             try:
                 page.goto(APP + '/config.json')
                 page.evaluate('''s => {
@@ -177,6 +205,17 @@ with sync_playwright() as playwright:
                 jump_latest()
                 page.evaluate('navigator.serviceWorker.ready.then(() => true)')
                 check(label + ' authenticated-media service worker ready')
+                if width == 1400:
+                    assets = json.loads((REPO / 'public/res/stickers/SOURCES.json').read_text())['files']
+                    decoded = page.evaluate('''async files => Promise.all(files.map(async file => {
+                      const image = new Image();
+                      image.src = '/public/stickers/' + file.asset.slice('res/stickers/'.length);
+                      await image.decode();
+                      if (image.naturalWidth !== file.info.w || image.naturalHeight !== file.info.h)
+                        throw new Error('Invalid sticker dimensions: ' + file.asset);
+                      return file.asset;
+                    }))''', assets)
+                    check(label + ' all 144 bundled PNGs decode in browser', len(decoded) == 144)
                 # Defaults must be present without any account/room sticker packs.
                 def open_stickers():
                     button = page.get_by_role('button', name='Stickers', exact=True)
@@ -187,7 +226,8 @@ with sync_playwright() as playwright:
                         page.get_by_text('Sticker', exact=True).click()
                 open_stickers()
                 page.locator('button[data-emoji-type="sticker"]').first.wait_for()
-                check(label + ' all three default pack icons', all(page.get_by_role('button', name=name, exact=True).count() == 1 for name in ['Коты', 'Реакции', 'Зверята']))
+                check(label + ' all nine default pack icons', all(page.get_by_role('button', name=name, exact=True).count() == 1 for name in ['Коты', 'Реакции', 'Зверята', 'Жесты', 'Настроение', 'Сердечки', 'Перекус', 'За работу', 'Праздник']))
+                page.get_by_role('button', name='Коты', exact=True).click()
                 sticker = page.locator('button[data-emoji-data="builtin-sticker:cats/cat_face"]')
                 sticker.wait_for()
                 check(label + ' sticker pixels loaded', sticker.locator('img').evaluate('(el) => el.complete && el.naturalWidth === 256'))
@@ -233,12 +273,48 @@ with sync_playwright() as playwright:
                 page.keyboard.press('Escape')
                 page.get_by_placeholder('Search', exact=True).wait_for(state='hidden')
                 check(label + ' Escape closes picker from its search input')
+                for pack_name, sticker_key, sticker_body in [
+                    ('Жесты', 'gestures/thumbs_up', 'Одобряю, лайк'),
+                    ('Настроение', 'moods/salute', 'Есть, принято'),
+                    ('Сердечки', 'hearts/red_heart', 'Красное сердце'),
+                    ('Перекус', 'snacks/coffee', 'Кофе и чай'),
+                    ('За работу', 'work/laptop', 'За работу, ноутбук'),
+                    ('Праздник', 'celebration/balloon', 'Воздушный шарик'),
+                ]:
+                    open_stickers()
+                    page.get_by_role('button', name=pack_name, exact=True).click()
+                    new_sticker = page.locator('button[data-emoji-data="builtin-sticker:' + sticker_key + '"]')
+                    new_sticker.wait_for()
+                    new_sticker.scroll_into_view_if_needed()
+                    page.wait_for_function('key => document.querySelector(`button[data-emoji-data="${key}"] img`)?.naturalWidth === 256', arg='builtin-sticker:' + sticker_key)
+                    check(label + ' expanded pack loads ' + pack_name, new_sticker.locator('img').evaluate('(el) => el.naturalWidth === 256'))
+                    if width == 1400:
+                        page.screenshot(path=str(OUT / (label + '-pack-' + sticker_key.split('/')[0] + '.png')))
+                    previous_ids = {event['event_id'] for event in events(token, room)}
+                    new_sticker.click()
+                    new_event = wait_event(token, room, lambda e: e['event_id'] not in previous_ids and e['type'] == 'm.sticker' and e.get('content', {}).get('body') == sticker_body)
+                    check(label + ' expanded pack sends portable MXC ' + pack_name, new_event['content']['url'].startswith('mxc://') and new_event['content']['info']['w'] == 256)
+                    jump_latest()
+                open_stickers()
+                page.get_by_placeholder('Search', exact=True).fill('спасибо')
+                page.get_by_role('button', name='Спасибо, пожалуйста sticker', exact=True).wait_for()
+                check(label + ' expanded packs searchable by Russian meaning')
+                page.keyboard.press('Escape')
                 # Direct GIF/video URLs and provider metadata each render actual media.
                 def text_message(body):
+                    previous_ids = {event['event_id'] for event in events(token, room)}
                     editor.click(); page.keyboard.insert_text(body); page.keyboard.press('Enter')
-                    event = wait_event(token, room, lambda e: e.get('content', {}).get('body') == body)
-                    jump_latest()
-                    return event
+                    event = wait_event(token, room, lambda e: e['event_id'] not in previous_ids and e.get('content', {}).get('body') == body)
+                    row = page.locator('[data-message-id="' + event['event_id'] + '"]')
+                    # Sync and initial/restored scroll can settle after the API
+                    # accepts a message. Follow the latest until the new row mounts.
+                    for _ in range(40):
+                        jump_latest()
+                        if row.count():
+                            row.scroll_into_view_if_needed()
+                            return event
+                        page.wait_for_timeout(200)
+                    raise AssertionError('Sent message never appeared in the timeline')
 
                 for suffix, tag in [('loop.gif', 'img'), ('clip.webm', 'video'), ('watch', 'video')]:
                     body = media_base + '/' + suffix + '?' + label
@@ -255,6 +331,45 @@ with sync_playwright() as playwright:
                         media.evaluate('(el) => el.pause()')
                     check(label + ' media preview loaded ' + suffix)
                     check(label + ' original link retained ' + suffix, linked_row.locator('a[href="' + body + '"]').count() >= 1)
+                share_body = 'https://gifs.ru/gifs/rabota-rabotayu-pechatayu-4Oib7Z?utm_source=share&utm_medium=copy_link'
+                shared = text_message(share_body)
+                shared_row = page.locator('[data-message-id="' + shared['event_id'] + '"]')
+                provider_frame = shared_row.locator('iframe[title="GIFS.RU media preview"]')
+                provider_frame.wait_for()
+                provider_img = shared_row.frame_locator('iframe').locator('img')
+                provider_img.wait_for()
+                provider_img.evaluate('(el) => el.decode()')
+                expected_gif_width = 318 if os.environ.get('LIVE_GIF_PROVIDERS') else 2
+                check(label + ' GIFS.RU share animation renders without Matrix preview API', provider_img.evaluate('(el) => el.naturalWidth') == expected_gif_width and not provider_requests)
+                check(label + ' provider embed blocks scripts and referrer', provider_frame.get_attribute('sandbox') == '' and provider_frame.get_attribute('referrerpolicy') == 'no-referrer')
+                check(label + ' GIFS.RU original share link retained', shared_row.locator('a[href="' + share_body + '"]').count() >= 1)
+                check(label + ' provider fits narrow messages', provider_frame.bounding_box()['width'] <= width)
+                if os.environ.get('LIVE_GIF_PROVIDERS') and width == 1400:
+                    check_animation(label + ' GIFS.RU', provider_img, page)
+                for provider, provider_body, provider_src in [
+                    ('GIPHY', 'https://giphy.com/gifs/cat-3oriO0OEd9QIDdllqo?utm_source=share', 'https://i.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif'),
+                    ('Tenor', 'https://tenor.com/view/cat-typing-gif-18240062', 'https://tenor.com/view/18240062.gif'),
+                    ('Tenor short', 'https://tenor.com/boHeI.gif', 'https://tenor.com/view/18240062.gif'),
+                    ('Imgur GIFV', 'https://i.imgur.com/llGqCrR.gifv', 'https://i.imgur.com/llGqCrR.mp4'),
+                    ('Imgur single image', 'https://imgur.com/llGqCrR', 'https://i.imgur.com/llGqCrR.gif'),
+                ]:
+                    if engine == 'webkit' and provider.startswith('Imgur'):
+                        # WebKit's native media requests bypass Playwright routes.
+                        # The real host returns HTTP 429 here; Chromium/Firefox
+                        # cover the fixture, not a fabricated live Imgur result.
+                        print('SKIP ' + label + ' ' + provider + ': Imgur HTTP 429; native media bypasses test routes', flush=True)
+                        continue
+                    provider_event = text_message(provider_body)
+                    provider_row = page.locator('[data-message-id="' + provider_event['event_id'] + '"]')
+                    if provider == 'Imgur GIFV':
+                        page.wait_for_function('(row) => row.querySelector("video")?.videoWidth > 0', arg=provider_row.element_handle())
+                        check(label + ' GIFV plays as muted looping video', provider_row.locator('video').evaluate('(el) => el.loop && el.muted && el.autoplay'))
+                    else:
+                        page.wait_for_function('({row, src}) => Array.from(row.querySelectorAll("img")).some(el => el.src === src && el.naturalWidth > 0)', arg={'row': provider_row.element_handle(), 'src': provider_src})
+                        if os.environ.get('LIVE_GIF_PROVIDERS') and width == 1400 and provider in ['GIPHY', 'Tenor']:
+                            check_animation(label + ' ' + provider, provider_row.locator('img[src="' + provider_src + '"]'), page)
+                    check(label + ' ' + provider + ' share renders without Matrix API', not provider_requests)
+                    check(label + ' ' + provider + ' original link retained', provider_row.locator('a[href="' + provider_body + '"]').count() >= 1)
                 # Real upload through the file picker, with an omitted browser MIME type.
                 for filename, data, mime, expected in [('meme.gif', gif, '', 'm.image'), ('clip.webm', clip, 'application/octet-stream', 'm.video')]:
                     unique_name = label + '-' + filename
@@ -307,9 +422,18 @@ with sync_playwright() as playwright:
                     manual_row.get_by_role('button', name='Load media preview', exact=True).click()
                     page.wait_for_function('(row) => Array.from(row.querySelectorAll("img")).some(img => img.naturalWidth === 2)', arg=manual_row.element_handle())
                     check(label + ' explicit click loads media when automatic loading is disabled')
+                    manual_share = text_message(share_body + '&manual=' + label)
+                    manual_share_row = page.locator('[data-message-id="' + manual_share['event_id'] + '"]')
+                    manual_share_row.get_by_role('button', name='Load media preview', exact=True).wait_for()
+                    check(label + ' provider respects disabled automatic media loading', manual_share_row.locator('iframe').count() == 0)
+                    manual_share_row.get_by_role('button', name='Load media preview', exact=True).click()
+                    manual_share_row.frame_locator('iframe').locator('img').wait_for()
+                    check(label + ' provider loads after explicit click')
                     page.evaluate('localStorage.setItem("settings", JSON.stringify({mediaAutoLoad:false,urlPreview:false}))')
                     page.reload(); editor.wait_for(timeout=30000); jump_latest()
                     manual_row.wait_for()
+                    manual_share_row.wait_for()
+                    check(label + ' disabling URL previews prevents provider embeds', manual_share_row.locator('iframe').count() == 0 and manual_share_row.get_by_role('button', name='Load media preview', exact=True).count() == 0)
                     check(label + ' disabling URL previews preserves only the original link', manual_row.locator('a[href="' + manual_body + '"]').count() == 1 and manual_row.locator('img[src^="' + media_base + '"]').count() == 0 and manual_row.get_by_role('button', name='Load media preview', exact=True).count() == 0)
                 check(label + ' no script errors', not errors)
             except Exception as error:

@@ -26,19 +26,26 @@ import { tryDecodeURIComponent } from '../../utils/dom';
 import { mxcUrlToHttp } from '../../utils/matrix';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { ImageViewer } from '../image-viewer';
-import { getDirectMedia, getHttpUrl, getPreviewMedia } from '../../utils/urlPreview';
+import {
+  getDirectMedia,
+  getGifProviderEmbed,
+  getHttpUrl,
+  getProviderMedia,
+  getPreviewMedia,
+} from '../../utils/urlPreview';
 
 const linkStyles = { color: color.Success.Main };
 
 type PreviewMediaProps = {
   src: string;
   poster?: string;
-  kind: 'image' | 'video';
+  kind: 'image' | 'video' | 'embed';
   title: string;
   autoLoad?: boolean;
+  loop?: boolean;
 };
 
-function PreviewMedia({ src, poster, kind, title, autoLoad }: PreviewMediaProps) {
+function PreviewMedia({ src, poster, kind, title, autoLoad, loop }: PreviewMediaProps) {
   const [load, setLoad] = useState(!!autoLoad);
   const [error, setError] = useState(false);
   const [viewer, setViewer] = useState(false);
@@ -64,6 +71,18 @@ function PreviewMedia({ src, poster, kind, title, autoLoad }: PreviewMediaProps)
       </Button>
     );
   }
+  if (kind === 'embed') {
+    return (
+      <iframe
+        className={css.ProviderEmbed}
+        src={src}
+        title={title}
+        sandbox=""
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
   return kind === 'video' ? (
     // eslint-disable-next-line jsx-a11y/media-has-caption
     <video
@@ -73,6 +92,9 @@ function PreviewMedia({ src, poster, kind, title, autoLoad }: PreviewMediaProps)
       title={title}
       controls
       playsInline
+      loop={loop}
+      muted={loop}
+      autoPlay={loop}
       preload="metadata"
       onError={() => setError(true)}
     />
@@ -108,20 +130,23 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
   ({ url, ts, mediaAutoLoad = true, ...props }, ref) => {
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
-    const directMedia = getDirectMedia(url);
+    const directMedia = getProviderMedia(url) ?? getDirectMedia(url);
+    const localMediaUrl = directMedia?.url;
+    const providerEmbed = getGifProviderEmbed(url);
     const safeUrl = getHttpUrl(url);
     const [previewStatus, loadPreview] = useAsyncCallback(
       useCallback(() => mx.getUrlPreview(url, ts), [url, ts, mx])
     );
 
     useEffect(() => {
-      if (safeUrl && !getDirectMedia(url)) {
+      if (safeUrl && !localMediaUrl && !providerEmbed) {
         // The hook exposes the error state; consume the rejected promise as well.
         loadPreview().catch(() => undefined);
       }
-    }, [loadPreview, safeUrl, url]);
+    }, [loadPreview, safeUrl, localMediaUrl, providerEmbed]);
 
-    if (!safeUrl || (!directMedia && previewStatus.status === AsyncStatus.Error)) return null;
+    if (!safeUrl || (!directMedia && !providerEmbed && previewStatus.status === AsyncStatus.Error))
+      return null;
 
     const renderContent = (prev?: IPreviewUrlResponse) => {
       const image = prev?.['og:image'];
@@ -130,8 +155,9 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
           ? mxcUrlToHttp(mx, image, useAuthentication) ?? getHttpUrl(image)
           : undefined;
       const media = directMedia ?? (prev && getPreviewMedia(prev));
-      const src = media?.url ?? imgUrl;
-      const title = typeof prev?.['og:title'] === 'string' ? prev['og:title'] : 'Media preview';
+      const src = providerEmbed ?? media?.url ?? imgUrl;
+      const defaultTitle = providerEmbed ? 'GIFS.RU media preview' : 'Media preview';
+      const title = typeof prev?.['og:title'] === 'string' ? prev['og:title'] : defaultTitle;
 
       return (
         <>
@@ -139,10 +165,11 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
             <PreviewMedia
               key={src}
               src={src}
-              kind={media?.kind ?? 'image'}
+              kind={providerEmbed ? 'embed' : media?.kind ?? 'image'}
               poster={imgUrl ?? undefined}
               title={title}
               autoLoad={mediaAutoLoad}
+              loop={media?.loop}
             />
           )}
           <UrlPreviewContent>
@@ -179,7 +206,7 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
         <Spinner variant="Secondary" size="400" />
       </Box>
     );
-    if (directMedia) previewContent = renderContent();
+    if (directMedia || providerEmbed) previewContent = renderContent();
     else if (previewStatus.status === AsyncStatus.Success)
       previewContent = renderContent(previewStatus.data);
 
