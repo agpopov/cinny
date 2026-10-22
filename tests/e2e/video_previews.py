@@ -110,6 +110,26 @@ with sync_playwright() as p:
                 check(label + ' thread guide is visible', nav.evaluate('(e)=>getComputedStyle(e,"::before").content') == '""')
                 page.screenshot(path=str(OUT / (label.replace('/', '-') + '-sidebar.png')))
                 if width == 390: page.get_by_role('link').filter(has_text=name).first.click()
+                def change_settings(switches=None, theme=None):
+                    page.evaluate('document.documentElement.style.fontSize=""')
+                    settings = page.get_by_role('button', name='Настройки пользователя', exact=True)
+                    if not settings.is_visible():
+                        page.get_by_role('button', name='Назад', exact=True).first.click()
+                    settings.click()
+                    if width == 390: page.get_by_text('Основные', exact=True).click()
+                    for title, enabled in (switches or {}).items():
+                        switch = page.get_by_role('switch', name=title, exact=True)
+                        if switch.get_attribute('aria-checked') != str(enabled).lower(): switch.click()
+                    if theme:
+                        current = json.loads(page.evaluate('localStorage.getItem("settings")'))['themeId']
+                        labels = {'dark-theme':'Тёмная','light-theme':'Светлая'}
+                        page.get_by_role('button', name=labels[current], exact=True).click()
+                        page.get_by_text(labels[theme], exact=True).last.click()
+                    page.get_by_role('button', name='Закрыть', exact=True).last.click()
+                    if width == 390:
+                        page.get_by_role('button', name='Закрыть', exact=True).last.click()
+                        page.get_by_role('link').filter(has_text=name).first.click()
+                    editor.wait_for(timeout=30000)
                 for provider, link in links:
                     event = send(token, room, link)
                     page.wait_for_timeout(350)
@@ -139,8 +159,7 @@ with sync_playwright() as p:
                 (OUT / (label.replace('/', '-') + '-requests.json')).write_text(json.dumps(requests, indent=2))
                 check(label + ' Referer contains only app origin', all(r['referer'] == APP.split('/#', 1)[0] + '/' for r in requests))
                 page.screenshot(path=str(OUT / (label.replace('/', '-') + '-videos.png')))
-                page.evaluate('localStorage.setItem("settings",JSON.stringify({urlPreview:true,mediaAutoLoad:false,isNotificationSounds:false}))')
-                page.reload(); editor.wait_for(timeout=45000); page.keyboard.press('Escape')
+                change_settings({'Отключить автозагрузку медиа':True})
                 event = send(token, room, links[0][1] + '&manual=' + run)
                 row = page.locator(f'[data-message-id="{event}"]')
                 load = row.get_by_role('button', name='Загрузить видеоплеер YouTube', exact=True)
@@ -149,13 +168,11 @@ with sync_playwright() as p:
                 load.click()
                 expect(row.frame_locator('iframe').locator('body')).to_have_attribute('data-isolated', 'true')
                 check(label + ' explicit action loads a disabled automatic preview')
-                page.evaluate('localStorage.setItem("settings",JSON.stringify({urlPreview:false,mediaAutoLoad:true,isNotificationSounds:false}))')
-                page.reload(); editor.wait_for(timeout=45000); page.keyboard.press('Escape')
+                change_settings({'Предпросмотр ссылок':False,'Отключить автозагрузку медиа':False})
                 expect(row).to_be_visible(timeout=30000)
                 check(label + ' disabling previews leaves only message links', page.locator('iframe[title^="Видеоплеер"]').count() == 0)
                 for theme in ['dark-theme', 'light-theme']:
-                    page.evaluate('(t)=>localStorage.setItem("settings",JSON.stringify({urlPreview:true,mediaAutoLoad:true,isNotificationSounds:false,useSystemTheme:false,themeId:t}))', theme)
-                    page.reload(); editor.wait_for(timeout=45000); page.keyboard.press('Escape')
+                    change_settings({'Предпросмотр ссылок':True}, theme)
                     page.evaluate('document.documentElement.style.fontSize="200%"')
                     check(label + ' ' + theme + ' 200% font has no page overflow', page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
                 check(label + ' no unhandled script errors', not errors)
