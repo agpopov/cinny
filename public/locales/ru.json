@@ -295,5 +295,8 @@
   "Open PDF": "Открыть PDF",
   "Zoom In": "Увеличить",
   "Zoom Out": "Уменьшить",
-  "Explore Community": "Обзор сообществ"
+  "Explore Community": "Обзор сообществ",
+  "Continue with {{name}}": "Войти через {{name}}",
+  "SSO Login": "Вход через SSO",
+  "To perform this action you need to authenticate yourself by SSO login.": "Для этого действия подтвердите свою личность через SSO."
 }

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, Button, color, config, Dialog, Header, Icon, IconButton, Icons, Text } from 'folds';
 import React, { useCallback, useEffect, useState } from 'react';
 import { StageComponentProps } from './types';
@@ -54,7 +55,7 @@ export function SSOStage({
         size="500"
       >
         <Box grow="Yes">
-          <Text size="H4">SSO Login</Text>
+          <Text size="H4">{t('SSO Login')}</Text>
         </Box>
         <IconButton aria-label="Закрыть" size="300" onClick={onCancel} radii="300">
           <Icon src={Icons.Cross} />
@@ -66,7 +67,7 @@ export function SSOStage({
         gap="400"
       >
         <Text size="T200">
-          To perform this action you need to authenticate yourself by SSO login.
+          {t('To perform this action you need to authenticate yourself by SSO login.')}
         </Text>
         {errorCode && (
           <Box alignItems="Center" gap="100" style={{ color: color.Critical.Main }}>
@@ -80,13 +81,13 @@ export function SSOStage({
         {ssoWindow ? (
           <Button variant="Primary" onClick={handleSubmit}>
             <Text as="span" size="B400">
-              Continue
+              {t('Continue')}
             </Text>
           </Button>
         ) : (
           <Button variant="Primary" onClick={handleContinue}>
             <Text as="span" size="B400">
-              Continue with SSO
+              {t('Continue with SSO')}
             </Text>
           </Button>
         )}

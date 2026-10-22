@@ -347,7 +347,7 @@ with sync_playwright() as playwright:
                 # Direct GIF/video URLs and provider metadata each render actual media.
                 def text_message(body):
                     previous_ids = {event['event_id'] for event in events(token, room)}
-                    editor.click(); page.keyboard.insert_text(body); page.keyboard.press('Enter')
+                    editor.click(); page.keyboard.type(body, delay=2); page.keyboard.press('Enter')
                     event = wait_event(token, room, lambda e: e['event_id'] not in previous_ids and e.get('content', {}).get('body') == body)
                     row = page.locator('[data-message-id="' + event['event_id'] + '"]')
                     # Sync and initial/restored scroll can settle after the API

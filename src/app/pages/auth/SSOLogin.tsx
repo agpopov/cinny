@@ -33,7 +33,7 @@ export function SSOLogin({ providers, redirectUrl, action, saveScreenSpace }: SS
           const { id, name, icon } = provider;
           const iconUrl = icon && mx.mxcUrlToHttp(icon, 96, 96, 'crop', false);
 
-          const buttonTitle = `Continue with ${name}`;
+          const buttonTitle = t('Continue with {{name}}', { name });
 
           if (renderAsIcons) {
             return (
