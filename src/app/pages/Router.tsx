@@ -6,9 +6,11 @@ import {
   createHashRouter,
   createRoutesFromElements,
   redirect,
+  replace,
 } from 'react-router-dom';
 
 import { ClientConfig } from '../hooks/useClientConfig';
+import { getCanonicalMatrixPath } from './matrixRoutePath';
 import { AuthLayout, Login, Register, ResetPassword } from './auth';
 import {
   DIRECT_PATH,
@@ -107,7 +109,8 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
       </Route>
 
       <Route
-        loader={() => {
+        shouldRevalidate={() => true}
+        loader={({ params, request }) => {
           const session = getFallbackSession();
           if (!session) {
             const afterLoginPath = getAppPathFromHref(
@@ -117,6 +120,9 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
             if (afterLoginPath) setAfterLoginRedirectPath(afterLoginPath);
             return redirect(getLoginPath());
           }
+          const url = new URL(request.url);
+          const canonicalPath = getCanonicalMatrixPath(url.pathname, params);
+          if (canonicalPath) return replace(`${canonicalPath}${url.search}${url.hash}`);
           return null;
         }}
         element={

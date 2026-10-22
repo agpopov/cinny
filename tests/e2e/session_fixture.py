@@ -10,12 +10,17 @@ from urllib.parse import unquote, urlsplit
 HS = 'https://session.cinny.test'
 USER = '@startup:session.cinny.test'
 ROOM = '!startup:session.cinny.test'
+SPACE = '!workspace:session.cinny.test'
+CHANNEL = '!channel:session.cinny.test'
+DIRECT = '!direct:session.cinny.test'
+PEER = '@peer:session.cinny.test'
+ALIAS = '#startup:session.cinny.test'
 TOKEN = 'disposable-startup-token'
 DEVICE = 'STARTUPDEVICE'
 MESSAGE = 'Saved session restored with real Matrix SDK and Rust crypto'
 
 
-def install_session_fixture(page):
+def install_session_fixture(page, hash_router=True):
     requests = []
     device_keys = {}
     sync_count = 0
@@ -34,6 +39,34 @@ def install_session_fixture(page):
              event('m.room.power_levels', {'users': {USER: 100}, 'users_default': 0,
                                           'events_default': 0, 'state_default': 50}, '', 4)]
     message = event('m.room.message', {'msgtype': 'm.text', 'body': MESSAGE}, index=5)
+
+    def joined_room(room_state, events):
+        return {'state': {'events': room_state},
+                'timeline': {'events': events, 'prev_batch': 'startup-before', 'limited': False},
+                'ephemeral': {'events': []}, 'account_data': {'events': []},
+                'unread_notifications': {'notification_count': 0, 'highlight_count': 0}}
+
+    def other_state(key, name, extra=None):
+        result = json.loads(json.dumps(state))
+        for index, item in enumerate(result):
+            item['event_id'] = '$' + key + str(index)
+            if item['type'] == 'm.room.name': item['content'] = {'name': name}
+        return result + (extra or [])
+
+    space_state = other_state('space', 'Saved session workspace', [
+        event('m.space.child', {'via': ['session.cinny.test']}, CHANNEL, 10)])
+    space_state[0]['content']['type'] = 'm.space'
+    channel_state = other_state('channel', 'Workspace channel', [
+        event('m.space.parent', {'via': ['session.cinny.test'], 'canonical': True}, SPACE, 11)])
+    channel_message = event('m.room.message', {'msgtype': 'm.text', 'body': 'Workspace channel is open'}, index=12)
+    direct_state = other_state('direct', 'Saved direct conversation', [
+        event('m.room.member', {'membership': 'join', 'displayname': 'Startup peer'}, PEER, 13)])
+    direct_message = event('m.room.message', {'msgtype': 'm.text', 'body': 'Direct conversation is open'}, index=14)
+    state.append(event('m.room.canonical_alias', {'alias': ALIAS}, '', 15))
+    joined = {ROOM: joined_room(state, [message]),
+              SPACE: joined_room(space_state, []),
+              CHANNEL: joined_room(channel_state, [channel_message]),
+              DIRECT: joined_room(direct_state, [direct_message])}
 
     def respond(route):
         nonlocal sync_count
@@ -80,11 +113,8 @@ def install_session_fixture(page):
             # A short delay keeps the SDK's long-poll loop bounded in a fixture.
             time.sleep(0.15)
             body = {'next_batch': 'startup-' + str(sync_count),
-                    'rooms': {'join': {ROOM: {'state': {'events': state},
-                              'timeline': {'events': [message], 'prev_batch': 'startup-before', 'limited': False},
-                              'ephemeral': {'events': []}, 'account_data': {'events': []},
-                              'unread_notifications': {'notification_count': 0, 'highlight_count': 0}}}},
-                    'account_data': {'events': [{'type': 'm.push_rules', 'content': {'global': {}}}]},
+                    'rooms': {'join': joined},
+                    'account_data': {'events': [{'type': 'm.push_rules', 'content': {'global': {}}}, {'type': 'm.direct', 'content': {PEER: [DIRECT]}}]},
                     'presence': {'events': []}, 'to_device': {'events': []},
                     'device_lists': {'changed': [], 'left': []},
                     'device_one_time_keys_count': {'signed_curve25519': 50},
@@ -119,7 +149,7 @@ def install_session_fixture(page):
     page.route(HS + '/**', respond)
     page.route('**/config.json', lambda route: route.fulfill(json={
         'homeserverList': [HS], 'allowCustomHomeservers': False,
-        'hashRouter': {'enabled': True, 'basename': '/'},
+        'hashRouter': {'enabled': hash_router, 'basename': '/'},
     }))
     return requests
 

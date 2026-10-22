@@ -1,6 +1,6 @@
 {
   "name": "cinny",
-  "version": "4.12.18",
+  "version": "4.12.19",
   "description": "Yet another matrix client",
   "main": "index.js",
   "type": "module",
@@ -30,7 +30,8 @@
     "test:key-export": "node tests/key-export.test.mjs",
     "test:p1": "node tests/p1.test.mjs && node tests/p1-tools.test.mjs",
     "test:p2": "node --import ./tests/register-unread-source.mjs tests/p2.test.mjs",
-    "test:build-compat": "node tests/build-compat.test.mjs"
+    "test:build-compat": "node tests/build-compat.test.mjs",
+    "test:routes": "node --import ./tests/register-unread-source.mjs tests/routes.test.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": "eslint",
