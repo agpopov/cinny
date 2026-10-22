@@ -6,3 +6,6 @@ devAssets
 .DS_Store
 .idea
 /tests/.unread.test.mjs
+
+# Python end-to-end test cache
+__pycache__/

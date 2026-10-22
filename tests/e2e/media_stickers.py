@@ -4,11 +4,12 @@ HS_URL=http://127.0.0.1:8008 APP_URL=http://127.0.0.1:18081 \
   python3 tests/e2e/media_stickers.py
 Requires Playwright browsers. Never use production accounts.
 """
-import base64
+import http.server
 import json
 import os
 import re
 import struct
+import threading
 import time
 import urllib.request
 import uuid
@@ -75,6 +76,9 @@ for data in (b'\x44\x0a', b'\x0c\x0a'):
     gif += b'!\xf9\x04\0\x14\0\0\0,' + struct.pack('<HHHH', 0, 0, 2, 1) + b'\0\x02\x02' + data + b'\0'
 gif += b';'
 png = (REPO / 'public/res/stickers/cats/cat_face.png').read_bytes()
+request = urllib.request.Request(HS + '/_matrix/media/v3/upload?filename=custom.png', data=png, method='POST', headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'image/png'})
+with opener.open(request, timeout=30) as response:
+    custom_mxc = json.loads(response.read())['content_uri']
 
 with sync_playwright() as playwright:
     # Produce a real video in Chromium, rather than using a link to a player page.
@@ -92,6 +96,41 @@ with sync_playwright() as playwright:
     }'''))
     producer.close()
     (OUT / 'fixture.webm').write_bytes(clip)
+
+    # Serve actual bytes over loopback. WebKit's media stack does not reliably
+    # pass service-worker-controlled resource requests through Playwright routes.
+    class MediaHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            data, content_type = (clip, 'video/webm') if 'clip' in self.path else (gif, 'image/gif')
+            if self.path.startswith('/watch'):
+                data = ('<html><head><meta property="og:title" content="Playable video page">'
+                        f'<meta property="og:video" content="{media_base}/clip.webm">'
+                        '<meta property="og:video:type" content="video/webm">'
+                        f'<meta property="og:image" content="{media_base}/loop.gif">'
+                        '</head><body>Local video fixture</body></html>').encode()
+                content_type = 'text/html'
+            match = re.match(r'bytes=(\d+)-(\d*)', self.headers.get('Range', ''))
+            status = 200
+            full_size = len(data)
+            if match:
+                start = int(match[1]); end = min(int(match[2]) if match[2] else len(data) - 1, len(data) - 1)
+                data = data[start:end + 1]; status = 206
+            self.send_response(status)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Accept-Ranges', 'bytes')
+            self.send_header('Content-Length', str(len(data)))
+            if match:
+                self.send_header('Content-Range', f'bytes {start}-{end}/{full_size}')
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, *args):
+            pass
+
+    media_server = http.server.ThreadingHTTPServer(('0.0.0.0', 0), MediaHandler)
+    threading.Thread(target=media_server.serve_forever, daemon=True).start()
+    media_base = f'http://{os.environ.get("MEDIA_HOST", "127.0.0.1")}:{media_server.server_port}'
 
     for engine in os.environ.get('BROWSERS', 'chromium').split(','):
         launch = {'args': ['--no-sandbox', '--no-proxy-server']} if engine == 'chromium' else {}
@@ -115,21 +154,9 @@ with sync_playwright() as playwright:
                 'hashRouter': {'enabled': False, 'basename': '/'},
             }))
 
-            def media_response(route):
-                data, content_type = (clip, 'video/webm') if 'clip' in route.request.url else (gif, 'image/gif')
-                headers = {'Content-Type': content_type, 'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes'}
-                match = re.match(r'bytes=(\d+)-(\d*)', route.request.headers.get('range', ''))
-                status = 200
-                if match:
-                    start = int(match[1]); end = min(int(match[2]) if match[2] else len(data) - 1, len(data) - 1)
-                    headers['Content-Range'] = f'bytes {start}-{end}/{len(data)}'
-                    data = data[start:end + 1]; status = 206
-                route.fulfill(status=status, headers=headers, body=data)
-
-            context.route('https://media.test/**', media_response)
             context.route(re.compile(r'/_matrix/.*/preview_url'), lambda route: route.fulfill(json={
-                'og:title': 'Playable video page', 'og:video': 'https://media.test/clip.webm',
-                'og:video:type': 'video/webm', 'og:image': 'https://media.test/loop.gif',
+                'og:title': 'Playable video page', 'og:video': media_base + '/clip.webm',
+                'og:video:type': 'video/webm', 'og:image': media_base + '/loop.gif',
             }))
             try:
                 page.goto(APP + '/config.json')
@@ -175,6 +202,21 @@ with sync_playwright() as playwright:
                 row.wait_for()
                 page.wait_for_function('(row) => Array.from(row.querySelectorAll("img")).some(img => img.complete && img.naturalWidth === 256)', arg=row.element_handle())
                 check(label + ' authenticated sticker renders in timeline')
+                # Room packs arriving while the picker is open must update live.
+                open_stickers()
+                pack_name = 'Live pack ' + label
+                custom_label = 'Своя картинка ' + label
+                api('PUT', f'/_matrix/client/v3/rooms/{room}/state/im.ponies.room_emotes/{label}', token, {
+                    'pack': {'display_name': pack_name, 'usage': ['sticker']},
+                    'images': {'custom_cat': {'url': custom_mxc, 'body': custom_label, 'usage': ['sticker'], 'info': {'w': 256, 'h': 256, 'mimetype': 'image/png', 'size': len(png)}}},
+                })
+                page.get_by_role('button', name=pack_name, exact=True).wait_for()
+                check(label + ' custom room pack appears without reopening picker')
+                page.get_by_placeholder('Search', exact=True).fill(custom_label)
+                page.get_by_role('button', name=custom_label + ' sticker', exact=True).click()
+                custom_event = wait_event(token, room, lambda e: e.get('content', {}).get('body') == custom_label)
+                check(label + ' custom sticker preserves existing MXC and metadata', custom_event['type'] == 'm.sticker' and custom_event['content']['url'] == custom_mxc and custom_event['content']['info']['w'] == 256)
+                jump_latest()
                 # Search matches Cyrillic labels as well as shortcodes.
                 open_stickers()
                 page.get_by_placeholder('Search', exact=True).fill('панда')
@@ -199,7 +241,7 @@ with sync_playwright() as playwright:
                     return event
 
                 for suffix, tag in [('loop.gif', 'img'), ('clip.webm', 'video'), ('watch', 'video')]:
-                    body = 'https://media.test/' + suffix + '?' + label
+                    body = media_base + '/' + suffix + '?' + label
                     linked = text_message(body)
                     linked_row = page.locator('[data-message-id="' + linked['event_id'] + '"]')
                     media = linked_row.locator(tag).last
@@ -254,11 +296,31 @@ with sync_playwright() as playwright:
                     room_link.hover(); arrow.click(); check(label + ' collapses all threads', nav.count() == 0)
                     room_link.hover(); page.get_by_role('button', name='Показать треды', exact=True).click()
                     page.screenshot(path=str(OUT / (label + '-navigation.png')))
+                if engine == 'chromium' and width == 1400:
+                    page.evaluate('localStorage.setItem("settings", JSON.stringify({mediaAutoLoad:false,urlPreview:true}))')
+                    page.reload(); editor.wait_for(timeout=30000); jump_latest()
+                    manual_body = media_base + '/loop.gif?manual-' + label
+                    manual = text_message(manual_body)
+                    manual_row = page.locator('[data-message-id="' + manual['event_id'] + '"]')
+                    manual_row.get_by_role('button', name='Load media preview', exact=True).wait_for()
+                    check(label + ' automatic media disabled leaves a load button', manual_row.locator('img[src^="' + media_base + '"]').count() == 0)
+                    manual_row.get_by_role('button', name='Load media preview', exact=True).click()
+                    page.wait_for_function('(row) => Array.from(row.querySelectorAll("img")).some(img => img.naturalWidth === 2)', arg=manual_row.element_handle())
+                    check(label + ' explicit click loads media when automatic loading is disabled')
+                    page.evaluate('localStorage.setItem("settings", JSON.stringify({mediaAutoLoad:false,urlPreview:false}))')
+                    page.reload(); editor.wait_for(timeout=30000); jump_latest()
+                    manual_row.wait_for()
+                    check(label + ' disabling URL previews preserves only the original link', manual_row.locator('a[href="' + manual_body + '"]').count() == 1 and manual_row.locator('img[src^="' + media_base + '"]').count() == 0 and manual_row.get_by_role('button', name='Load media preview', exact=True).count() == 0)
                 check(label + ' no script errors', not errors)
-            except Exception:
-                page.screenshot(path=str(OUT / (label + '-failure.png')))
-                (OUT / (label + '-failure.txt')).write_text(page.locator('body').inner_text() + '\nERRORS ' + repr(errors) + '\nCONSOLE ' + repr(console_errors))
+            except Exception as error:
+                print('FAIL', label, repr(error), flush=True)
+                try:
+                    page.screenshot(path=str(OUT / (label + '-failure.png')))
+                    (OUT / (label + '-failure.txt')).write_text(page.locator('body').inner_text() + '\nERRORS ' + repr(errors) + '\nCONSOLE ' + repr(console_errors))
+                except Exception:
+                    (OUT / (label + '-crash.txt')).write_text(repr(error) + '\nERRORS ' + repr(errors) + '\nCONSOLE ' + repr(console_errors))
                 raise
             finally:
                 context.close()
         browser.close()
+    media_server.shutdown()
