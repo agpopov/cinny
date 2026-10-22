@@ -29,6 +29,7 @@ def api(method, path, token=None, body=None):
 
 def check(label):
     results.append(label)
+    if 'page' in globals(): page.evaluate('(phase) => window.__p2Phase = phase', label)
     print('PASS ' + label, flush=True)
 
 
@@ -76,8 +77,11 @@ with sync_playwright() as p:
             context = browser.new_context(viewport={'width': width, 'height': 900}, has_touch=True if width == 390 else False, reduced_motion='reduce')
             page = context.new_page()
             errors = []
-            page.on('pageerror', lambda error: errors.append(str(error)))
-            page.add_init_script('''window.__copied = ''; window.__notices = [];
+            page.on('pageerror', lambda error, sink=errors: sink.append({'message':str(error),'stack':error.stack}))
+            page.on('console', lambda message: print(message.text, flush=True) if message.text.startswith('P2_DIAG') else None)
+            page.add_init_script('''window.addEventListener('unhandledrejection', e=>console.error('P2_DIAG '+JSON.stringify({kind:'rejection',phase:window.__p2Phase,url:location.href,name:e.reason?.name,message:e.reason?.message,stack:e.reason?.stack,cause:e.reason?.cause?.message})));
+                window.addEventListener('error', e=>console.error('P2_DIAG '+JSON.stringify({kind:'error',phase:window.__p2Phase,url:location.href,filename:e.filename,line:e.lineno,message:e.message,stack:e.error?.stack})));
+                window.__copied = ''; window.__notices = [];
                 Object.defineProperty(navigator, 'clipboard', {value: {writeText: async text => {window.__copied=text;}}});
                 window.Notification = class {
                     static permission = 'granted'; static requestPermission = async () => 'granted';

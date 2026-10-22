@@ -103,6 +103,9 @@ export function CreateTab() {
             }
           >
             <SidebarAvatar
+              aria-label="Создать или вступить"
+              aria-haspopup="menu"
+              aria-expanded={!!menuCords}
               className={menuCords ? ContainerColor({ variant: 'Surface' }) : undefined}
               as="button"
               ref={triggerRef}

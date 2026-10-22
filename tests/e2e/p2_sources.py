@@ -20,6 +20,9 @@ entry = '''
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
+import { useUserProfile } from './src/app/hooks/useUserProfile';
+import { MatrixClientProvider } from './src/app/hooks/useMatrixClient';
+import { useLiveTimelineRefresh } from './src/app/hooks/useLiveTimelineRefresh';
 import { useRoomThreads } from './src/app/features/room/thread/useThread';
 import { getNotificationAvatar } from './src/app/utils/notificationContent';
 import { createClient, Room, MatrixEvent, RoomEvent } from 'matrix-js-sdk';
@@ -33,6 +36,8 @@ import { downloadMedia } from './src/app/utils/media';
 import { encryptFile, decryptFile } from './src/app/utils/matrix';
 const root=createRoot(document.querySelector('#root'));
 function Abandoned(){useInterval(()=>{},1000);throw new Promise(()=>{});}
+function ProfileProbe({userId}){const profile=useUserProfile(userId);window.profile=profile;return <output id='profile'>{profile.displayName}</output>;}
+function ResetProbe({room}){useLiveTimelineRefresh(room,undefined,()=>{window.resetCount++});return null;}
 function ThreadProbe({room}){useRoomThreads(room);return null;}
 function Clock(){useSharedClock();return null;}
 function Probe(){
@@ -43,6 +48,8 @@ function Probe(){
 }
 function Owner(){const owner=useNotificationOwner('@p2:localhost');return <output id="owner">{String(owner)}</output>;}
 Object.assign(window,{getNotificationAvatar,createClient,Room,MatrixEvent,RoomEvent,
+ mountProfile:(mx,userId)=>flushSync(()=>root.render(<MatrixClientProvider value={mx}><ProfileProbe userId={userId}/></MatrixClientProvider>)),
+ mountReset:room=>{window.resetCount=0;flushSync(()=>root.render(<ResetProbe room={room}/>));},
  mountThread:room=>flushSync(()=>root.render(<ThreadProbe room={room}/>)),flush:flushSync,
  streamMediaToDisk,downloadMedia,encryptFile,decryptFile,ownsNotifications,
  mountAbandoned:()=>flushSync(()=>root.render(<React.Suspense fallback={<span>Waiting</span>}><Abandoned/></React.Suspense>)),
@@ -101,6 +108,24 @@ with sync_playwright() as p:
           mountThread(room);const original=Array.prototype.sort;let sorts=0;
           Array.prototype.sort=function(...args){sorts++;return original.apply(this,args)};
           try{flush(()=>room.emit(RoomEvent.Receipt,new MatrixEvent({type:'m.receipt',content:{}}),room));return sorts===0;}finally{Array.prototype.sort=original;unmount();}
+        }""")
+        check('limited room sync refreshes a replaced live timeline', """() => {
+          const mx=createClient({baseUrl:'https://test.invalid',userId:'@me:test',accessToken:'test',timelineSupport:true});
+          const room=new Room('!reset:test',mx,'@me:test',{timelineSupport:true});mountReset(room);
+          const previous=room.getLiveTimeline();room.resetLiveTimeline('back','forward');
+          const ok=previous!==room.getLiveTimeline()&&window.resetCount===1;unmount();return ok;
+        }""")
+        check('profile lookup failure retains cached names without unhandled rejection', """async () => {
+          const user={displayName:'Cached',avatarUrl:'mxc://test/cached',on(){},removeListener(){}};
+          const mx={getUser:()=>user,getProfileInfo:async()=>{throw Error('offline')}};
+          mountProfile(mx,'@cached:test');await new Promise(resolve=>setTimeout(resolve,30));
+          const ok=profile.displayName==='Cached'&&profile.avatarUrl==='mxc://test/cached';unmount();return ok;
+        }""")
+        check('late profile responses cannot overwrite another selected user', """async () => {
+          let oldResolve;
+          const mx={getUser:id=>({displayName:id,on(){},removeListener(){}}),getProfileInfo:id=>id==='old'?new Promise(resolve=>oldResolve=resolve):Promise.resolve({displayname:'New server'})};
+          mountProfile(mx,'old');mountProfile(mx,'new');oldResolve({displayname:'Late old user'});
+          await new Promise(resolve=>setTimeout(resolve,30));const ok=profile.displayName==='New server';unmount();return ok;
         }""")
         check('avatar LRU evicts old entries and isolates renamed users and accounts', """async () => {
           const original=document.createElement;let canvases=0;

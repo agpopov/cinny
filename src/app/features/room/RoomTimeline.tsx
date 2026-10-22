@@ -50,6 +50,7 @@ import {
 import { isKeyHotkey } from 'is-hotkey';
 import { Opts as LinkifyOpts } from 'linkifyjs';
 import { useTranslation } from 'react-i18next';
+import { useLiveTimelineRefresh } from '../../hooks/useLiveTimelineRefresh';
 import { canPaginateTimeline } from '../../utils/timelinePagination';
 import { eventWithShortcode, factoryEventSentBy, getMxIdLocalPart } from '../../utils/matrix';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
@@ -446,32 +447,6 @@ const useLiveEventArrive = (
   }, [room, timelineSet, onArrive]);
 };
 
-const useLiveTimelineRefresh = (room: Room, thread: Thread | undefined, onRefresh: () => void) => {
-  useEffect(() => {
-    if (thread) {
-      // Тред пересоздаёт живой таймлайн при начальной загрузке и после разрывов синхронизации.
-      const handleReset: EventTimelineSetHandlerMap[RoomEvent.TimelineReset] = (r, tSet) => {
-        if (tSet !== thread.timelineSet) return;
-        onRefresh();
-      };
-      thread.on(RoomEvent.TimelineReset, handleReset);
-      return () => {
-        thread.removeListener(RoomEvent.TimelineReset, handleReset);
-      };
-    }
-
-    const handleTimelineRefresh: RoomEventHandlerMap[RoomEvent.TimelineRefresh] = (r) => {
-      if (r.roomId !== room.roomId) return;
-      onRefresh();
-    };
-
-    room.on(RoomEvent.TimelineRefresh, handleTimelineRefresh);
-    return () => {
-      room.removeListener(RoomEvent.TimelineRefresh, handleTimelineRefresh);
-    };
-  }, [room, thread, onRefresh]);
-};
-
 const getInitialTimeline = (timelineSet: EventTimelineSet) => {
   const linkedTimelines = getLinkedTimelines(getSetLiveTimeline(timelineSet));
   const evLength = getTimelinesEventsCount(linkedTimelines);
@@ -524,9 +499,10 @@ export function RoomTimeline({
   );
   const markTimelineAsRead = useCallback(
     (privateReceipt: boolean) =>
-      thread
+      (thread
         ? markThreadAsRead(mx, room, thread.id, privateReceipt)
-        : markMainTimelineAsRead(mx, room.roomId, privateReceipt),
+        : markMainTimelineAsRead(mx, room.roomId, privateReceipt)
+      ).catch(() => undefined),
     [mx, room, thread]
   );
   const useAuthentication = useMediaAuthentication();
@@ -729,20 +705,16 @@ export function RoomTimeline({
         scrollToBottomRef.current.count += 1;
         scrollToBottomRef.current.smooth = true;
 
-        setTimeline((ct) => ({
-          ...ct,
-          range: {
-            start: ct.range.start + 1,
-            end: ct.range.end + 1,
-          },
-        }));
+        // A reset can start with an empty live timeline; redactions and remote
+        // echoes may not add an item at all. Derive the range from actual events.
+        setTimeline(getInitialTimeline(viewTimelineSet));
         return;
       }
       setTimeline((ct) => ({ ...ct }));
       if (!unreadInfo) {
         setUnreadInfo(getRoomUnreadInfo(room, thread));
       }
-    }, [room, thread, unreadInfo, hideActivity, markTimelineAsRead, alive])
+    }, [room, thread, unreadInfo, hideActivity, markTimelineAsRead, alive, viewTimelineSet])
   );
 
   // Под корневыми сообщениями показывается сводка треда — перерисуемся,
@@ -2069,7 +2041,7 @@ export function RoomTimeline({
           <span ref={atBottomAnchorRef} />
         </Box>
       </Scroll>
-      {!atBottom && (
+      {(!atBottom || !liveTimelineLinked || !rangeAtEnd) && (
         <TimelineFloat position="Bottom">
           <Chip
             variant="SurfaceVariant"

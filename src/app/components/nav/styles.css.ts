@@ -64,7 +64,7 @@ const NavItemBase = style({
     [`&:has(.${NavLink}:active)`]: {
       backgroundColor: ContainerActive,
     },
-    '&[aria-selected=true]': {
+    '&[data-selected=true]': {
       backgroundColor: ContainerActive,
     },
     [`&:has(.${NavLink}:focus-visible)`]: {

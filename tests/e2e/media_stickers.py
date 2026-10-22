@@ -243,7 +243,7 @@ with sync_playwright() as playwright:
                 editor.wait_for(timeout=30000)
                 page.wait_for_timeout(2200); page.keyboard.press('Escape')
                 def jump_latest():
-                    latest = page.get_by_role('button', name='Jump to Latest', exact=True)
+                    latest = page.get_by_role('button', name='К последним сообщениям', exact=True)
                     if latest.count():
                         latest.click(); page.wait_for_timeout(300)
                 jump_latest()
