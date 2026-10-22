@@ -132,10 +132,14 @@ with sync_playwright() as p:
                     editor.wait_for(timeout=30000)
                 for provider, link in links:
                     event = send(token, room, link)
-                    page.wait_for_timeout(350)
-                    latest = page.get_by_role('button', name='К последним сообщениям', exact=True)
-                    if latest.count(): latest.click()
                     row = page.locator(f'[data-message-id="{event}"]')
+                    # A loaded player grows the preceding message. Preserve its
+                    # reading position, then use the UI's debounced latest button.
+                    for _ in range(60):
+                        if row.is_visible(): break
+                        latest = page.get_by_role('button', name='К последним сообщениям', exact=True)
+                        if latest.count(): latest.click()
+                        page.wait_for_timeout(500)
                     row.wait_for(timeout=30000)
                     if provider == 'Twitch' and not APP.startswith('https:'):
                         expect(row.get_by_text(re.compile('доступен на HTTPS'))).to_be_visible()
