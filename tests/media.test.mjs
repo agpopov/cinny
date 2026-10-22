@@ -26,6 +26,121 @@ registerHooks({
 const mime = await import('../src/app/utils/mimeTypes.ts');
 const { getDirectMedia, getGifProviderEmbed, getProviderMedia, getPreviewMedia, getHttpUrl } =
   await import('../src/app/utils/urlPreview.ts');
+const { getVideoPreview } = await import('../src/app/utils/videoPreview.ts');
+
+for (const [link, provider, expected] of [
+  [
+    'https://youtu.be/dQw4w9WgXcQ?t=1m23s&si=tracking',
+    'YouTube',
+    'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0&playsinline=1&hl=ru&start=83',
+  ],
+  [
+    'https://m.youtube.com/watch?v=dQw4w9WgXcQ&start=91',
+    'YouTube',
+    'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0&playsinline=1&hl=ru&start=91',
+  ],
+  ['https://youtube.com/shorts/dQw4w9WgXcQ', 'YouTube'],
+  ['https://youtube.com/live/dQw4w9WgXcQ', 'YouTube'],
+  ['https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1', 'YouTube'],
+  ['https://vimeo.com/76979871', 'Vimeo'],
+  [
+    'https://vimeo.com/76979871/abc123def4',
+    'Vimeo',
+    'https://player.vimeo.com/video/76979871?h=abc123def4&autoplay=0&dnt=1',
+  ],
+  [
+    'https://player.vimeo.com/video/76979871?h=abc123def4',
+    'Vimeo',
+    'https://player.vimeo.com/video/76979871?h=abc123def4&autoplay=0&dnt=1',
+  ],
+  ['https://rutube.ru/video/7716bd3e665725c3c008ae7ab4ff02e2/', 'Rutube'],
+  ['https://rutube.ru/shorts/7716bd3e665725c3c008ae7ab4ff02e2/', 'Rutube'],
+  [
+    'https://rutube.ru/video/private/caafe83ff1c6ed38d394635b83ece578/?p=IBgzQQrKH4qB1bqm_91x7Q&t=300&autoplay=1',
+    'Rutube',
+    'https://rutube.ru/play/embed/caafe83ff1c6ed38d394635b83ece578/?p=IBgzQQrKH4qB1bqm_91x7Q&t=300',
+  ],
+  [
+    'https://vkvideo.ru/video-31805219_456244301',
+    'VK Видео',
+    'https://vkvideo.ru/video_ext.php?oid=-31805219&id=456244301&autoplay=0',
+  ],
+  ['https://m.vk.com/video-31805219_456244301', 'VK Видео'],
+  [
+    'https://vk.com/video_ext.php?oid=-31805219&id=456244301&hash=3f727ec5ee23b7c1&autoplay=1',
+    'VK Видео',
+    'https://vkvideo.ru/video_ext.php?oid=-31805219&id=456244301&autoplay=0&hash=3f727ec5ee23b7c1',
+  ],
+  ['https://www.dailymotion.com/video/x84sh87', 'Dailymotion'],
+  ['https://dai.ly/x84sh87', 'Dailymotion'],
+  [
+    'https://twitch.tv/videos/40464143',
+    'Twitch',
+    'https://player.twitch.tv/?video=v40464143&parent=chat.example&autoplay=false',
+  ],
+  [
+    'https://twitch.tv/dallas',
+    'Twitch',
+    'https://player.twitch.tv/?channel=dallas&parent=chat.example&autoplay=false',
+  ],
+  [
+    'https://clips.twitch.tv/IncredulousAbstemiousFennelImGlitch',
+    'Twitch',
+    'https://clips.twitch.tv/embed?clip=IncredulousAbstemiousFennelImGlitch&parent=chat.example&autoplay=false',
+  ],
+  ['https://www.twitch.tv/dallas/clip/IncredulousAbstemiousFennelImGlitch', 'Twitch'],
+]) {
+  test(`video provider resolves without Matrix metadata: ${link}`, () => {
+    const result = getVideoPreview(link, 'https://chat.example/room/private?token=secret');
+    assert.equal(result.provider, provider);
+    if (expected) assert.equal(result.url, expected);
+    assert.ok(!result.url.includes('secret'));
+    assert.ok(!result.url.includes('autoplay=1'));
+    if (provider === 'Twitch') {
+      assert.equal(result.minimumWidth, 400);
+      assert.equal(result.minimumHeight, 300);
+      assert.equal(result.requiresHttps, true);
+    }
+  });
+}
+test('video previews reject unsafe schemes, credentials, lookalike hosts and non-video pages', () => {
+  for (const url of [
+    undefined,
+    {},
+    'javascript:alert(1)',
+    'data:text/html,video',
+    'ftp://youtube.com/watch?v=dQw4w9WgXcQ',
+    'https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ',
+    'https://evil.example/youtu.be/dQw4w9WgXcQ',
+    'https://user:pass@youtube.com/watch?v=dQw4w9WgXcQ',
+    'https://youtube.com:8080/watch?v=dQw4w9WgXcQ',
+    'https://youtube.com/watch?v=bad',
+    'https://youtube.com/@channel',
+    'https://youtube.com/playlist?list=abc',
+    'https://vimeo.com/settings',
+    'https://rutube.ru/video/bad/',
+    'https://vk.com/feed',
+    'https://vk.com/video_ext.php?oid=1%26evil&id=2',
+    'https://dailymotion.com/playlist/abc',
+    'https://twitch.tv/directory',
+    'https://clips.twitch.tv/embed?clip=anything',
+  ])
+    assert.equal(getVideoPreview(url, 'https://chat.example'), undefined, String(url));
+});
+test('provider timestamps are bounded and optional query parameters cannot change the player origin', () => {
+  const youtube = getVideoPreview(
+    'https://youtu.be/dQw4w9WgXcQ?t=999999999999999999&origin=https://evil.example&autoplay=1',
+    'https://chat.example'
+  );
+  assert.equal(new URL(youtube.url).searchParams.has('start'), false);
+  assert.equal(new URL(youtube.url).searchParams.has('origin'), false);
+  const vimeo = getVideoPreview(
+    'https://vimeo.com/123?h=%22%3E%3Cscript%3E',
+    'https://chat.example'
+  );
+  assert.equal(new URL(vimeo.url).searchParams.has('h'), false);
+  assert.equal(getVideoPreview('https://twitch.tv/dallas', 'tauri://localhost'), undefined);
+});
 const { ImagePack } = await import('../src/app/plugins/custom-emoji/ImagePack.ts');
 const { PackImageReader } = await import('../src/app/plugins/custom-emoji/PackImageReader.ts');
 const { ImageUsage } = await import('../src/app/plugins/custom-emoji/types.ts');

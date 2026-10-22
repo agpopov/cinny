@@ -37,7 +37,7 @@ export const productionCsp = () => {
     // Homeservers, media repositories and LiveKit endpoints are user-configurable.
     "connect-src 'self' https: wss: http: ws: blob: ipc: http://ipc.localhost",
     "worker-src 'self' blob:",
-    "frame-src 'self' https://gifs.ru https://www.google.com/recaptcha/ https://www.recaptcha.net/recaptcha/",
+    "frame-src 'self' https://gifs.ru/embed/ https://www.youtube-nocookie.com/embed/ https://player.vimeo.com/video/ https://rutube.ru/play/embed/ https://vkvideo.ru/video_ext.php https://www.dailymotion.com/embed/video/ https://geo.dailymotion.com/player/ https://player.twitch.tv/ https://clips.twitch.tv/embed https://www.google.com/recaptcha/ https://www.recaptcha.net/recaptcha/",
     "manifest-src 'self'",
   ].join('; ');
 };

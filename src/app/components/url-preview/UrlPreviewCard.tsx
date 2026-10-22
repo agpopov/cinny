@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IPreviewUrlResponse } from 'matrix-js-sdk';
 import {
   Box,
@@ -12,6 +12,7 @@ import {
   as,
   color,
   config,
+  toRem,
 } from 'folds';
 import { AuthenticatedImage } from '../media/AuthenticatedImage';
 import { ImageOverlay } from '../ImageOverlay';
@@ -34,6 +35,8 @@ import {
   getProviderMedia,
   getPreviewMedia,
 } from '../../utils/urlPreview';
+import { getVideoPreview } from '../../utils/videoPreview';
+import { VideoPreview } from './VideoPreview';
 
 const linkStyles = { color: color.Success.Main };
 
@@ -61,14 +64,14 @@ function PreviewMedia({ src, poster, kind, title, autoLoad, loop }: PreviewMedia
           setLoad(true);
         }}
       >
-        <Text size="B300">Retry media preview</Text>
+        <Text size="B300">Повторить загрузку медиа</Text>
       </Button>
     );
   }
   if (!load) {
     return (
       <Button size="300" variant="Secondary" onClick={() => setLoad(true)}>
-        <Text size="B300">Load media preview</Text>
+        <Text size="B300">Загрузить предпросмотр медиа</Text>
       </Button>
     );
   }
@@ -134,19 +137,26 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
     const directMedia = getProviderMedia(url) ?? getDirectMedia(url);
     const localMediaUrl = directMedia?.url;
     const providerEmbed = getGifProviderEmbed(url);
+    const videoPreview = useMemo(() => getVideoPreview(url, window.location.href), [url]);
     const safeUrl = getHttpUrl(url);
     const [previewStatus, loadPreview] = useAsyncCallback(
       useCallback(() => mx.getUrlPreview(url, ts), [url, ts, mx])
     );
 
     useEffect(() => {
-      if (safeUrl && !localMediaUrl && !providerEmbed) {
+      if (safeUrl && !localMediaUrl && !providerEmbed && !videoPreview) {
         // The hook exposes the error state; consume the rejected promise as well.
         loadPreview().catch(() => undefined);
       }
-    }, [loadPreview, safeUrl, localMediaUrl, providerEmbed]);
+    }, [loadPreview, safeUrl, localMediaUrl, providerEmbed, videoPreview]);
 
-    if (!safeUrl || (!directMedia && !providerEmbed && previewStatus.status === AsyncStatus.Error))
+    if (
+      !safeUrl ||
+      (!directMedia &&
+        !providerEmbed &&
+        !videoPreview &&
+        previewStatus.status === AsyncStatus.Error)
+    )
       return null;
 
     const renderContent = (prev?: IPreviewUrlResponse) => {
@@ -157,12 +167,15 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
           : undefined;
       const media = directMedia ?? (prev && getPreviewMedia(prev));
       const src = providerEmbed ?? media?.url ?? imgUrl;
-      const defaultTitle = providerEmbed ? 'GIFS.RU media preview' : 'Media preview';
+      const defaultTitle = providerEmbed ? 'Предпросмотр GIFS.RU' : 'Предпросмотр медиа';
       const title = typeof prev?.['og:title'] === 'string' ? prev['og:title'] : defaultTitle;
 
       return (
         <>
-          {src && (
+          {videoPreview && (
+            <VideoPreview key={videoPreview.url} preview={videoPreview} autoLoad={mediaAutoLoad} />
+          )}
+          {!videoPreview && src && (
             <PreviewMedia
               key={src}
               src={src}
@@ -184,6 +197,7 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
               size="T200"
               priority="300"
             >
+              {videoPreview && `${videoPreview.provider} | `}
               {typeof prev?.['og:site_name'] === 'string' && `${prev['og:site_name']} | `}
               {tryDecodeURIComponent(url)}
             </Text>
@@ -207,12 +221,12 @@ export const UrlPreviewCard = as<'div', { url: string; ts: number; mediaAutoLoad
         <Spinner variant="Secondary" size="400" />
       </Box>
     );
-    if (directMedia || providerEmbed) previewContent = renderContent();
+    if (directMedia || providerEmbed || videoPreview) previewContent = renderContent();
     else if (previewStatus.status === AsyncStatus.Success)
       previewContent = renderContent(previewStatus.data);
 
     return (
-      <UrlPreview {...props} ref={ref}>
+      <UrlPreview style={videoPreview ? { width: toRem(480) } : undefined} {...props} ref={ref}>
         {previewContent}
       </UrlPreview>
     );
@@ -232,12 +246,8 @@ export const UrlPreviewHolder = as<'div'>(({ children, ...props }, ref) => {
       const frontAnchor = frontAnchorRef.current;
       const backEntry = backAnchor && getIntersectionObserverEntry(backAnchor, entries);
       const frontEntry = frontAnchor && getIntersectionObserverEntry(frontAnchor, entries);
-      if (backEntry) {
-        setBackVisible(backEntry.isIntersecting);
-      }
-      if (frontEntry) {
-        setFrontVisible(frontEntry.isIntersecting);
-      }
+      if (backEntry) setBackVisible(backEntry.isIntersecting);
+      if (frontEntry) setFrontVisible(frontEntry.isIntersecting);
     }, []),
     useCallback(
       () => ({

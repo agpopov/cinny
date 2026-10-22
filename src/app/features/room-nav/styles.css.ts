@@ -8,6 +8,27 @@ export const CategoryButtonIcon = style({
   opacity: config.opacity.P400,
 });
 
+export const RoomName = style({ fontWeight: config.fontWeight.W600 });
+
+export const ThreadName = style({
+  fontWeight: config.fontWeight.W400,
+  selectors: { '&[data-unread=true]': { fontWeight: config.fontWeight.W500 } },
+});
+
+export const ThreadList = style({
+  position: 'relative',
+  '::before': {
+    content: '""',
+    position: 'absolute',
+    top: toRem(4),
+    bottom: toRem(4),
+    left: toRem(16),
+    width: toRem(1),
+    backgroundColor: color.Background.ContainerLine,
+    pointerEvents: 'none',
+  },
+});
+
 export const ThreadsMoreButton = style([
   DefaultReset,
   FocusOutline,

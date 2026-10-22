@@ -21,6 +21,7 @@ import { useFocusWithin, useHover } from 'react-aria';
 import FocusTrap from 'focus-trap-react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { NavItem, NavItemContent, NavItemOptions, NavLink } from '../../components/nav';
+import * as navCss from './styles.css';
 import { UnreadBadge, UnreadBadgeCenter } from '../../components/unread-badge';
 import { RoomAvatar, RoomIcon } from '../../components/room-avatar';
 import { getDirectRoomAvatarUrl, getRoomAvatarUrl, getStateEvent } from '../../utils/room';
@@ -371,7 +372,13 @@ export function RoomNavItem({
                 )}
               </Avatar>
               <Box as="span" grow="Yes">
-                <Text priority={unread ? '500' : '300'} as="span" size="Inherit" truncate>
+                <Text
+                  className={navCss.RoomName}
+                  priority={unread ? '500' : '300'}
+                  as="span"
+                  size="Inherit"
+                  truncate
+                >
                   {roomName}
                 </Text>
               </Box>

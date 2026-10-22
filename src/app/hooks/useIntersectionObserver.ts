@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 
 export type OnIntersectionCallback = (entries: IntersectionObserverEntry[]) => void;
 
@@ -22,7 +22,13 @@ export const useIntersectionObserver = (
 
   useEffect(() => {
     const initOpts = typeof opts === 'function' ? opts() : opts;
-    setIntersectionObserver(new IntersectionObserver(onIntersectionCallback, initOpts));
+    // Firefox may invoke observers during cross-origin video/PiP inspection.
+    // An explicit priority keeps React 18 from reading the foreign window.event.type.
+    setIntersectionObserver(
+      new IntersectionObserver((entries) => {
+        startTransition(() => onIntersectionCallback(entries));
+      }, initOpts)
+    );
   }, [onIntersectionCallback, opts]);
 
   useEffect(() => () => intersectionObserver?.disconnect(), [intersectionObserver]);

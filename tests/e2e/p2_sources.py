@@ -23,6 +23,8 @@ import { accessibleColor } from './src/app/plugins/color';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { useUserProfile } from './src/app/hooks/useUserProfile';
+import { useIntersectionObserver } from './src/app/hooks/useIntersectionObserver';
+import { useResizeObserver } from './src/app/hooks/useResizeObserver';
 import { MatrixClientProvider } from './src/app/hooks/useMatrixClient';
 import { useLiveTimelineRefresh } from './src/app/hooks/useLiveTimelineRefresh';
 import { useRoomThreads } from './src/app/features/room/thread/useThread';
@@ -42,6 +44,12 @@ function ProfileProbe({userId}){const profile=useUserProfile(userId);window.prof
 function ResetProbe({room}){useLiveTimelineRefresh(room,undefined,()=>{window.resetCount++});return null;}
 function ThreadProbe({room}){useRoomThreads(room);return null;}
 function Clock(){useSharedClock();return null;}
+function ObserverProbe(){
+ const [intersection,setIntersection]=React.useState(0),[resize,setResize]=React.useState(0);
+ useIntersectionObserver(React.useCallback(()=>setIntersection(v=>v+1),[]));
+ useResizeObserver(React.useCallback(()=>setResize(v=>v+1),[]));
+ return <output id="observers">{intersection}/{resize}</output>;
+}
 function Probe(){
  const [room,setRoom]=React.useState(false),[thread,setThread]=React.useState(false),[menu,setMenu]=React.useState(false);
  useBackDismiss(room,()=>setRoom(false),0);useBackDismiss(thread,()=>setThread(false),10);useBackDismiss(menu,()=>setMenu(false),30);
@@ -55,6 +63,7 @@ Object.assign(window,{accessibleColor,chroma,getNotificationAvatar,createClient,
  mountThread:room=>flushSync(()=>root.render(<ThreadProbe room={room}/>)),flush:flushSync,
  streamMediaToDisk,downloadMedia,encryptFile,decryptFile,ownsNotifications,
  mountAbandoned:()=>flushSync(()=>root.render(<React.Suspense fallback={<span>Waiting</span>}><Abandoned/></React.Suspense>)),
+ mountObservers:()=>flushSync(()=>root.render(<ObserverProbe/>)),
  mountClocks:count=>flushSync(()=>root.render(<>{Array.from({length:count},(_,i)=><Clock key={i}/>)}</>)),
  mountProbe:()=>flushSync(()=>root.render(<Probe/>)),mountOwner:()=>flushSync(()=>root.render(<Owner/>)),unmount:()=>flushSync(()=>root.render(null))});
 window.ready=true;
@@ -108,6 +117,23 @@ with sync_playwright() as p:
         }""")
         check('1000 mounted clocks share one timer and release it', '''() => {mountClocks(1000);const one=timers.size===1;unmount();return one&&timers.size===0}''')
         check('abandoned React render never starts an interval', '() => {mountAbandoned();const safe=timers.size===0;unmount();return safe&&timers.size===0}')
+        check('observer updates never read a foreign Firefox PiP event', """async () => {
+          const intersection=window.IntersectionObserver,resize=window.ResizeObserver;
+          const descriptor=Object.getOwnPropertyDescriptor(window,'event');
+          const observer=key=>class {constructor(callback){window[key]=callback}observe(){}unobserve(){}disconnect(){}};
+          window.IntersectionObserver=observer('deliverIntersection');window.ResizeObserver=observer('deliverResize');
+          try{
+            mountObservers();
+            Object.defineProperty(window,'event',{configurable:true,value:new Proxy({}, {get(){throw Error('Foreign event access')}})});
+            try { deliverIntersection([]);deliverResize([]); }
+            finally {if(descriptor)Object.defineProperty(window,'event',descriptor);else delete window.event;}
+            await new Promise(resolve=>setTimeout(resolve,50));
+            return document.querySelector('#observers').textContent==='1/1';
+          } finally {
+            if(descriptor)Object.defineProperty(window,'event',descriptor);else delete window.event;
+            unmount();window.IntersectionObserver=intersection;window.ResizeObserver=resize;
+          }
+        }""")
         check('receipts update thread badges without re-sorting the list', """() => {
           const mx=createClient({baseUrl:'https://test.invalid',userId:'@me:test',accessToken:'test',timelineSupport:true});
           mx.supportsThreads=()=>true;const room=new Room('!sort:test',mx,'@me:test');

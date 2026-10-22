@@ -54,7 +54,14 @@ function ThreadNavItem({ room, thread, active, onOpen }: ThreadNavItemProps) {
               filled={active}
             />
             <Box as="span" grow="Yes">
-              <Text priority={unread.unread ? '500' : '300'} as="span" size="T300" truncate>
+              <Text
+                className={css.ThreadName}
+                priority={unread.unread ? '500' : '300'}
+                as="span"
+                size="T200"
+                data-unread={unread.unread}
+                truncate
+              >
                 {title}
               </Text>
             </Box>
@@ -139,7 +146,13 @@ export function RoomNavThreads({
   };
 
   return (
-    <Box direction="Column" gap="100" role="group" aria-label="Активные треды">
+    <Box
+      className={css.ThreadList}
+      direction="Column"
+      gap="100"
+      role="group"
+      aria-label="Активные треды"
+    >
       {visible.map((thread) => (
         <ThreadNavItem
           key={thread.id}

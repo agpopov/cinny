@@ -28,6 +28,20 @@ export const ProviderEmbed = style({
   border: 0,
 });
 
+export const VideoPreview = style({
+  width: '100%',
+  minWidth: 0,
+});
+
+export const VideoPlayer = style({
+  display: 'block',
+  width: '100%',
+  aspectRatio: '16 / 9',
+  border: 0,
+});
+
+export const VideoPreviewNotice = style({ padding: toRem(12) });
+
 export const UrlPreviewHolderGradient = recipe({
   base: [
     DefaultReset,

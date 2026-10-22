@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { startTransition, useEffect, useMemo } from 'react';
 
 export type OnResizeCallback = (entries: ResizeObserverEntry[]) => void;
 
@@ -11,7 +11,15 @@ export const useResizeObserver = (
   onResizeCallback: OnResizeCallback,
   observeElement?: Element | null | (() => Element | null)
 ): ResizeObserver => {
-  const resizeObserver = useMemo(() => new ResizeObserver(onResizeCallback), [onResizeCallback]);
+  const resizeObserver = useMemo(
+    () =>
+      new ResizeObserver((entries) => {
+        // Match intersection observers: layout updates do not inherit a foreign
+        // video inspection event's priority in Firefox/React 18.
+        startTransition(() => onResizeCallback(entries));
+      }),
+    [onResizeCallback]
+  );
 
   useEffect(() => () => resizeObserver?.disconnect(), [resizeObserver]);
 
