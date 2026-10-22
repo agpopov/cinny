@@ -44,7 +44,7 @@ export const EditorTextarea = style([
 export const EditorPlaceholderContainer = style([
   DefaultReset,
   {
-    opacity: config.opacity.Placeholder,
+    opacity: 0.85,
     pointerEvents: 'none',
     userSelect: 'none',
   },

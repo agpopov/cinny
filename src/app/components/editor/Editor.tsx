@@ -155,7 +155,11 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
 
     const renderPlaceholder = useCallback(
       ({ attributes, children }: RenderPlaceholderProps) => (
-        <span {...attributes} className={css.EditorPlaceholderContainer}>
+        <span
+          {...attributes}
+          style={{ ...attributes.style, opacity: 0.85 }}
+          className={css.EditorPlaceholderContainer}
+        >
           {/* Inner component to style the actual text position and appearance */}
           <Text as="span" className={css.EditorPlaceholderTextVisual} truncate>
             {children}
@@ -184,6 +188,7 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
               hideTrack
             >
               <Editable
+                aria-label={placeholder || 'Редактор сообщения'}
                 readOnly={readOnly}
                 onCompositionStart={handleCompositionStart}
                 data-editable-name={editableName}

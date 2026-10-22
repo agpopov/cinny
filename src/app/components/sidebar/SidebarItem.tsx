@@ -44,7 +44,18 @@ export function SidebarItemTooltip({
         </Tooltip>
       }
     >
-      {children}
+      {(triggerRef) => {
+        const item = children(triggerRef);
+        if (
+          typeof tooltip === 'string' &&
+          React.isValidElement(item) &&
+          item.type !== React.Fragment &&
+          !item.props['aria-label']
+        ) {
+          return React.cloneElement(item as React.ReactElement, { 'aria-label': tooltip });
+        }
+        return item;
+      }}
     </TooltipProvider>
   );
 }

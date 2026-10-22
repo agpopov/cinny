@@ -37,6 +37,17 @@ def send(token, room, body, extra=None):
                {'msgtype': 'm.text', 'body': body, **(extra or {})})['event_id']
 
 
+def audit_accessibility(page, label):
+    url = os.environ.get('AXE_SCRIPT_URL')
+    if not url: return
+    if not page.evaluate('typeof window.axe !== "undefined"'):
+        page.add_script_tag(url=url)
+    result = page.evaluate("""async () => await axe.run(document, {runOnly:{type:'rule',values:['button-name','aria-input-field-name','label','color-contrast','aria-allowed-attr','aria-valid-attr-value']}, resultTypes:['violations','incomplete']})""")
+    (OUT / (label.replace('/', '-') + '-accessibility.json')).write_text(json.dumps(result, ensure_ascii=False, indent=2))
+    assert not result['violations'], [(v['id'], [node['target'] for node in v['nodes']]) for v in result['violations']]
+    check(label + ' axe accessible names, ARIA and contrast')
+
+
 def set_settings(page, changes):
     page.evaluate('(changes) => localStorage.setItem("settings", JSON.stringify({...JSON.parse(localStorage.getItem("settings") || "{}"), ...changes}))', changes)
     page.reload()
@@ -194,6 +205,7 @@ with sync_playwright() as p:
                 assert (page.locator('.dark-theme').count() > 0) == (theme == 'dark')
                 page.screenshot(path=str(OUT / f'{engine}-{width}-{theme}-zoom.png'))
                 check(label + ' ' + theme + ' at 200% font without document overflow')
+                audit_accessibility(page, label + '-' + theme)
             set_settings(page, {'pageZoom': 100})
 
             # New unread items accumulate while the attention center stays open.
@@ -210,6 +222,7 @@ with sync_playwright() as p:
             expect(page.get_by_text('P2 ordinary ' + run, exact=True)).to_have_count(0)
             expect(page.get_by_text('P2 mention ' + run, exact=True)).to_be_visible()
             check(label + ' attention includes live unreads and Me filters ordinary noise')
+            audit_accessibility(page, label + '-attention')
             # Another device sends a real main receipt; no reload or manual queue refresh.
             other_device = api('POST', '/_matrix/client/v3/login', body={'type': 'm.login.password', 'identifier': {'type': 'm.id.user', 'user': a['user_id']}, 'password': 'pass123'})
             api('POST', f'/_matrix/client/v3/rooms/{mentioned}/receipt/m.read/{mention_event}', other_device['access_token'], {'thread_id': 'main'})

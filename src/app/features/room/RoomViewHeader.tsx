@@ -570,6 +570,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               <IconButton
                 fill="None"
                 style={{ position: 'relative' }}
+                aria-label={t('Pinned Messages')}
                 onClick={handleOpenPinMenu}
                 ref={triggerRef}
                 aria-pressed={!!pinMenuAnchor}
@@ -629,6 +630,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
                   fill="None"
                   ref={triggerRef}
                   style={{ position: 'relative' }}
+                  aria-label="Список тредов"
                   onClick={handleThreadsToggle}
                   aria-pressed={!!threadPanel}
                 >
@@ -677,7 +679,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             >
               {(triggerRef) => (
                 <IconButton
-                  aria-label="Профиль участника"
+                  aria-label={peopleDrawer ? 'Скрыть участников' : 'Показать участников'}
                   fill="None"
                   ref={triggerRef}
                   onClick={handleMemberToggle}

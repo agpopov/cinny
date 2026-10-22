@@ -308,7 +308,7 @@ with sync_playwright() as playwright:
                 check(label + ' Cyrillic sticker search')
                 check(label + ' search hides unrelated stickers', page.locator('button[data-emoji-type="sticker"]:visible').count() == 1)
                 page.get_by_role('button', name='Зверята', exact=True).click()
-                page.wait_for_function('() => document.querySelector("input[placeholder=Search]")?.value === ""')
+                page.wait_for_function('() => document.querySelector("input[placeholder=Поиск]")?.value === ""')
                 page.get_by_role('button', name='Панда sticker', exact=True).wait_for()
                 check(label + ' switching packs clears search')
                 page.get_by_placeholder('Поиск', exact=True).fill('no-such-sticker-xyz')

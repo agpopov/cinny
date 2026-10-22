@@ -8,7 +8,10 @@ let consuming = false;
 
 const guard = () => {
   if (guarded || consuming || !layers.length) return;
-  window.history.pushState({ ...window.history.state, [marker]: true }, '', window.location.href);
+  // Reuse the same guard after reload instead of accumulating duplicate room entries.
+  if (!window.history.state?.[marker]) {
+    window.history.pushState({ ...window.history.state, [marker]: true }, '', window.location.href);
+  }
   guarded = true;
 };
 

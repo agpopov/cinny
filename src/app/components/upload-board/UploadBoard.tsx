@@ -81,6 +81,10 @@ export function UploadBoardHeader({
     handleSend,
   }));
   const handleCancel = () => onCancel(uploads);
+  let statusLabel = `Загрузка файлов: ${uploads.length}`;
+  if (isSuccess) statusLabel = `Готово к отправке: ${uploads.length}`;
+  if (isError) statusLabel = 'Не удалось загрузить некоторые файлы';
+  if (sending) statusLabel = `Отправка… В очереди: ${uploads.length}`;
 
   return (
     <Header size="400">
@@ -94,8 +98,8 @@ export function UploadBoardHeader({
         gap="100"
       >
         <Icon src={open ? Icons.ChevronTop : Icons.ChevronRight} size="50" />
-        <Text size="H6">
-          {sending ? `Отправка… В очереди: ${uploads.length}` : `Файлы: ${uploads.length}`}
+        <Text size="H6" role="status" aria-live="polite">
+          {statusLabel}
         </Text>
       </Box>
       <Box className={css.UploadBoardHeaderContent} alignItems="Center" gap="100">

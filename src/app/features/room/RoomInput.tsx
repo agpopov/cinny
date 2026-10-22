@@ -863,6 +863,10 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                 variant="SurfaceVariant"
                 size="300"
                 radii="300"
+                aria-label={
+                  toolbar ? 'Скрыть панель форматирования' : 'Показать панель форматирования'
+                }
+                aria-pressed={toolbar}
                 onClick={() => setToolbar(!toolbar)}
               >
                 <Icon src={toolbar ? Icons.AlphabetUnderline : Icons.Alphabet} />

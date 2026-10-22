@@ -115,6 +115,12 @@ with sync_playwright() as p:
           }finally{document.createElement=original;}
         }""")
         page.evaluate('mountProbe()')
+        page.locator('#room').click()
+        history_depth = page.evaluate('history.length')
+        page.reload();page.wait_for_function('window.ready');page.evaluate('mountProbe()');page.locator('#room').click()
+        assert page.evaluate('history.length') == history_depth
+        page.go_back();page.wait_for_function('!JSON.parse(document.querySelector("#state").textContent).room')
+        checks.append(engine + ': reload reuses the room history guard');print('PASS ' + checks[-1], flush=True)
         for index in range(10):
             for id in ['room', 'thread', 'menu']: page.locator('#' + id).click()
             page.go_back()

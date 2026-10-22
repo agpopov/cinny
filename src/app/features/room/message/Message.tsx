@@ -832,6 +832,7 @@ export const Message = as<'div', MessageProps>(
         <Avatar
           className={css.MessageAvatar}
           as="button"
+          aria-label={`Профиль: ${senderDisplayName}`}
           size="300"
           data-user-id={senderId}
           onClick={onUserClick}
