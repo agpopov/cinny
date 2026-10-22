@@ -1976,7 +1976,9 @@ export function RoomTimeline({
             before={<Icon size="50" src={Icons.CheckTwice} />}
             onClick={handleMarkAsRead}
           >
-            <Text size="L400">Отметить прочитанным</Text>
+            <Text size="L400" truncate>
+              Отметить прочитанным
+            </Text>
           </Chip>
         </TimelineFloat>
       )}
@@ -2076,7 +2078,9 @@ export function RoomTimeline({
             before={<Icon size="50" src={Icons.ArrowBottom} />}
             onClick={handleJumpToLatest}
           >
-            <Text size="L400">К последним сообщениям</Text>
+            <Text size="L400" truncate>
+              К последним сообщениям
+            </Text>
           </Chip>
         </TimelineFloat>
       )}
