@@ -143,7 +143,8 @@ test('cancellation reaches the authenticated fetch', async (t) => {
   t.mock.method(globalThis, 'fetch', (request) => {
     assert.equal(request.headers.get('Authorization'), 'Bearer private-token');
     return new Promise((resolve, reject) => {
-      request.signal.addEventListener('abort', () => reject(request.signal.reason));
+      if (request.signal.aborted) reject(request.signal.reason);
+      else request.signal.addEventListener('abort', () => reject(request.signal.reason));
     });
   });
   const pending = downloadMedia(mediaUrl, controller.signal);
