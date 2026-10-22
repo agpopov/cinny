@@ -92,8 +92,7 @@ export function Register() {
         </>
       )}
       <Text align="Center">
-        {t('Already have an account?')}
-        <Link to={getLoginPath(server)}>{t('Login')}</Link>
+        {t('Already have an account?')} <Link to={getLoginPath(server)}>{t('Login')}</Link>
       </Text>
     </Box>
   );
