@@ -9,3 +9,6 @@ devAssets
 
 # Python end-to-end test cache
 __pycache__/
+
+# Local release signing material (never commit keys or passwords)
+/.release-signing/
