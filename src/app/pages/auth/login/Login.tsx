@@ -87,7 +87,10 @@ export function Login() {
       {!parsedFlows.password && !parsedFlows.sso && (
         <>
           <Text style={{ color: color.Critical.Main }}>
-            {`This client does not support login on "${server}" homeserver. Password and SSO based login method not found.`}
+            {t(
+              'This client does not support login on "{{value1}}" homeserver. Password and SSO based login method not found.',
+              { value1: server }
+            )}
           </Text>
           <span data-spacing-node />
         </>

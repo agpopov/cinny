@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable react/no-array-index-key */
 import React, { useState, MouseEventHandler, ReactNode } from 'react';
 import FocusTrap from 'focus-trap-react';
@@ -127,8 +128,10 @@ export function Powers({ powerLevels, permissionGroups, onEdit }: PowersProps) {
           gap="400"
         >
           <SettingTile
-            title="Founders"
-            description="Founding members has all permissions and can only be changed during upgrade."
+            title={t('Founders')}
+            description={t(
+              'Founding members has all permissions and can only be changed during upgrade.'
+            )}
           />
 
           <SettingTile>
@@ -155,8 +158,8 @@ export function Powers({ powerLevels, permissionGroups, onEdit }: PowersProps) {
         gap="400"
       >
         <SettingTile
-          title="Power Levels"
-          description="Manage and customize incremental power levels for users."
+          title={t('Power Levels')}
+          description={t('Manage and customize incremental power levels for users.')}
           after={
             onEdit && (
               <Box gap="200">
@@ -168,7 +171,7 @@ export function Powers({ powerLevels, permissionGroups, onEdit }: PowersProps) {
                   outlined
                   onClick={onEdit}
                 >
-                  <Text size="B300">Edit</Text>
+                  <Text size="B300">{t('Edit')}</Text>
                 </Button>
               </Box>
             )

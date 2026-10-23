@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ReactNode } from 'react';
 import {
   Overlay,
@@ -41,12 +42,14 @@ export function UIAFlowOverlay({
             gap="200"
           >
             <Chip as="div" radii="Pill" outlined>
-              <Text as="span" size="T300">{`Step ${currentStep}/${stepCount}`}</Text>
+              <Text as="span" size="T300">
+                {t('Step {{value1}}/{{value2}}', { value1: currentStep, value2: stepCount })}
+              </Text>
             </Chip>
             <TooltipProvider
               tooltip={
                 <Tooltip variant="Critical">
-                  <Text>Exit</Text>
+                  <Text>{t('Exit')}</Text>
                 </Tooltip>
               }
               position="Top"

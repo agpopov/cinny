@@ -69,19 +69,25 @@ export function TokenLogin({ token }: TokenLoginProps) {
       {loginState.status === AsyncStatus.Error && (
         <>
           {loginState.error.errcode === LoginError.Forbidden && (
-            <LoginTokenError message="Invalid login token." />
+            <LoginTokenError message={t('Invalid login token.')} />
           )}
           {loginState.error.errcode === LoginError.UserDeactivated && (
-            <LoginTokenError message="This account has been deactivated." />
+            <LoginTokenError message={t('This account has been deactivated.')} />
           )}
           {loginState.error.errcode === LoginError.InvalidRequest && (
-            <LoginTokenError message="Failed to login. Part of your request data is invalid." />
+            <LoginTokenError
+              message={t('Failed to login. Part of your request data is invalid.')}
+            />
           )}
           {loginState.error.errcode === LoginError.RateLimited && (
-            <LoginTokenError message="Failed to login. Your login request has been rate-limited by server, Please try after some time." />
+            <LoginTokenError
+              message={t(
+                'Failed to login. Your login request has been rate-limited by server, Please try after some time.'
+              )}
+            />
           )}
           {loginState.error.errcode === LoginError.Unknown && (
-            <LoginTokenError message="Failed to login. Unknown reason." />
+            <LoginTokenError message={t('Failed to login. Unknown reason.')} />
           )}
         </>
       )}

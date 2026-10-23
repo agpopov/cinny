@@ -77,7 +77,7 @@ function UsernameHint({ server }: { server: string }) {
               </Text>
               <Text size="T300">
                 <Text as="span" size="Inherit" priority="300">
-                  Matrix ID:
+                  {t('Matrix ID:')}
                 </Text>
                 {` @user123:${server}`}
               </Text>
@@ -218,10 +218,12 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
         {loginState.status === AsyncStatus.Error && (
           <>
             {loginState.error.errcode === LoginError.ServerNotAllowed && (
-              <FieldError message="Login with custom server not allowed by your client instance." />
+              <FieldError
+                message={t('Login with custom server not allowed by your client instance.')}
+              />
             )}
             {loginState.error.errcode === LoginError.InvalidServer && (
-              <FieldError message="Failed to find your Matrix ID server." />
+              <FieldError message={t('Failed to find your Matrix ID server.')} />
             )}
           </>
         )}
@@ -242,19 +244,23 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           {loginState.status === AsyncStatus.Error && (
             <>
               {loginState.error.errcode === LoginError.Forbidden && (
-                <FieldError message="Invalid Username or Password." />
+                <FieldError message={t('Invalid Username or Password.')} />
               )}
               {loginState.error.errcode === LoginError.UserDeactivated && (
-                <FieldError message="This account has been deactivated." />
+                <FieldError message={t('This account has been deactivated.')} />
               )}
               {loginState.error.errcode === LoginError.InvalidRequest && (
-                <FieldError message="Failed to login. Part of your request data is invalid." />
+                <FieldError message={t('Failed to login. Part of your request data is invalid.')} />
               )}
               {loginState.error.errcode === LoginError.RateLimited && (
-                <FieldError message="Failed to login. Your login request has been rate-limited by server, Please try after some time." />
+                <FieldError
+                  message={t(
+                    'Failed to login. Your login request has been rate-limited by server, Please try after some time.'
+                  )}
+                />
               )}
               {loginState.error.errcode === LoginError.Unknown && (
-                <FieldError message="Failed to login. Unknown reason." />
+                <FieldError message={t('Failed to login. Unknown reason.')} />
               )}
             </>
           )}

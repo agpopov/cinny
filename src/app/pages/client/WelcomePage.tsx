@@ -15,7 +15,7 @@ export function WelcomePage() {
       >
         <PageHeroSection>
           <PageHero
-            icon={<img width="70" height="70" src={CinnySVG} alt="Cinny Logo" />}
+            icon={<img width="70" height="70" src={CinnySVG} alt={t('Cinny Logo')} />}
             title={t('Welcome to Cinny')}
             subTitle={
               <span>
@@ -25,7 +25,7 @@ export function WelcomePage() {
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  v4.13.0
+                  v4.13.1
                 </a>
               </span>
             }

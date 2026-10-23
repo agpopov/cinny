@@ -189,7 +189,7 @@ export function SearchResultGroup({
         <Box grow="Yes" direction="Column">
           <Text size="T400" priority="300">
             <code className={customHtmlCss.Code}>{event.type}</code>
-            {' event'}
+            {t(' event')}
           </Text>
         </Box>
       );

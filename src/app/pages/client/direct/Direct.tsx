@@ -158,7 +158,7 @@ function DirectEmpty() {
         }
         content={
           <Text size="T300" align="Center">
-            You do not have any direct messages yet.
+            {t('You do not have any direct messages yet.')}
           </Text>
         }
         options={

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { forwardRef, MouseEventHandler, useEffect, useMemo } from 'react';
 import { MatrixError, Room } from 'matrix-js-sdk';
 import { IHierarchyRoom } from 'matrix-js-sdk/lib/@types/spaces';
@@ -217,10 +218,10 @@ export const SpaceHierarchy = forwardRef<HTMLDivElement, SpaceHierarchyProps>(
                 gap="100"
               >
                 <Text size="H5" align="Center">
-                  No Rooms
+                  {t('No Rooms')}
                 </Text>
                 <Text align="Center" size="T300" priority="300">
-                  This space does not contains rooms yet.
+                  {t('This space does not contains rooms yet.')}
                 </Text>
               </Box>
             </SequenceCard>

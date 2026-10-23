@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { Avatar, Box, config, Icon, IconButton, Icons, IconSrc, MenuItem, Text } from 'folds';
@@ -130,7 +131,7 @@ export function SpaceSettings({ initialPage, requestClose }: SpaceSettingsProps)
                 <div style={{ flexGrow: 1 }}>
                   {menuItems.map((item) => (
                     <MenuItem
-                      key={item.name}
+                      key={t(item.name)}
                       variant="Background"
                       radii="400"
                       aria-pressed={activePage === item.page}
@@ -144,7 +145,7 @@ export function SpaceSettings({ initialPage, requestClose }: SpaceSettingsProps)
                         size="T300"
                         truncate
                       >
-                        {item.name}
+                        {t(item.name)}
                       </Text>
                     </MenuItem>
                   ))}

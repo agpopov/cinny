@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable jsx-a11y/alt-text */
 import React, {
   ComponentPropsWithoutRef,
@@ -142,7 +143,9 @@ export const renderMatrixMention = (
       >
         {customProps.children
           ? customProps.children
-          : `Message: ${mentionRoom ? `#${mentionRoom.name}` : roomIdOrAlias}`}
+          : t('Message: {{value1}}', {
+              value1: mentionRoom ? `#${mentionRoom.name}` : roomIdOrAlias,
+            })}
       </a>
     );
   }
@@ -266,7 +269,7 @@ export function CodeBlock({
       <Header variant="Surface" size="400" className={css.CodeBlockHeader}>
         <Box grow="Yes">
           <Text size="L400" truncate>
-            {customLabel ?? language ?? 'Code'}
+            {customLabel ?? language ?? t('Code')}
           </Text>
         </Box>
         <Box shrink="No" gap="200">
@@ -277,7 +280,7 @@ export function CodeBlock({
             onClick={handleCopy}
             before={copied && <Icon size="50" src={Icons.Check} />}
           >
-            <Text size="B300">{copied ? 'Copied' : 'Copy'}</Text>
+            <Text size="B300">{copied ? t('Copied') : t('Copy')}</Text>
           </Chip>
           {largeCodeBlock && (
             <IconButton
@@ -286,7 +289,7 @@ export function CodeBlock({
               outlined
               radii="300"
               onClick={toggleExpand}
-              aria-label={expanded ? 'Collapse' : 'Expand'}
+              aria-label={expanded ? t('Collapse') : t('Expand')}
             >
               <Icon size="50" src={expanded ? Icons.ChevronTop : Icons.ChevronBottom} />
             </IconButton>

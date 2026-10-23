@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { User, UserEvent, UserEventHandlerMap } from 'matrix-js-sdk';
 import { useMatrixClient } from './useMatrixClient';
@@ -50,9 +51,9 @@ export const useUserPresence = (userId: string): UserPresence | undefined => {
 export const usePresenceLabel = (): Record<Presence, string> =>
   useMemo(
     () => ({
-      [Presence.Online]: 'Active',
-      [Presence.Unavailable]: 'Busy',
-      [Presence.Offline]: 'Away',
+      [Presence.Online]: t('Active'),
+      [Presence.Unavailable]: t('Busy'),
+      [Presence.Offline]: t('Away'),
     }),
     []
   );

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, ReactNode, useCallback, useState } from 'react';
 import {
   Box,
@@ -55,8 +56,8 @@ export function ManualVerificationMethodSwitcher({
         onClick={handleMenu}
       >
         <Text as="span" size="B300">
-          {value === ManualVerificationMethod.RecoveryPassphrase && 'Recovery Passphrase'}
-          {value === ManualVerificationMethod.RecoveryKey && 'Recovery Key'}
+          {value === ManualVerificationMethod.RecoveryPassphrase && t('Recovery Passphrase')}
+          {value === ManualVerificationMethod.RecoveryKey && t('Recovery Key')}
         </Text>
       </Chip>
       <PopOut
@@ -87,7 +88,7 @@ export function ManualVerificationMethodSwitcher({
                   onClick={() => handleSelect(ManualVerificationMethod.RecoveryPassphrase)}
                 >
                   <Box grow="Yes">
-                    <Text size="T300">Recovery Passphrase</Text>
+                    <Text size="T300">{t('Recovery Passphrase')}</Text>
                   </Box>
                 </MenuItem>
                 <MenuItem
@@ -98,7 +99,7 @@ export function ManualVerificationMethodSwitcher({
                   onClick={() => handleSelect(ManualVerificationMethod.RecoveryKey)}
                 >
                   <Box grow="Yes">
-                    <Text size="T300">Recovery Key</Text>
+                    <Text size="T300">{t('Recovery Key')}</Text>
                   </Box>
                 </MenuItem>
               </Box>
@@ -154,8 +155,10 @@ export function ManualVerificationTile({
   return (
     <Box direction="Column" gap="200">
       <SettingTile
-        title="Verify Manually"
-        description={hasPassphrase ? 'Select a verification method.' : 'Provide recovery key.'}
+        title={t('Verify Manually')}
+        description={
+          hasPassphrase ? t('Select a verification method.') : t('Provide recovery key.')
+        }
         after={
           <Box alignItems="Center" gap="200">
             {hasPassphrase && (
@@ -167,7 +170,7 @@ export function ManualVerificationTile({
       />
       {verifyState.status === AsyncStatus.Success ? (
         <Text size="T200" style={{ color: color.Success.Main }}>
-          <b>Device verified!</b>
+          <b>{t('Device verified!')}</b>
         </Text>
       ) : (
         <Box direction="Column" gap="100">

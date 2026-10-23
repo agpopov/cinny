@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import React, { ComponentProps, HTMLAttributes, Suspense, forwardRef, lazy } from 'react';
 import classNames from 'classnames';
@@ -62,7 +63,7 @@ export const TextViewer = as<'div', TextViewerProps>(
           </Box>
           <Box shrink="No" alignItems="Center" gap="200">
             <Chip variant="Primary" radii="300" onClick={handleCopy}>
-              <Text size="B300">Copy All</Text>
+              <Text size="B300">{t('Copy All')}</Text>
             </Chip>
           </Box>
         </Header>

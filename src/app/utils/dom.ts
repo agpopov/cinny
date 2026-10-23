@@ -84,8 +84,13 @@ export const selectFile = <M extends boolean | undefined = undefined>(
 export const getDataTransferFiles = (dataTransfer: DataTransfer): File[] | undefined => {
   const fileList = dataTransfer.files;
   const files: File[] = getFilesFromFileList(fileList);
-  if (files.length === 0) return undefined;
-  return files;
+  if (files.length > 0) return files;
+  // Some WebViews expose clipboard images only through DataTransferItemList.
+  const itemFiles = Array.from(dataTransfer.items ?? [])
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+  return itemFiles.length > 0 ? itemFiles : undefined;
 };
 
 export const renameFile = (file: File, name: string): File =>

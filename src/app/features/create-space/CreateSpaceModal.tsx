@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import {
   Box,
@@ -58,7 +59,7 @@ function CreateSpaceModal({ state }: CreateSpaceModalProps) {
                   }}
                 >
                   <Box grow="Yes">
-                    <Text size="H4">New Space</Text>
+                    <Text size="H4">{t('New Space')}</Text>
                   </Box>
                   <Box shrink="No">
                     <IconButton aria-label="Закрыть" size="300" radii="300" onClick={closeDialog}>

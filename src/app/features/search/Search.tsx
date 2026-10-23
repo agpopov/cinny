@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import FocusTrap from 'focus-trap-react';
 import {
   Avatar,
@@ -269,7 +270,7 @@ export function Search({ requestClose }: SearchProps) {
                 variant="Background"
                 radii="400"
                 outlined
-                placeholder="Search"
+                placeholder={t('Search')}
                 before={<Icon size="200" src={Icons.Search} />}
                 onChange={handleInputChange}
                 onKeyDown={handleInputKeyDown}
@@ -286,12 +287,12 @@ export function Search({ requestClose }: SearchProps) {
                   gap="100"
                 >
                   <Text size="H6" align="Center">
-                    {result ? 'No Match Found' : 'No Rooms'}
+                    {result ? t('No Match Found') : t('No Rooms')}
                   </Text>
                   <Text size="T200" align="Center">
                     {result
-                      ? `No match found for "${result.query}".`
-                      : `You do not have any Rooms to display yet.`}
+                      ? t('No match found for "{{value1}}".', { value1: result.query })
+                      : t('You do not have any Rooms to display yet.')}
                   </Text>
                 </Box>
               )}
@@ -409,8 +410,13 @@ export function Search({ requestClose }: SearchProps) {
             <Line size="300" />
             <Box shrink="No" justifyContent="Center" style={{ padding: config.space.S200 }}>
               <Text size="T200" priority="300">
-                Type <b>#</b> for rooms, <b>@</b> for DMs and <b>*</b> for spaces. Hotkey:{' '}
-                <b>{isMacOS() ? KeySymbol.Command : 'Ctrl'} + k</b>
+                {t('Type ')}
+                <b>#</b>
+                {t(' for rooms, ')}
+                <b>@</b>
+                {t(' for DMs and ')}
+                <b>*</b>
+                {t(' for spaces. Hotkey:')} <b>{isMacOS() ? KeySymbol.Command : 'Ctrl'} + k</b>
               </Text>
             </Box>
           </Modal>

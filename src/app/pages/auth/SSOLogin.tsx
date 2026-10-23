@@ -42,6 +42,7 @@ export function SSOLogin({ providers, redirectUrl, action, saveScreenSpace }: SS
                 key={id}
                 as="a"
                 href={getSSOIdUrl(id)}
+                data-mobile-in-app
                 aria-label={buttonTitle}
                 size="300"
                 radii="300"
@@ -57,6 +58,7 @@ export function SSOLogin({ providers, redirectUrl, action, saveScreenSpace }: SS
               key={id}
               as="a"
               href={getSSOIdUrl(id)}
+              data-mobile-in-app
               size="500"
               variant="Secondary"
               fill="Soft"
@@ -80,6 +82,7 @@ export function SSOLogin({ providers, redirectUrl, action, saveScreenSpace }: SS
           style={{ width: '100%' }}
           as="a"
           href={getSSOIdUrl()}
+          data-mobile-in-app
           size="500"
           variant="Secondary"
           fill="Soft"

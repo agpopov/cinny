@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { TooltipProvider, Tooltip, Box, Text, Badge, toRem } from 'folds';
 
@@ -9,15 +10,15 @@ export function BetaNoticeBadge() {
       tooltip={
         <Tooltip style={{ maxWidth: toRem(200) }}>
           <Box direction="Column">
-            <Text size="L400">Notice</Text>
-            <Text size="T200">This feature is under testing and may change over time.</Text>
+            <Text size="L400">{t('Notice')}</Text>
+            <Text size="T200">{t('This feature is under testing and may change over time.')}</Text>
           </Box>
         </Tooltip>
       }
     >
       {(triggerRef) => (
         <Badge size="500" tabIndex={0} ref={triggerRef} variant="Primary" fill="Solid">
-          <Text size="L400">Beta</Text>
+          <Text size="L400">{t('Beta')}</Text>
         </Badge>
       )}
     </TooltipProvider>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useMemo, useRef, useState } from 'react';
 import { Box, Chip, Icon, IconButton, Icons, Line, Scroll, Spinner, Text, config } from 'folds';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -450,7 +451,7 @@ export function Lobby() {
                       radii="Pill"
                       outlined
                       size="300"
-                      aria-label="Scroll to Top"
+                      aria-label={t('Scroll to Top')}
                     >
                       <Icon src={Icons.ChevronTop} size="300" />
                     </IconButton>
@@ -526,7 +527,7 @@ export function Lobby() {
                         radii="Pill"
                         before={<Spinner variant="Secondary" fill="Soft" size="100" />}
                       >
-                        <Text size="L400">Reordering</Text>
+                        <Text size="L400">{t('Reordering')}</Text>
                       </Chip>
                     </Box>
                   )}

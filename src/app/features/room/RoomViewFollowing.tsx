@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useState } from 'react';
 import {
   Box,
@@ -83,7 +84,7 @@ export const RoomViewFollowing = as<'div', RoomViewFollowingProps>(
                   <>
                     <b>{names[0]}</b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' is following the conversation.'}
+                      {t(' is following the conversation.')}
                     </Text>
                   </>
                 )}
@@ -91,11 +92,11 @@ export const RoomViewFollowing = as<'div', RoomViewFollowingProps>(
                   <>
                     <b>{names[0]}</b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' and '}
+                      {t(' and ')}
                     </Text>
                     <b>{names[1]}</b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' are following the conversation.'}
+                      {t(' are following the conversation.')}
                     </Text>
                   </>
                 )}
@@ -107,11 +108,11 @@ export const RoomViewFollowing = as<'div', RoomViewFollowingProps>(
                     </Text>
                     <b>{names[1]}</b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' and '}
+                      {t(' and ')}
                     </Text>
                     <b>{names[2]}</b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' are following the conversation.'}
+                      {t(' are following the conversation.')}
                     </Text>
                   </>
                 )}
@@ -127,11 +128,14 @@ export const RoomViewFollowing = as<'div', RoomViewFollowingProps>(
                     </Text>
                     <b>{names[2]}</b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' and '}
+                      {t(' and ')}
                     </Text>
-                    <b>{names.length - 3} others</b>
+                    <b>
+                      {names.length - 3}
+                      {t(' others')}
+                    </b>
                     <Text as="span" size="Inherit" priority="300">
-                      {' are following the conversation.'}
+                      {t(' are following the conversation.')}
                     </Text>
                   </>
                 )}

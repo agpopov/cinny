@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useLayoutEffect, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Editor } from 'slate';
@@ -198,7 +199,10 @@ export function UserMentionAutocomplete({
     getMemberDisplayName(room, member.userId) ?? getMxIdLocalPart(member.userId) ?? member.userId;
 
   return (
-    <AutocompleteMenu headerContent={<Text size="L400">Mentions</Text>} requestClose={requestClose}>
+    <AutocompleteMenu
+      headerContent={<Text size="L400">{t('Mentions')}</Text>}
+      requestClose={requestClose}
+    >
       {groups.map((group) => (
         <MenuItem
           key={`${group.spaceId}/${group.id}`}

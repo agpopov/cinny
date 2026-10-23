@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useState } from 'react';
 import {
   Avatar,
@@ -129,7 +130,8 @@ export function LiveChip({ count, room, members }: LiveChipProps) {
         onClick={handleOpenMenu}
       >
         <Text className={css.LiveChipText} as="span" size="L400" truncate>
-          {count} Live
+          {count}
+          {t(' Live')}
         </Text>
       </Chip>
     </PopOut>

@@ -25,7 +25,7 @@ export function Create() {
                   <PageHero
                     icon={<Icon size="600" src={Icons.Space} />}
                     title={t('Create Space')}
-                    subTitle="Build a space for your community."
+                    subTitle={t('Build a space for your community.')}
                   />
                   <CreateSpaceForm onCreate={navigateSpace} />
                 </Box>

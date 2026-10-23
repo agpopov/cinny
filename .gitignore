@@ -12,3 +12,7 @@ __pycache__/
 
 # Local release signing material (never commit keys or passwords)
 /.release-signing/
+
+# Local build artifacts and downloaded test tools
+/artifacts/
+/*.whl

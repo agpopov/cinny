@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useState } from 'react';
 import FocusTrap from 'focus-trap-react';
 import {
@@ -40,7 +41,7 @@ export function EditorPreview() {
               <div style={{ padding: config.space.S400 }}>
                 <CustomEditor
                   editor={editor}
-                  placeholder="Send a message..."
+                  placeholder={t('Send a message...')}
                   before={
                     <IconButton variant="SurfaceVariant" size="300" radii="300">
                       <Icon src={Icons.PlusCircle} />

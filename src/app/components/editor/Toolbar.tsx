@@ -361,7 +361,9 @@ export function Toolbar() {
           <Box className={css.MarkdownBtnBox} shrink="No" grow="Yes" justifyContent="End">
             <TooltipProvider
               align="End"
-              tooltip={<BtnTooltip text={isMarkdown ? 'Disable Markdown' : 'Enable Markdown'} />}
+              tooltip={
+                <BtnTooltip text={isMarkdown ? t('Disable Markdown') : t('Enable Markdown')} />
+              }
               delay={500}
             >
               {(triggerRef) => (

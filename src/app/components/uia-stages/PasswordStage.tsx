@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, Button, color, config, Dialog, Header, Icon, IconButton, Icons, Text } from 'folds';
 import React, { FormEventHandler } from 'react';
 import { AuthType } from 'matrix-js-sdk';
@@ -43,7 +44,7 @@ export function PasswordStage({
         size="500"
       >
         <Box grow="Yes">
-          <Text size="H4">Account Password</Text>
+          <Text size="H4">{t('Account Password')}</Text>
         </Box>
         <IconButton aria-label="Закрыть" size="300" onClick={onCancel} radii="300">
           <Icon src={Icons.Cross} />
@@ -58,11 +59,12 @@ export function PasswordStage({
       >
         <Box direction="Column" gap="400">
           <Text size="T200">
-            To perform this action you need to authenticate yourself by entering you account
-            password.
+            {t(
+              'To perform this action you need to authenticate yourself by entering you account password.'
+            )}
           </Text>
           <Box direction="Column" gap="100">
-            <Text size="L400">Password</Text>
+            <Text size="L400">{t('Password')}</Text>
             <PasswordInput size="400" name="passwordInput" outlined autoFocus required />
             {errorCode && (
               <Box alignItems="Center" gap="100" style={{ color: color.Critical.Main }}>
@@ -70,7 +72,7 @@ export function PasswordStage({
                 <Text size="T200">
                   <b>
                     {errorCode === ErrorCode.M_FORBIDDEN
-                      ? 'Invalid Password!'
+                      ? t('Invalid Password!')
                       : `${errorCode}: ${error}`}
                   </b>
                 </Text>
@@ -80,7 +82,7 @@ export function PasswordStage({
         </Box>
         <Button variant="Primary" type="submit">
           <Text as="span" size="B400">
-            Continue
+            {t('Continue')}
           </Text>
         </Button>
       </Box>

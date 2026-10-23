@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable no-param-reassign */
 import { type Descendant, Text } from 'slate';
 import parse from 'html-dom-parser';
@@ -106,7 +107,7 @@ const getInlineNonMarkElement = (node: Element): MentionElement | EmoticonElemen
   if (node.name === 'img' && node.attribs['data-mx-emoticon'] !== undefined) {
     const { src, alt } = node.attribs;
     if (!src) return undefined;
-    return createEmoticonElement(src, alt || 'Unknown Emoji');
+    return createEmoticonElement(src, alt || t('Unknown Emoji'));
   }
   if (node.name === 'a') {
     const href = tryDecodeURIComponent(node.attribs.href);

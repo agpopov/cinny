@@ -109,8 +109,9 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
     const [initialValue] = useState(createInitialValue);
     const handlePaste: ClipboardEventHandler = useCallback(
       (evt) => {
+        if (readOnly) return;
         onPaste?.(evt);
-        if (readOnly || evt.defaultPrevented || evt.clipboardData.files.length > 0) return;
+        if (evt.defaultPrevented || evt.clipboardData.files.length > 0) return;
         if (pasteLink(editor, evt.clipboardData.getData('text/plain'))) evt.preventDefault();
       },
       [editor, onPaste, readOnly]

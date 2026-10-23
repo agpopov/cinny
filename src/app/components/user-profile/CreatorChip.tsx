@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Chip, config, Icon, Icons, Menu, MenuItem, PopOut, RectCords, Text } from 'folds';
 import React, { MouseEventHandler, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
@@ -70,7 +71,7 @@ export function CreatorChip() {
                   close();
                 }}
               >
-                <Text size="B300">Manage Powers</Text>
+                <Text size="B300">{t('Manage Powers')}</Text>
               </MenuItem>
             </div>
           </Menu>

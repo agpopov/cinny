@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { forwardRef } from 'react';
 import { Menu, Box, Text, Chip } from 'folds';
 import dayjs from 'dayjs';
@@ -59,7 +60,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
     return (
       <Menu className={css.PickerMenu} ref={ref}>
         <Box direction="Row" gap="200" className={css.PickerContainer}>
-          <PickerColumn title="Day">
+          <PickerColumn title={t('Day')}>
             {Array.from(Array(daysInMonth(selectedMonth, selectedYear)).keys())
               .map((i) => i + 1)
               .map((day) => (
@@ -80,7 +81,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
                 </Chip>
               ))}
           </PickerColumn>
-          <PickerColumn title="Month">
+          <PickerColumn title={t('Month')}>
             {Array.from(Array(12).keys())
               .map((i) => i + 1)
               .map((month) => (
@@ -105,7 +106,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
                 </Chip>
               ))}
           </PickerColumn>
-          <PickerColumn title="Year">
+          <PickerColumn title={t('Year')}>
             {Array.from(Array(yearsRange).keys())
               .map((i) => minYear + i)
               .map((year) => (

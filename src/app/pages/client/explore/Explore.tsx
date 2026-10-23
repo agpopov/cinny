@@ -95,7 +95,7 @@ export function AddServer() {
                 size="500"
               >
                 <Box grow="Yes">
-                  <Text size="H4">Add Server</Text>
+                  <Text size="H4">{t('Add Server')}</Text>
                 </Box>
                 <IconButton
                   aria-label="Закрыть"
@@ -113,13 +113,13 @@ export function AddServer() {
                 direction="Column"
                 gap="400"
               >
-                <Text priority="400">Add server name to explore public communities.</Text>
+                <Text priority="400">{t('Add server name to explore public communities.')}</Text>
                 <Box direction="Column" gap="100">
-                  <Text size="L400">Server Name</Text>
+                  <Text size="L400">{t('Server Name')}</Text>
                   <Input ref={serverInputRef} name="serverInput" variant="Background" required />
                   {exploreState.status === AsyncStatus.Error && (
                     <Text style={{ color: color.Critical.Main }} size="T300">
-                      Failed to load public rooms. Please try again.
+                      {t('Failed to load public rooms. Please try again.')}
                     </Text>
                   )}
                 </Box>
@@ -154,7 +154,7 @@ export function AddServer() {
         onClick={() => setDialog(true)}
       >
         <Text size="B300" truncate>
-          Add Server
+          {t('Add Server')}
         </Text>
       </Button>
     </>
@@ -179,7 +179,7 @@ export function Explore() {
         <Box grow="Yes" gap="300">
           <Box grow="Yes">
             <Text size="H4" truncate>
-              Explore Community
+              {t('Explore Community')}
             </Text>
           </Box>
         </Box>
@@ -197,7 +197,7 @@ export function Explore() {
                     </Avatar>
                     <Box as="span" grow="Yes">
                       <Text as="span" size="Inherit" truncate>
-                        Featured
+                        {t('Featured')}
                       </Text>
                     </Box>
                   </Box>
@@ -235,7 +235,7 @@ export function Explore() {
             <NavCategory>
               <NavCategoryHeader>
                 <Text size="O400" style={{ paddingLeft: config.space.S200 }}>
-                  Servers
+                  {t('Servers')}
                 </Text>
               </NavCategoryHeader>
               {servers.map((server) => (

@@ -159,7 +159,10 @@ function click(t, href, overrides = {}) {
     }
 
     hasAttribute(name) {
-      return name === 'download' && !!overrides.download;
+      return (
+        (name === 'download' && !!overrides.download) ||
+        (name === 'data-mobile-in-app' && !!overrides.inApp)
+      );
     }
   }
   mockGlobal(t, 'HTMLAnchorElement', Anchor);
@@ -181,6 +184,25 @@ for (const href of ['https://example.org/page?a=1#part', 'mailto:me@example.org'
     handleMobileLinkClick(event);
     assert.equal(event.defaultPrevented, true);
     assert.deepEqual(calls, [{ command: 'plugin:opener|open_url', args: { url: href } }]);
+  });
+}
+
+for (const action of ['login', 'register']) {
+  test(`Android keeps SSO ${action} and its local callback in the WebView`, (t) => {
+    const { calls } = browser(t);
+    const url = new URL('https://matrix.example/_matrix/client/v3/login/sso/redirect/oidc');
+    url.searchParams.set('redirectUrl', 'http://tauri.localhost/#/login/matrix.example');
+    url.searchParams.set('action', action);
+    const event = click(t, url.href, { inApp: true });
+    handleMobileLinkClick(event);
+    assert.equal(event.defaultPrevented, false);
+    assert.deepEqual(calls, []);
+
+    // The exception belongs to the auth link, not the whole homeserver.
+    handleMobileLinkClick(click(t, 'https://matrix.example/help'));
+    assert.deepEqual(calls, [
+      { command: 'plugin:opener|open_url', args: { url: 'https://matrix.example/help' } },
+    ]);
   });
 }
 

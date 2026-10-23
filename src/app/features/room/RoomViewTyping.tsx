@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Icon, IconButton, Icons, Text, as } from 'folds';
 import { Room } from 'matrix-js-sdk';
@@ -58,7 +59,7 @@ export const RoomViewTyping = as<'div', RoomViewTypingProps>(
               <>
                 <b>{typingNames[0]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' is typing...'}
+                  {t(' is typing...')}
                 </Text>
               </>
             )}
@@ -66,11 +67,11 @@ export const RoomViewTyping = as<'div', RoomViewTypingProps>(
               <>
                 <b>{typingNames[0]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' and '}
+                  {t(' and ')}
                 </Text>
                 <b>{typingNames[1]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' are typing...'}
+                  {t(' are typing...')}
                 </Text>
               </>
             )}
@@ -82,11 +83,11 @@ export const RoomViewTyping = as<'div', RoomViewTypingProps>(
                 </Text>
                 <b>{typingNames[1]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' and '}
+                  {t(' and ')}
                 </Text>
                 <b>{typingNames[2]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' are typing...'}
+                  {t(' are typing...')}
                 </Text>
               </>
             )}
@@ -102,16 +103,24 @@ export const RoomViewTyping = as<'div', RoomViewTypingProps>(
                 </Text>
                 <b>{typingNames[2]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' and '}
+                  {t(' and ')}
                 </Text>
-                <b>{typingNames.length - 3} others</b>
+                <b>
+                  {typingNames.length - 3}
+                  {t(' others')}
+                </b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' are typing...'}
+                  {t(' are typing...')}
                 </Text>
               </>
             )}
           </Text>
-          <IconButton title="Drop Typing Status" size="300" radii="Pill" onClick={handleDropAll}>
+          <IconButton
+            title={t('Drop Typing Status')}
+            size="300"
+            radii="Pill"
+            onClick={handleDropAll}
+          >
             <Icon size="50" src={Icons.Cross} />
           </IconButton>
         </Box>

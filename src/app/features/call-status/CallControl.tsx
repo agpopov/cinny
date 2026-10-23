@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, Chip, Icon, IconButton, Icons, Spinner, Text, Tooltip, TooltipProvider } from 'folds';
 import React, { useCallback } from 'react';
 import { useSetAtom } from 'jotai';
@@ -20,7 +21,7 @@ function MicrophoneButton({ enabled, onToggle, disabled }: MicrophoneButtonProps
       position="Top"
       tooltip={
         <Tooltip>
-          <Text size="T200">{enabled ? 'Turn Off Microphone' : 'Turn On Microphone'}</Text>
+          <Text size="T200">{enabled ? t('Turn Off Microphone') : t('Turn On Microphone')}</Text>
         </Tooltip>
       }
     >
@@ -193,7 +194,7 @@ export function CallControl({
       >
         {!compact && (
           <Text as="span" size="L400">
-            End
+            {t('End')}
           </Text>
         )}
       </Chip>

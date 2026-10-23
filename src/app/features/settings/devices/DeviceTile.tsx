@@ -50,11 +50,11 @@ function DeviceActiveTime({ ts }: { ts: number }) {
   return (
     <Text className={BreakWord} size="T200">
       <Text size="Inherit" as="span" priority="300">
-        {'Last activity: '}
+        {t('Last activity: ')}
       </Text>
       <>
-        {today(ts) && 'Today'}
-        {yesterday(ts) && 'Yesterday'}
+        {today(ts) && t('Today')}
+        {yesterday(ts) && t('Yesterday')}
         {!today(ts) && !yesterday(ts) && timeDayMonYear(ts, dateFormatString)}{' '}
         {timeHourMinute(ts, hour24Clock)}
       </>
@@ -101,7 +101,7 @@ export function DeviceKeyDetails({ crypto }: DeviceKeyDetailsProps) {
   return (
     <Text className={BreakWord} size="T200" priority="300">
       {t('Device Key:')}{' '}
-      <i>{keysState.status === AsyncStatus.Success ? keysState.data.ed25519 : 'loading...'}</i>
+      <i>{keysState.status === AsyncStatus.Success ? keysState.data.ed25519 : t('loading...')}</i>
     </Text>
   );
 }

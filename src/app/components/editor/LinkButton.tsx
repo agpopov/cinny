@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useEffect, useId, useState } from 'react';
 import { Editor, type RangeRef, Transforms } from 'slate';
 import { ReactEditor, useReadOnly, useSlate } from 'slate-react';
@@ -45,7 +46,7 @@ function LinkForm({ editor, selection, requestClose }: LinkFormProps) {
     >
       <Header size="500" style={{ padding: config.space.S400 }}>
         <Box grow="Yes">
-          <Text size="H4">Link</Text>
+          <Text size="H4">{t('Link')}</Text>
         </Box>
         <IconButton
           size="300"
@@ -67,12 +68,12 @@ function LinkForm({ editor, selection, requestClose }: LinkFormProps) {
       >
         <Box direction="Column" gap="100">
           <Text as="label" size="L400" htmlFor={`${id}-text`}>
-            Text
+            {t('Text')}
           </Text>
           <Input
             id={`${id}-text`}
             value={text}
-            placeholder="Link text"
+            placeholder={t('Link text')}
             onChange={(evt) => setText(evt.currentTarget.value)}
           />
         </Box>
@@ -95,7 +96,7 @@ function LinkForm({ editor, selection, requestClose }: LinkFormProps) {
           />
           {invalid && (
             <Text id={`${id}-error`} size="T200" role="alert">
-              Enter a valid URL, such as https://example.org.
+              {t('Enter a valid URL, such as https://example.org.')}
             </Text>
           )}
         </Box>
@@ -109,11 +110,11 @@ function LinkForm({ editor, selection, requestClose }: LinkFormProps) {
                 requestClose();
               }}
             >
-              <Text size="B400">Remove link</Text>
+              <Text size="B400">{t('Remove link')}</Text>
             </Button>
           )}
           <Button type="submit" variant="Primary">
-            <Text size="B400">{existing ? 'Save' : 'Insert'}</Text>
+            <Text size="B400">{existing ? t('Save') : t('Insert')}</Text>
           </Button>
         </Box>
       </Box>
@@ -146,7 +147,7 @@ export function LinkButton() {
       <IconButton
         variant="SurfaceVariant"
         aria-label="Ссылка"
-        title={link ? 'Edit link' : 'Insert link'}
+        title={link ? t('Edit link') : t('Insert link')}
         aria-pressed={!!link}
         size="400"
         radii="300"

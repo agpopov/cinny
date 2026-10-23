@@ -140,7 +140,7 @@ export function SpecialMessagesNotifications() {
         gap="400"
       >
         <SettingTile
-          title={`Mention User ID ("${userId}")`}
+          title={t('Mention User ID ("{{value1}}")', { value1: userId })}
           after={
             <MentionModeSwitcher
               pushRules={pushRules}
@@ -157,7 +157,9 @@ export function SpecialMessagesNotifications() {
         gap="400"
       >
         <SettingTile
-          title={`Contains Displayname ${displayName ? `("${displayName}")` : ''}`}
+          title={t('Contains Displayname {{value1}}', {
+            value1: displayName ? `("${displayName}")` : '',
+          })}
           after={
             <MentionModeSwitcher
               pushRules={pushRules}
@@ -174,7 +176,7 @@ export function SpecialMessagesNotifications() {
         gap="400"
       >
         <SettingTile
-          title={`Contains Username ("${getMxIdLocalPart(userId)}")`}
+          title={t('Contains Username ("{{value1}}")', { value1: getMxIdLocalPart(userId) })}
           after={
             <MentionModeSwitcher
               pushRules={pushRules}

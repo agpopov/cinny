@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Box,
   Button,
@@ -150,8 +151,10 @@ export function AdditionalCreatorInput({
 
   return (
     <SettingTile
-      title="Founders"
-      description="Special privileged users can be assigned during creation. These users have elevated control and can only be modified during a upgrade."
+      title={t('Founders')}
+      description={t(
+        'Special privileged users can be assigned during creation. These users have elevated control and can only be modified during a upgrade.'
+      )}
     >
       <Box shrink="No" direction="Column" gap="100">
         <Box gap="200" wrap="Wrap">
@@ -263,10 +266,10 @@ export function AdditionalCreatorInput({
                           gap="100"
                         >
                           <Text size="H6" align="Center">
-                            No Suggestions
+                            {t('No Suggestions')}
                           </Text>
                           <Text size="T200" align="Center">
-                            Please provide the user ID and hit Enter.
+                            {t('Please provide the user ID and hit Enter.')}
                           </Text>
                         </Box>
                       )}

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useState } from 'react';
 import {
   Box,
@@ -88,7 +89,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Developer Tools
+              {t('Developer Tools')}
             </Text>
           </Box>
           <Box shrink="No">
@@ -103,7 +104,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
           <PageContent>
             <Box direction="Column" gap="700">
               <Box direction="Column" gap="100">
-                <Text size="L400">Options</Text>
+                <Text size="L400">{t('Options')}</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -111,7 +112,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                   gap="400"
                 >
                   <SettingTile
-                    title="Enable Developer Tools"
+                    title={t('Enable Developer Tools')}
                     after={
                       <Switch
                         variant="Primary"
@@ -129,8 +130,10 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Room ID"
-                      description={`Copy room ID to clipboard. ("${room.roomId}")`}
+                      title={t('Room ID')}
+                      description={t('Copy room ID to clipboard. ("{{value1}}")', {
+                        value1: room.roomId,
+                      })}
                       after={
                         <Button
                           onClick={() => copyToClipboard(room.roomId ?? '<NO_ROOM_ID_FOUND>')}
@@ -140,7 +143,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           radii="300"
                           outlined
                         >
-                          <Text size="B300">Copy</Text>
+                          <Text size="B300">{t('Copy')}</Text>
                         </Button>
                       }
                     />
@@ -150,7 +153,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
 
               {developerTools && (
                 <Box direction="Column" gap="100">
-                  <Text size="L400">Data</Text>
+                  <Text size="L400">{t('Data')}</Text>
 
                   <SequenceCard
                     className={SequenceCardStyle}
@@ -159,8 +162,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="New Message Event"
-                      description="Create and send a new message event within the room."
+                      title={t('New Message Event')}
+                      description={t('Create and send a new message event within the room.')}
                       after={
                         <Button
                           onClick={() => setComposeEvent({})}
@@ -170,7 +173,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           radii="300"
                           outlined
                         >
-                          <Text size="B300">Compose</Text>
+                          <Text size="B300">{t('Compose')}</Text>
                         </Button>
                       }
                     />
@@ -182,8 +185,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Room State"
-                      description="State events of the room."
+                      title={t('Room State')}
+                      description={t('State events of the room.')}
                       after={
                         <Button
                           onClick={() => setExpandState(!expandState)}
@@ -200,15 +203,18 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                             />
                           }
                         >
-                          <Text size="B300">{expandState ? 'Collapse' : 'Expand'}</Text>
+                          <Text size="B300">{expandState ? t('Collapse') : t('Expand')}</Text>
                         </Button>
                       }
                     />
                     {expandState && (
                       <Box direction="Column" gap="100">
                         <Box justifyContent="SpaceBetween">
-                          <Text size="L400">Events</Text>
-                          <Text size="L400">Total: {roomState.size}</Text>
+                          <Text size="L400">{t('Events')}</Text>
+                          <Text size="L400">
+                            {t('Total: ')}
+                            {roomState.size}
+                          </Text>
                         </Box>
                         <CutoutCard>
                           <MenuItem
@@ -221,7 +227,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           >
                             <Box grow="Yes">
                               <Text size="T200" truncate>
-                                Add New
+                                {t('Add New')}
                               </Text>
                             </Box>
                           </MenuItem>
@@ -275,7 +281,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                                       >
                                         <Box grow="Yes">
                                           <Text size="T200" truncate>
-                                            Add New
+                                            {t('Add New')}
                                           </Text>
                                         </Box>
                                       </MenuItem>
@@ -298,7 +304,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                                           >
                                             <Box grow="Yes">
                                               <Text size="T200" truncate>
-                                                {stateKey ? `"${stateKey}"` : 'Default'}
+                                                {stateKey ? `"${stateKey}"` : t('Default')}
                                               </Text>
                                             </Box>
                                           </MenuItem>
@@ -319,8 +325,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Account Data"
-                      description="Private personalization data stored within room."
+                      title={t('Account Data')}
+                      description={t('Private personalization data stored within room.')}
                       after={
                         <Button
                           onClick={() => setExpandAccountData(!expandAccountData)}
@@ -337,15 +343,18 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                             />
                           }
                         >
-                          <Text size="B300">{expandAccountData ? 'Collapse' : 'Expand'}</Text>
+                          <Text size="B300">{expandAccountData ? t('Collapse') : t('Expand')}</Text>
                         </Button>
                       }
                     />
                     {expandAccountData && (
                       <Box direction="Column" gap="100">
                         <Box justifyContent="SpaceBetween">
-                          <Text size="L400">Events</Text>
-                          <Text size="L400">Total: {accountData.size}</Text>
+                          <Text size="L400">{t('Events')}</Text>
+                          <Text size="L400">
+                            {t('Total: ')}
+                            {accountData.size}
+                          </Text>
                         </Box>
                         <CutoutCard>
                           <MenuItem
@@ -358,7 +367,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           >
                             <Box grow="Yes">
                               <Text size="T200" truncate>
-                                Add New
+                                {t('Add New')}
                               </Text>
                             </Box>
                           </MenuItem>

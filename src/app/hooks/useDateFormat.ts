@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { useMemo } from 'react';
 import { DateFormat } from '../state/settings';
 
@@ -31,7 +32,7 @@ export const useDateFormatItems = (): DateFormatItem[] =>
       },
       {
         format: '',
-        name: 'Custom',
+        name: t('Custom'),
       },
     ],
     []

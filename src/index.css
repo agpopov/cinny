@@ -143,6 +143,10 @@ li p::before {
   outline-offset: 3px;
 }
 
+html[data-input-modality='pointer'] :focus-visible {
+  outline: none !important;
+}
+
 @media (pointer: coarse) {
   button[data-message-actions] {
     min-width: 44px;

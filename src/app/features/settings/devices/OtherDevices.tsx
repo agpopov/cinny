@@ -206,7 +206,11 @@ export function OtherDevices({ devices, refreshDeviceList, showVerification }: O
                 </Text>
               ) : (
                 <Text size="T200">
-                  <b>Logout from selected devices. ({deleted.size} selected)</b>
+                  <b>
+                    {t('Logout from selected devices. (')}
+                    {deleted.size}
+                    {t(' selected)')}
+                  </b>
                 </Text>
               )}
               {authData && (

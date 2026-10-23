@@ -231,7 +231,7 @@ export function PasswordResetForm({ defaultEmail }: PasswordResetFormProps) {
       {resetPasswordError && (
         <FieldError
           message={`${resetPasswordError.errcode}: ${
-            resetPasswordError.data?.error ?? 'Failed to reset password.'
+            resetPasswordError.data?.error ?? t('Failed to reset password.')
           }`}
         />
       )}

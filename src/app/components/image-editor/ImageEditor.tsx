@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import classNames from 'classnames';
 import { Box, Chip, Header, Icon, IconButton, Icons, Text, as } from 'folds';
@@ -28,12 +29,12 @@ export const ImageEditor = as<'div', ImageEditorProps>(
               <Icon size="50" src={Icons.ArrowLeft} />
             </IconButton>
             <Text size="T300" truncate>
-              Image Editor
+              {t('Image Editor')}
             </Text>
           </Box>
           <Box shrink="No" alignItems="Center" gap="200">
             <Chip variant="Primary" radii="300" onClick={handleApply}>
-              <Text size="B300">Save</Text>
+              <Text size="B300">{t('Save')}</Text>
             </Chip>
           </Box>
         </Header>

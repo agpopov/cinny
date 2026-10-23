@@ -234,7 +234,7 @@ export const ImageContent = as<'div', ImageContentProps>(
             <TooltipProvider
               tooltip={
                 <Tooltip variant="Critical">
-                  <Text>Failed to load image!</Text>
+                  <Text>{t('Failed to load image!')}</Text>
                 </Tooltip>
               }
               position="Top"

@@ -43,7 +43,7 @@ const renderErrorButton = (retry: () => void, text: string) => (
   <TooltipProvider
     tooltip={
       <Tooltip variant="Critical">
-        <Text>Failed to load file!</Text>
+        <Text>{t('Failed to load file!')}</Text>
       </Tooltip>
     }
     position="Top"
@@ -132,7 +132,7 @@ export function ReadTextFile({ body, mimeType, url, encInfo, renderViewer }: Rea
         </Overlay>
       )}
       {textState.status === AsyncStatus.Error ? (
-        renderErrorButton(loadText, 'Open File')
+        renderErrorButton(loadText, t('Open File'))
       ) : (
         <Button
           variant="Secondary"
@@ -152,7 +152,7 @@ export function ReadTextFile({ body, mimeType, url, encInfo, renderViewer }: Rea
           }
         >
           <Text size="B400" truncate>
-            Open File
+            {t('Open File')}
           </Text>
         </Button>
       )}
@@ -270,7 +270,10 @@ export function DownloadFile({ body, mimeType, url, info, encInfo }: DownloadFil
   );
 
   return downloadState.status === AsyncStatus.Error ? (
-    renderErrorButton(download, `Retry Download (${bytesToSize(info.size ?? 0)})`)
+    renderErrorButton(
+      download,
+      t('Retry Download ({{value1}})', { value1: bytesToSize(info.size ?? 0) })
+    )
   ) : (
     <Button
       variant="Secondary"
@@ -291,7 +294,9 @@ export function DownloadFile({ body, mimeType, url, info, encInfo }: DownloadFil
         )
       }
     >
-      <Text size="B400" truncate>{`Download (${bytesToSize(info.size ?? 0)})`}</Text>
+      <Text size="B400" truncate>
+        {t('Download ({{value1}})', { value1: bytesToSize(info.size ?? 0) })}
+      </Text>
     </Button>
   );
 }

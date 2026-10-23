@@ -18,9 +18,11 @@ import './app/i18n';
 import { pushSessionToSW } from './sw-session';
 import { getFallbackSession } from './app/state/sessions';
 import { installMobileLinks } from './app/utils/mobileLinks';
+import { installInputModality } from './app/utils/inputModality';
 
 document.body.classList.add(configClass, varsClass);
 installMobileLinks();
+installInputModality();
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

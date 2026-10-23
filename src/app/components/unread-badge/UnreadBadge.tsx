@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Badge, toRem, Text } from 'folds';
 import { millify } from '../../plugins/millify';
@@ -20,7 +21,9 @@ export function UnreadBadgeCenter({ children }: { children: ReactNode }) {
 export function UnreadBadge({ highlight, count }: UnreadBadgeProps) {
   return (
     <Badge
-      aria-label={count > 0 ? `Unread messages: ${count}` : 'Unread messages'}
+      aria-label={
+        count > 0 ? t('Unread messages: {{value1}}', { value1: count }) : t('Unread messages')
+      }
       variant={highlight ? 'Success' : 'Secondary'}
       size={count > 0 ? '400' : '200'}
       fill="Solid"

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useState } from 'react';
 import { useAtom } from 'jotai';
 import { CryptoApi, KeyBackupInfo } from 'matrix-js-sdk/lib/crypto-api';
@@ -43,7 +44,7 @@ function BackupStatus({ enabled }: BackupStatusProps) {
         size="L400"
         style={{ color: enabled ? color.Success.Main : color.Critical.Main }}
       >
-        {enabled ? 'Connected' : 'Disconnected'}
+        {enabled ? t('Connected') : t('Disconnected')}
       </Text>
     </Box>
   );
@@ -56,7 +57,8 @@ function BackupSyncing({ count }: BackupSyncingProps) {
     <Box as="span" gap="100" alignItems="Center">
       <Spinner size="50" variant="Primary" fill="Soft" />
       <Text as="span" size="L400" style={{ color: color.Primary.Main }}>
-        Syncing ({count})
+        {t('Syncing (')}
+        {count})
       </Text>
     </Box>
   );
@@ -66,7 +68,7 @@ function BackupProgressFetching() {
   return (
     <Box grow="Yes" gap="200" alignItems="Center">
       <Badge variant="Secondary" fill="Solid" radii="300">
-        <Text size="L400">Restoring: 0%</Text>
+        <Text size="L400">{t('Restoring: 0%')}</Text>
       </Badge>
       <Box grow="Yes" direction="Column">
         <ProgressBar variant="Secondary" size="300" min={0} max={1} value={0} />
@@ -84,7 +86,10 @@ function BackupProgress({ total, downloaded }: BackupProgressProps) {
   return (
     <Box grow="Yes" gap="200" alignItems="Center">
       <Badge variant="Secondary" fill="Solid" radii="300">
-        <Text size="L400">Restoring: {`${Math.round(percent(0, total, downloaded))}%`}</Text>
+        <Text size="L400">
+          {t('Restoring: ')}
+          {`${Math.round(percent(0, total, downloaded))}%`}
+        </Text>
       </Badge>
       <Box grow="Yes" direction="Column">
         <ProgressBar variant="Secondary" size="300" min={0} max={total} value={downloaded} />
@@ -111,20 +116,20 @@ function BackupTrustInfo({ crypto, backupInfo }: BackupTrustInfoProps) {
     <Box direction="Column">
       {trust.matchesDecryptionKey ? (
         <Text size="T200" style={{ color: color.Success.Main }}>
-          <b>Backup has trusted decryption key.</b>
+          <b>{t('Backup has trusted decryption key.')}</b>
         </Text>
       ) : (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>Backup does not have trusted decryption key!</b>
+          <b>{t('Backup does not have trusted decryption key!')}</b>
         </Text>
       )}
       {trust.trusted ? (
         <Text size="T200" style={{ color: color.Success.Main }}>
-          <b>Backup has trusted by signature.</b>
+          <b>{t('Backup has trusted by signature.')}</b>
         </Text>
       ) : (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>Backup does not have trusted signature!</b>
+          <b>{t('Backup does not have trusted signature!')}</b>
         </Text>
       )}
     </Box>
@@ -168,7 +173,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
   return (
     <InfoCard
       variant="Surface"
-      title="Encryption Backup"
+      title={t('Encryption Backup')}
       after={
         <Box alignItems="Center" gap="200">
           {remainingSession === 0 ? (
@@ -213,12 +218,18 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
                     <Box direction="Column" gap="200">
                       <InfoCard
                         variant="SurfaceVariant"
-                        title="Backup Details"
+                        title={t('Backup Details')}
                         description={
                           <>
-                            <span>Version: {backupInfo?.version ?? 'NIL'}</span>
+                            <span>
+                              {t('Version: ')}
+                              {backupInfo?.version ?? t('NIL')}
+                            </span>
                             <br />
-                            <span>Keys: {backupInfo?.count ?? 'NIL'}</span>
+                            <span>
+                              {t('Keys: ')}
+                              {backupInfo?.count ?? t('NIL')}
+                            </span>
                           </>
                         }
                       />
@@ -235,7 +246,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
                       }
                       before={<Icon size="100" src={Icons.Download} />}
                     >
-                      <Text size="B300">Restore Backup</Text>
+                      <Text size="B300">{t('Restore Backup')}</Text>
                     </Button>
                   </Box>
                 </Menu>
@@ -252,7 +263,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
       )}
       {!backupEnabled && backupInfo === null && (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>No backup present on server!</b>
+          <b>{t('No backup present on server!')}</b>
         </Text>
       )}
       {!syncFailure && !backupEnabled && backupInfo && (

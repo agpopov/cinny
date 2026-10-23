@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useEffect, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
 import {
@@ -67,7 +68,7 @@ function SuggestMenuItem({
       disabled={toggleState.status === AsyncStatus.Loading}
     >
       <Text as="span" size="T300" truncate>
-        {content.suggested ? 'Unset Suggested' : 'Set Suggested'}
+        {content.suggested ? t('Unset Suggested') : t('Set Suggested')}
       </Text>
     </MenuItem>
   );
@@ -111,7 +112,7 @@ function RemoveMenuItem({
       disabled={removeState.status === AsyncStatus.Loading}
     >
       <Text as="span" size="T300" truncate>
-        Remove
+        {t('Remove')}
       </Text>
     </MenuItem>
   );
@@ -146,7 +147,7 @@ function InviteMenuItem({
         disabled={disabled || !room}
       >
         <Text as="span" size="T300" truncate>
-          Invite
+          {t('Invite')}
         </Text>
       </MenuItem>
       {invitePrompt && room && (
@@ -187,7 +188,7 @@ function SettingsMenuItem({
   return (
     <MenuItem onClick={handleSettings} size="300" radii="300" disabled={disabled}>
       <Text as="span" size="T300" truncate>
-        Settings
+        {t('Settings')}
       </Text>
     </MenuItem>
   );
@@ -275,7 +276,7 @@ export function HierarchyItemMenu({
                         }}
                       >
                         <Text as="span" size="T300" truncate>
-                          {pinned ? 'Unpin from Sidebar' : 'Pin to Sidebar'}
+                          {pinned ? t('Unpin from Sidebar') : t('Pin to Sidebar')}
                         </Text>
                       </MenuItem>
                     )}
@@ -298,7 +299,7 @@ export function HierarchyItemMenu({
                             aria-pressed={promptLeave}
                           >
                             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                              Leave
+                              {t('Leave')}
                             </Text>
                           </MenuItem>
                           {promptLeave &&

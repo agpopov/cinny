@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, Button, config, Icon, Icons, Text } from 'folds';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -88,7 +89,7 @@ export function UserRoomProfile({ userId }: UserRoomProfileProps) {
                   before={<Icon size="50" src={Icons.Message} filled />}
                   onClick={handleMessage}
                 >
-                  <Text size="B300">Message</Text>
+                  <Text size="B300">{t('Message')}</Text>
                 </Button>
               </Box>
             )}

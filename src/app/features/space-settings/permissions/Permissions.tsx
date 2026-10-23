@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useState } from 'react';
 import { Box, Icon, IconButton, Icons, Scroll, Text } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
@@ -41,7 +42,7 @@ export function Permissions({ requestClose }: PermissionsProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Permissions
+              {t('Permissions')}
             </Text>
           </Box>
           <Box shrink="No">

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Text, Icon, Icons, config, IconSrc } from 'folds';
 import { SequenceCard } from '../sequence-card';
@@ -36,9 +37,9 @@ export function CreateRoomAccessSelector({
             before={<Icon size="400" src={getIcon(CreateRoomAccess.Restricted)} />}
             after={value === CreateRoomAccess.Restricted && <Icon src={Icons.Check} />}
           >
-            <Text size="H6">Restricted</Text>
+            <Text size="H6">{t('Restricted')}</Text>
             <Text size="T300" priority="300">
-              Only member of parent space can join.
+              {t('Only member of parent space can join.')}
             </Text>
           </SettingTile>
         </SequenceCard>
@@ -58,9 +59,9 @@ export function CreateRoomAccessSelector({
           before={<Icon size="400" src={getIcon(CreateRoomAccess.Private)} />}
           after={value === CreateRoomAccess.Private && <Icon src={Icons.Check} />}
         >
-          <Text size="H6">Private</Text>
+          <Text size="H6">{t('Private')}</Text>
           <Text size="T300" priority="300">
-            Only people with invite can join.
+            {t('Only people with invite can join.')}
           </Text>
         </SettingTile>
       </SequenceCard>
@@ -79,9 +80,9 @@ export function CreateRoomAccessSelector({
           before={<Icon size="400" src={getIcon(CreateRoomAccess.Public)} />}
           after={value === CreateRoomAccess.Public && <Icon src={Icons.Check} />}
         >
-          <Text size="H6">Public</Text>
+          <Text size="H6">{t('Public')}</Text>
           <Text size="T300" priority="300">
-            Anyone with the address can join.
+            {t('Anyone with the address can join.')}
           </Text>
         </SettingTile>
       </SequenceCard>

@@ -41,7 +41,7 @@ export function UserPack({ onViewPack }: UserPackProps) {
         gap="400"
       >
         <SettingTile
-          title={userPack?.meta.name ?? 'Unknown'}
+          title={userPack?.meta.name ?? t('Unknown')}
           description={userPack?.meta.attribution}
           before={
             <Avatar size="300" radii="300">

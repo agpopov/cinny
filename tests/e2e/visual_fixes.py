@@ -52,6 +52,18 @@ room_events = [root_event, reply,
                event('$ui-image', {'msgtype': 'm.image', 'body': 'visual-test.png',
                                    'url': 'mxc://session.cinny.test/visual-test',
                                    'info': {'mimetype': 'image/png', 'w': 57, 'h': 57}})]
+code_content = {'msgtype': 'm.text', 'body': 'const value = 1;',
+                'format': 'org.matrix.custom.html',
+                'formatted_body': '<pre><code>const value = 1;</code></pre>'}
+code_event = event('$ui-code', code_content)
+code_event['origin_server_ts'] -= 86400000
+code_edit_content = {**code_content, 'body': 'const value = 2;',
+                     'formatted_body': '<pre><code>const value = 2;</code></pre>'}
+code_edit = event('$ui-code-edit', {'msgtype': 'm.text', 'body': '* const value = 2;',
+                                  'm.new_content': code_edit_content,
+                                  'm.relates_to': {'rel_type': 'm.replace', 'event_id': '$ui-code'}})
+code_edit['origin_server_ts'] -= 86300000
+room_events += [code_event, code_edit]
 room_state = [event('$ui-member', {'membership': 'join', 'displayname': 'Участник теста'}, PEER,
                     'm.room.member', PEER)]
 
@@ -75,6 +87,13 @@ with sync_playwright() as p:
         page.goto(APP + '/#/home/' + ROOM + '/')
         assert_session_ready(page)
         page.mouse.move(0, 0)
+        expect(page.get_by_text('Код', exact=True)).to_be_visible()
+        expect(page.get_by_text('Копировать', exact=True)).to_be_visible()
+        expect(page.get_by_text('(изменено)', exact=True)).to_be_visible()
+        expect(page.get_by_text('Вчера', exact=True)).to_be_visible()
+        for english in ['Code', 'Copy', '(edited)', 'Yesterday', 'Today']:
+            expect(page.get_by_text(english, exact=True)).to_have_count(0)
+        check(engine + ': code controls, edited marker and relative dates are translated')
         target = page.get_by_text(MESSAGE, exact=True)
         actions = action_bar(target)
         bar = actions.locator('xpath=ancestor::div[@data-visible][1]')
@@ -89,6 +108,7 @@ with sync_playwright() as p:
         expect(page.get_by_text('Скопировать текст', exact=True)).to_be_visible()
         page.keyboard.press('Escape')
         page.mouse.move(0, 0)
+        page.keyboard.press('Tab')
         actions.focus()
         expect(bar).to_have_css('opacity', '1')
         check(engine + ': keyboard actions and simplified menu with developer tools enabled')
@@ -132,6 +152,9 @@ with sync_playwright() as p:
         assert search.evaluate('(node) => document.activeElement !== node')
         assert not search.evaluate('(node) => node.matches(":focus-visible")')
         page.screenshot(path=str(OUT / (engine + '-stickers.png')))
+        page.get_by_role('button', name='Эмодзи', exact=True).last.click()
+        expect(page.get_by_text('Смайлы и люди', exact=True)).to_be_visible()
+        check(engine + ': emoji category names are translated')
         search.click()
         search.fill('кот')
         page.keyboard.press('Escape')
@@ -165,21 +188,62 @@ with sync_playwright() as p:
         check(engine + ': direct chat controls and Add Space tooltip translated')
         assert not errors, errors
         context.close()
-        # Coarse-pointer behavior uses a separate context, independent of viewport width.
-        context = browser.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, service_workers='block')
-        page = context.new_page()
-        install_session_fixture(page)
-        page.goto(APP + '/config.json')
-        seed_session(page)
-        page.goto(APP + '/#/home/' + ROOM + '/')
-        assert_session_ready(page)
-        actions = action_bar(page.get_by_text(MESSAGE, exact=True))
-        expect(actions.locator('xpath=ancestor::div[@data-visible][1]')).to_have_css('opacity', '1')
-        assert actions.bounding_box()['width'] >= 44
-        actions.click()
-        expect(page.get_by_text('Скопировать текст', exact=True)).to_be_visible()
-        check(engine + ': touch actions remain visible with a usable touch target')
-        context.close()
+        for message_layout in (0, 2):
+            # Coarse-pointer behavior uses a separate context, independent of viewport width.
+            context = browser.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, service_workers='block')
+            page = context.new_page()
+            install_session_fixture(page, room_events=room_events, room_state=room_state)
+            page.route('**/_matrix/client/versions', lambda route: route.fulfill(json={'versions': ['v1.' + str(i) for i in range(1, 12)], 'unstable_features': {}}))
+            page.route('**/relations/**', lambda route: route.fulfill(json={'chunk': [reply]}))
+            page.goto(APP + '/config.json')
+            seed_session(page)
+            page.evaluate('layout => localStorage.setItem("settings", JSON.stringify({...JSON.parse(localStorage.getItem("settings")), messageLayout: layout, isPeopleDrawer: false, useSystemTheme: false, themeId: "dark-theme"}))', message_layout)
+            page.goto(APP + '/#/home/' + ROOM + '/')
+            assert_session_ready(page)
+            actions = action_bar(page.get_by_text(MESSAGE, exact=True))
+            bar = actions.locator('xpath=ancestor::div[@data-visible][1]')
+            expect(bar).to_have_css('opacity', '0')
+            target = page.get_by_text(MESSAGE, exact=True)
+            target.tap()
+            expect(bar).to_have_css('opacity', '0')
+            base = target.locator('xpath=ancestor::div[@tabindex="0"][1]')
+            assert computed(base, 'outlineStyle') == 'none'
+            page.screenshot(path=str(OUT / (engine + '-touch-clean.png')))
+            check(engine + ': touch messages have no permanent action buttons or tap outline')
+            rect = target.bounding_box()
+            target.dispatch_event('pointerdown', {'pointerType': 'touch', 'isPrimary': True,
+                                                 'clientX': rect['x'] + 5, 'clientY': rect['y'] + 5})
+            expect(page.get_by_text('Скопировать текст', exact=True)).to_be_visible()
+            target.dispatch_event('pointerup', {'pointerType': 'touch', 'isPrimary': True})
+            expect(bar).to_have_css('opacity', '1')
+            assert actions.bounding_box()['width'] >= 44
+            focused = page.locator(':focus')
+            assert focused.count() == 1
+            assert computed(focused, 'outlineStyle') == 'none'
+            page.screenshot(path=str(OUT / (engine + '-touch-menu.png')))
+            check(engine + ': long press opens message actions without a ring on the first reaction')
+            page.keyboard.press('ArrowDown')
+            focused = page.locator(':focus')
+            assert computed(focused, 'outlineStyle') == 'solid'
+            check(engine + ': keyboard navigation restores the visible focus indicator')
+            page.keyboard.press('Escape')
+            page.locator('[data-editable-name="RoomInput"]').tap()
+            expect(bar).to_have_css('opacity', '0')
+            page.get_by_role('button', name='Открыть тред: 1 ответ', exact=True).tap()
+            thread_target = page.get_by_text('Ответ в треде для проверки', exact=True)
+            expect(thread_target).to_be_visible()
+            thread_actions = action_bar(thread_target)
+            thread_bar = thread_actions.locator('xpath=ancestor::div[@data-visible][1]')
+            expect(thread_bar).to_have_css('opacity', '0')
+            thread_target.tap()
+            expect(thread_bar).to_have_css('opacity', '0')
+            rect = thread_target.bounding_box()
+            thread_target.dispatch_event('pointerdown', {'pointerType': 'touch', 'isPrimary': True,
+                                                        'clientX': rect['x'] + 5, 'clientY': rect['y'] + 5})
+            expect(page.get_by_text('Скопировать текст', exact=True)).to_be_visible()
+            thread_target.dispatch_event('pointerup', {'pointerType': 'touch', 'isPrimary': True})
+            check(engine + ': thread messages share the same quiet touch controls and long-press menu')
+            context.close()
         browser.close()
 
 (OUT / 'summary.json').write_text(json.dumps({'passed':len(checks), 'checks':checks}, ensure_ascii=False, indent=2))

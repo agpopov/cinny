@@ -167,12 +167,12 @@ function HomeEmpty() {
         icon={<Icon size="600" src={Icons.Hash} />}
         title={
           <Text size="H5" align="Center">
-            No Rooms
+            {t('No Rooms')}
           </Text>
         }
         content={
           <Text size="T300" align="Center">
-            You do not have any rooms yet.
+            {t('You do not have any rooms yet.')}
           </Text>
         }
         options={
@@ -189,7 +189,7 @@ function HomeEmpty() {
               size="300"
             >
               <Text size="B300" truncate>
-                Explore Community Rooms
+                {t('Explore Community Rooms')}
               </Text>
             </Button>
           </>

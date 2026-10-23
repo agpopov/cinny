@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import {
@@ -98,7 +99,9 @@ export const ReactionViewer = as<'div', ReactionViewerProps>(
         <Box grow="Yes" direction="Column">
           <Header className={css.Header} variant="Surface" size="600">
             <Box grow="Yes">
-              <Text size="H3" truncate>{`Reacted with :${selectedShortcode}:`}</Text>
+              <Text size="H3" truncate>
+                {t('Reacted with :{{value1}}:', { value1: selectedShortcode })}
+              </Text>
             </Box>
             <IconButton aria-label="Закрыть" size="300" onClick={requestClose}>
               <Icon src={Icons.Cross} />

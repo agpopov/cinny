@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useCallback, useState } from 'react';
 import {
   Badge,
@@ -61,19 +62,21 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
       gap="400"
     >
       <SettingTile
-        title="Published Addresses"
+        title={t('Published Addresses')}
         description={
           <span>
-            If access is <b>Public</b>, Published addresses will be used to join by anyone.
+            {t('If access is ')}
+            <b>{t('Public')}</b>
+            {t(', Published addresses will be used to join by anyone.')}
           </span>
         }
       />
       <CutoutCard variant="Surface" style={{ padding: config.space.S300 }}>
         {publishedAliases.length === 0 ? (
           <Box direction="Column" gap="100">
-            <Text size="L400">No Addresses</Text>
+            <Text size="L400">{t('No Addresses')}</Text>
             <Text size="T200">
-              To publish an address, it needs to be set as a local address first
+              {t('To publish an address, it needs to be set as a local address first')}
             </Text>
           </Box>
         ) : (
@@ -86,7 +89,7 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
                   </Text>
                   {alias === canonicalAlias && (
                     <Badge variant="Success" fill="Solid" size="500">
-                      <Text size="L400">Main</Text>
+                      <Text size="L400">{t('Main')}</Text>
                     </Badge>
                   )}
                 </Box>
@@ -100,7 +103,7 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
                         disabled={loading}
                         onClick={() => setMain(undefined)}
                       >
-                        <Text size="B300">Unset Main</Text>
+                        <Text size="B300">{t('Unset Main')}</Text>
                       </Chip>
                     ) : (
                       <Chip
@@ -110,7 +113,7 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
                         disabled={loading}
                         onClick={() => setMain(alias)}
                       >
-                        <Text size="B300">Set Main</Text>
+                        <Text size="B300">{t('Set Main')}</Text>
                       </Chip>
                     )}
                   </Box>
@@ -183,14 +186,14 @@ function LocalAddressInput({ addLocalAlias }: { addLocalAlias: (alias: string) =
             disabled={adding}
             before={adding && <Spinner size="100" variant="Success" fill="Solid" />}
           >
-            <Text size="B400">Save</Text>
+            <Text size="B400">{t('Save')}</Text>
           </Button>
         </Box>
       </Box>
       {addState.status === AsyncStatus.Error && (
         <Text style={{ color: color.Critical.Main }} size="T200">
           {(addState.error as MatrixError).httpStatus === 409
-            ? 'Address is already in use!'
+            ? t('Address is already in use!')
             : (addState.error as MatrixError).message}
         </Text>
       )}
@@ -271,7 +274,10 @@ function LocalAddressesList({
       {selectedAliases.length > 0 && (
         <Box gap="200">
           <Box grow="Yes">
-            <Text size="L400">{selectedAliases.length} Selected</Text>
+            <Text size="L400">
+              {selectedAliases.length}
+              {t(' Selected')}
+            </Text>
           </Box>
           <Box shrink="No" gap="Inherit">
             {canEditCanonical &&
@@ -287,7 +293,7 @@ function LocalAddressesList({
                     )
                   }
                 >
-                  <Text size="B300">Unpublish</Text>
+                  <Text size="B300">{t('Unpublish')}</Text>
                 </Chip>
               ) : (
                 <Chip
@@ -301,7 +307,7 @@ function LocalAddressesList({
                     )
                   }
                 >
-                  <Text size="B300">Publish</Text>
+                  <Text size="B300">{t('Publish')}</Text>
                 </Chip>
               ))}
             <Chip
@@ -315,7 +321,7 @@ function LocalAddressesList({
                 )
               }
             >
-              <Text size="B300">Delete</Text>
+              <Text size="B300">{t('Delete')}</Text>
             </Chip>
           </Box>
         </Box>
@@ -343,7 +349,7 @@ function LocalAddressesList({
             <Box shrink="No" gap="100">
               {published && (
                 <Badge variant="Success" fill="Soft" size="500">
-                  <Text size="L400">Published</Text>
+                  <Text size="L400">{t('Published')}</Text>
                 </Badge>
               )}
             </Box>
@@ -380,8 +386,8 @@ export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissio
       gap="400"
     >
       <SettingTile
-        title="Local Addresses"
-        description="Set local address so users can join through your homeserver."
+        title={t('Local Addresses')}
+        description={t('Set local address so users can join through your homeserver.')}
         after={
           <Button
             type="button"
@@ -396,7 +402,7 @@ export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissio
             }
           >
             <Text as="span" size="B300" truncate>
-              {expand ? 'Collapse' : 'Expand'}
+              {expand ? t('Collapse') : t('Expand')}
             </Text>
           </Button>
         }
@@ -406,13 +412,13 @@ export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissio
           {localAliasesState.status === AsyncStatus.Loading && (
             <Box gap="100">
               <Spinner variant="Secondary" size="100" />
-              <Text size="T200">Loading...</Text>
+              <Text size="T200">{t('Loading...')}</Text>
             </Box>
           )}
           {localAliasesState.status === AsyncStatus.Success &&
             (localAliasesState.data.length === 0 ? (
               <Box direction="Column" gap="100">
-                <Text size="L400">No Addresses</Text>
+                <Text size="L400">{t('No Addresses')}</Text>
               </Box>
             ) : (
               <LocalAddressesList

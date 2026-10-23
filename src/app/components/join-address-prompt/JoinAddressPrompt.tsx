@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
 import {
@@ -80,7 +81,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">Join with Address</Text>
+                <Text size="H4">{t('Join with Address')}</Text>
               </Box>
               <IconButton aria-label="Закрыть" size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
@@ -95,7 +96,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
             >
               <Box direction="Column" gap="200">
                 <Text priority="400" size="T300">
-                  Enter public address to join the community. Addresses looks like:
+                  {t('Enter public address to join the community. Addresses looks like:')}
                 </Text>
                 <Text as="ul" size="T200" priority="300" style={{ paddingLeft: config.space.S400 }}>
                   <li>#community:server</li>
@@ -104,7 +105,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
                 </Text>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Address</Text>
+                <Text size="L400">{t('Address')}</Text>
                 <Input
                   size="500"
                   autoFocus
@@ -115,12 +116,12 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
                 />
                 {invalid && (
                   <Text size="T200" style={{ color: color.Critical.Main }}>
-                    <b>Invalid Address</b>
+                    <b>{t('Invalid Address')}</b>
                   </Text>
                 )}
               </Box>
               <Button type="submit" variant="Primary">
-                <Text size="B400">Open</Text>
+                <Text size="B400">{t('Open')}</Text>
               </Button>
             </Box>
           </Dialog>

@@ -223,7 +223,7 @@ function IncomingCall({ dm, info, onIgnore, onAnswer, onReject }: IncomingCallPr
                     before={<Icon size="200" src={Icons.Cross} filled />}
                   >
                     <Text as="span" size="B400">
-                      {dm ? 'Reject' : 'Ignore'}
+                      {dm ? t('Reject') : t('Ignore')}
                     </Text>
                   </Button>
                 </Box>

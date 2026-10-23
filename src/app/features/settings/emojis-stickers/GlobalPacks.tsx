@@ -164,7 +164,7 @@ function GlobalPackSelector({
                           addSelected(roomPackAddresses);
                         }}
                       >
-                        <Text size="B300">{allSelected ? 'Unselect All' : 'Select All'}</Text>
+                        <Text size="B300">{allSelected ? t('Unselect All') : t('Select All')}</Text>
                       </Chip>
                     </Box>
                   </Box>
@@ -186,7 +186,7 @@ function GlobalPackSelector({
                         gap="400"
                       >
                         <SettingTile
-                          title={pack.meta.name ?? 'Unknown'}
+                          title={pack.meta.name ?? t('Unknown')}
                           description={<span className={LineClamp2}>{pack.meta.attribution}</span>}
                           before={
                             <Box alignItems="Center" gap="300">
@@ -368,7 +368,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
         <SettingTile
           title={
             <span style={{ textDecoration: removed ? 'line-through' : undefined }}>
-              {pack.meta.name ?? 'Unknown'}
+              {pack.meta.name ?? t('Unknown')}
             </span>
           }
           description={<span className={LineClamp2}>{pack.meta.attribution}</span>}

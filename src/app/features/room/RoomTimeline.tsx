@@ -1604,7 +1604,7 @@ export function RoomTimeline({
                 <Box grow="Yes" direction="Column">
                   <Text size="T300" priority="300">
                     <b>{senderName}</b>
-                    {' changed room topic'}
+                    {t(' changed room topic')}
                   </Text>
                 </Box>
               }
@@ -1646,7 +1646,7 @@ export function RoomTimeline({
                 <Box grow="Yes" direction="Column">
                   <Text size="T300" priority="300">
                     <b>{senderName}</b>
-                    {' changed room avatar'}
+                    {t(' changed room avatar')}
                   </Text>
                 </Box>
               }
@@ -1696,7 +1696,7 @@ export function RoomTimeline({
                 <Box grow="Yes" direction="Column">
                   <Text size="T300" priority="300">
                     <b>{senderName}</b>
-                    {callJoined ? ' joined the call' : ' ended the call'}
+                    {callJoined ? t(' joined the call') : t(' ended the call')}
                   </Text>
                 </Box>
               }
@@ -1740,9 +1740,9 @@ export function RoomTimeline({
               <Box grow="Yes" direction="Column">
                 <Text size="T300" priority="300">
                   <b>{senderName}</b>
-                  {' sent '}
+                  {t(' sent ')}
                   <code className={customHtmlCss.Code}>{mEvent.getType()}</code>
-                  {' state event'}
+                  {t(' state event')}
                 </Text>
               </Box>
             }
@@ -1789,9 +1789,9 @@ export function RoomTimeline({
               <Box grow="Yes" direction="Column">
                 <Text size="T300" priority="300">
                   <b>{senderName}</b>
-                  {' sent '}
+                  {t(' sent ')}
                   <code className={customHtmlCss.Code}>{mEvent.getType()}</code>
-                  {' event'}
+                  {t(' event')}
                 </Text>
               </Box>
             }
@@ -1857,7 +1857,7 @@ export function RoomTimeline({
         <MessageBase space={messageSpacing}>
           <TimelineDivider style={{ color: color.Success.Main }} variant="Inherit">
             <Badge as="span" size="500" variant="Success" fill="Solid" radii="300">
-              <Text size="L400">New Messages</Text>
+              <Text size="L400">{t('New Messages')}</Text>
             </Badge>
           </TimelineDivider>
         </MessageBase>
@@ -1870,8 +1870,8 @@ export function RoomTimeline({
             <Badge as="span" size="500" variant="Secondary" fill="None" radii="300">
               <Text size="L400">
                 {(() => {
-                  if (today(mEvent.getTs())) return 'Today';
-                  if (yesterday(mEvent.getTs())) return 'Yesterday';
+                  if (today(mEvent.getTs())) return t('Today');
+                  if (yesterday(mEvent.getTs())) return t('Yesterday');
                   return timeDayMonthYear(mEvent.getTs());
                 })()}
               </Text>
@@ -1926,7 +1926,7 @@ export function RoomTimeline({
             before={<Icon size="50" src={Icons.MessageUnread} />}
             onClick={handleJumpToUnread}
           >
-            <Text size="L400">Jump to Unread</Text>
+            <Text size="L400">{t('Jump to Unread')}</Text>
           </Chip>
 
           <Chip

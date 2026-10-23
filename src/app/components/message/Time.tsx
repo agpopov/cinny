@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { ComponentProps } from 'react';
 import { Text, as } from 'folds';
 import { timeDayMonYear, timeHourMinute, today, yesterday } from '../../utils/time';
@@ -31,7 +32,7 @@ export const Time = as<'span', TimeProps & ComponentProps<typeof Text>>(
     } else if (today(ts)) {
       time = formattedTime;
     } else if (yesterday(ts)) {
-      time = `Yesterday ${formattedTime}`;
+      time = `${t('Yesterday')} ${formattedTime}`;
     } else {
       time = `${timeDayMonYear(ts, dateFormatString)} ${formattedTime}`;
     }

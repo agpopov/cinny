@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Button,
@@ -103,7 +104,7 @@ function RoomUpgradeDialog({ requestClose }: { requestClose: () => void }) {
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">{room.isSpaceRoom() ? 'Space Upgrade' : 'Room Upgrade'}</Text>
+                <Text size="H4">{room.isSpaceRoom() ? t('Space Upgrade') : t('Room Upgrade')}</Text>
               </Box>
               <IconButton aria-label="Закрыть" size="300" onClick={requestClose} radii="300">
                 <Icon src={Icons.Cross} />
@@ -111,10 +112,10 @@ function RoomUpgradeDialog({ requestClose }: { requestClose: () => void }) {
             </Header>
             <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
               <Text priority="400" style={{ color: color.Critical.Main }}>
-                <b>This action is irreversible!</b>
+                <b>{t('This action is irreversible!')}</b>
               </Text>
               <Box direction="Column" gap="100">
-                <Text size="L400">Options</Text>
+                <Text size="L400">{t('Options')}</Text>
                 <RoomVersionSelector
                   versions={roomVersions?.available ? Object.keys(roomVersions.available) : ['1']}
                   value={selectedRoomVersion}
@@ -148,7 +149,9 @@ function RoomUpgradeDialog({ requestClose }: { requestClose: () => void }) {
                 disabled={upgrading}
                 before={upgrading && <Spinner size="200" variant="Secondary" fill="Solid" />}
               >
-                <Text size="B400">{room.isSpaceRoom() ? 'Upgrade Space' : 'Upgrade Room'}</Text>
+                <Text size="B400">
+                  {room.isSpaceRoom() ? t('Upgrade Space') : t('Upgrade Room')}
+                </Text>
               </Button>
             </Box>
           </Dialog>
@@ -213,12 +216,14 @@ export function RoomUpgrade({ permissions, requestClose }: RoomUpgradeProps) {
       gap="400"
     >
       <SettingTile
-        title={room.isSpaceRoom() ? 'Upgrade Space' : 'Upgrade Room'}
+        title={room.isSpaceRoom() ? t('Upgrade Space') : t('Upgrade Room')}
         description={
           replacementRoom
             ? tombstoneContent.body ||
-              `This ${room.isSpaceRoom() ? 'space' : 'room'} has been replaced!`
-            : `Current version: ${roomVersion}.`
+              (room.isSpaceRoom()
+                ? t('This space has been replaced!')
+                : t('This room has been replaced!'))
+            : t('Current version: {{value1}}.', { value1: roomVersion })
         }
         after={
           <Box alignItems="Center" gap="200">
@@ -231,7 +236,7 @@ export function RoomUpgrade({ permissions, requestClose }: RoomUpgradeProps) {
                 radii="300"
                 onClick={handleOpenOldRoom}
               >
-                <Text size="B300">{room.isSpaceRoom() ? 'Old Space' : 'Old Room'}</Text>
+                <Text size="B300">{room.isSpaceRoom() ? t('Old Space') : t('Old Room')}</Text>
               </Button>
             )}
             {replacementRoom ? (
@@ -242,7 +247,9 @@ export function RoomUpgrade({ permissions, requestClose }: RoomUpgradeProps) {
                 radii="300"
                 onClick={handleOpenRoom}
               >
-                <Text size="B300">{room.isSpaceRoom() ? 'Open New Space' : 'Open New Room'}</Text>
+                <Text size="B300">
+                  {room.isSpaceRoom() ? t('Open New Space') : t('Open New Room')}
+                </Text>
               </Button>
             ) : (
               <Button
@@ -253,7 +260,7 @@ export function RoomUpgrade({ permissions, requestClose }: RoomUpgradeProps) {
                 disabled={!canUpgrade}
                 onClick={() => setPrompt(true)}
               >
-                <Text size="B300">Upgrade</Text>
+                <Text size="B300">{t('Upgrade')}</Text>
               </Button>
             )}
           </Box>

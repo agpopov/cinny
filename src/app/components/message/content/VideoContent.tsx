@@ -145,7 +145,7 @@ export const VideoContent = as<'div', VideoContentProps>(
               }}
               before={<Icon size="Inherit" src={Icons.Play} filled />}
             >
-              <Text size="B300">Watch</Text>
+              <Text size="B300">{t('Watch')}</Text>
             </Button>
           </Box>
         )}
@@ -205,7 +205,7 @@ export const VideoContent = as<'div', VideoContentProps>(
             <TooltipProvider
               tooltip={
                 <Tooltip variant="Critical">
-                  <Text>Failed to load video!</Text>
+                  <Text>{t('Failed to load video!')}</Text>
                 </Tooltip>
               }
               position="Top"

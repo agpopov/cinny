@@ -147,7 +147,7 @@ function ExportKeysTile() {
               }
             >
               <Text as="span" size="B300" truncate>
-                {expand ? t('Collapse') : 'Expand'}
+                {expand ? t('Collapse') : t('Expand')}
               </Text>
             </Button>
           </Box>

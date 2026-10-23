@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Direction,
   EventTimeline,
@@ -191,12 +192,12 @@ export const useCommands = (mx: MatrixClient, room: Room): CommandRecord => {
       },
       [Command.TableFlip]: {
         name: Command.TableFlip,
-        description: `Send ${TABLEFLIP} as message`,
+        description: t('Send {{value1}} as message', { value1: TABLEFLIP }),
         exe: async () => undefined,
       },
       [Command.UnFlip]: {
         name: Command.UnFlip,
-        description: `Send ${UNFLIP} as message`,
+        description: t('Send {{value1}} as message', { value1: UNFLIP }),
         exe: async () => undefined,
       },
       [Command.StartDm]: {

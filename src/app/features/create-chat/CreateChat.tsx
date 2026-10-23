@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, Button, color, config, Icon, Icons, Input, Spinner, Switch, Text } from 'folds';
 import React, { FormEventHandler, useCallback, useState } from 'react';
 import { ICreateRoomStateEvent, MatrixError, Preset, Visibility } from 'matrix-js-sdk';
@@ -75,7 +76,7 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
   return (
     <Box as="form" onSubmit={handleSubmit} grow="Yes" direction="Column" gap="500">
       <Box direction="Column" gap="100">
-        <Text size="L400">User ID</Text>
+        <Text size="L400">{t('User ID')}</Text>
         <Input
           defaultValue={defaultUserId}
           placeholder="@username:server"
@@ -92,13 +93,13 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
           <Box style={{ color: color.Critical.Main }} alignItems="Center" gap="100">
             <Icon src={Icons.Warning} filled size="50" />
             <Text size="T200" style={{ color: color.Critical.Main }}>
-              <b>Please enter a valid User ID.</b>
+              <b>{t('Please enter a valid User ID.')}</b>
             </Text>
           </Box>
         )}
       </Box>
       <Box shrink="No" direction="Column" gap="100">
-        <Text size="L400">Options</Text>
+        <Text size="L400">{t('Options')}</Text>
         <SequenceCard
           style={{ padding: config.space.S300 }}
           variant="SurfaceVariant"
@@ -106,8 +107,10 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
           gap="500"
         >
           <SettingTile
-            title="End-to-End Encryption"
-            description="Once this feature is enabled, it can't be disabled after the room is created."
+            title={t('End-to-End Encryption')}
+            description={t(
+              "Once this feature is enabled, it can't be disabled after the room is created."
+            )}
             after={
               <Switch
                 variant="Primary"
@@ -125,9 +128,11 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
           <Text size="T300" style={{ color: color.Critical.Main }}>
             <b>
               {error instanceof MatrixError && error.name === ErrorCode.M_LIMIT_EXCEEDED
-                ? `Server rate-limited your request for ${millisecondsToMinutes(
-                    (error.data.retry_after_ms as number | undefined) ?? 0
-                  )} minutes!`
+                ? t('Server rate-limited your request for {{value1}} minutes!', {
+                    value1: millisecondsToMinutes(
+                      (error.data.retry_after_ms as number | undefined) ?? 0
+                    ),
+                  })
                 : error.message}
             </b>
           </Text>
@@ -142,7 +147,7 @@ export function CreateChat({ defaultUserId }: CreateChatProps) {
           disabled={disabled}
           before={loading && <Spinner variant="Primary" fill="Solid" size="200" />}
         >
-          <Text size="B500">Create</Text>
+          <Text size="B500">{t('Create')}</Text>
         </Button>
       </Box>
     </Box>

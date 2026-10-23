@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useCallback } from 'react';
 import { Box, Text, Button, Spinner, color } from 'folds';
 import { decodeRecoveryKey, deriveRecoveryKeyFromPassphrase } from 'matrix-js-sdk/lib/crypto-api';
@@ -77,7 +78,7 @@ export function SecretStorageRecoveryPassphrase({
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="100">
       <Box gap="200" alignItems="End">
         <Box grow="Yes" direction="Column" gap="100">
-          <Text size="L400">Recovery Passphrase</Text>
+          <Text size="L400">{t('Recovery Passphrase')}</Text>
           <PasswordInput
             name="recoveryPassphraseInput"
             size="400"
@@ -99,7 +100,7 @@ export function SecretStorageRecoveryPassphrase({
             before={loading && <Spinner size="200" variant="Success" fill="Solid" />}
           >
             <Text as="span" size="B400">
-              Verify
+              {t('Verify')}
             </Text>
           </Button>
         </Box>
@@ -167,7 +168,7 @@ export function SecretStorageRecoveryKey({
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="100">
       <Box gap="200" alignItems="End">
         <Box grow="Yes" direction="Column" gap="100">
-          <Text size="L400">Recovery Key</Text>
+          <Text size="L400">{t('Recovery Key')}</Text>
           <PasswordInput
             name="recoveryKeyInput"
             size="400"
@@ -189,7 +190,7 @@ export function SecretStorageRecoveryKey({
             before={loading && <Spinner size="200" variant="Success" fill="Solid" />}
           >
             <Text as="span" size="B400">
-              Verify
+              {t('Verify')}
             </Text>
           </Button>
         </Box>

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable jsx-a11y/media-has-caption */
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 import { Badge, Chip, Icon, IconButton, Icons, ProgressBar, Spinner, Text, toRem } from 'folds';
@@ -147,7 +148,7 @@ export function AudioContent({
             )
           }
         >
-          <Text size="B300">{playing ? 'Pause' : 'Play'}</Text>
+          <Text size="B300">{playing ? t('Pause') : t('Play')}</Text>
         </Chip>
 
         <Text size="T200">{`${secondsToMinutesAndSeconds(

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useState } from 'react';
 import {
   Box,
@@ -47,7 +48,7 @@ export function RoomVersionSelector({
       gap="500"
     >
       <SettingTile
-        title="Version"
+        title={t('Version')}
         after={
           <PopOut
             anchor={menuCords}
@@ -73,7 +74,7 @@ export function RoomVersionSelector({
                     gap="200"
                     style={{ padding: config.space.S200, maxWidth: toRem(300) }}
                   >
-                    <Text size="L400">Versions</Text>
+                    <Text size="L400">{t('Versions')}</Text>
                     <Box wrap="Wrap" gap="100">
                       {versions.map((version) => (
                         <Chip

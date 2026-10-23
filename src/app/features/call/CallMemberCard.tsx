@@ -103,7 +103,9 @@ export function CallMemberRenderer({
               </Text>
             ) : (
               <Text size="L400" truncate>
-                {remaining === 0 ? `+${remaining} Other` : `+${remaining} Others`}
+                {remaining === 0
+                  ? t('+{{value1}} Other', { value1: remaining })
+                  : t('+{{value1}} Others', { value1: remaining })}
               </Text>
             )}
           </Box>

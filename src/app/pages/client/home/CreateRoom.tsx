@@ -43,7 +43,7 @@ export function HomeCreateRoom() {
                   <PageHero
                     icon={<Icon size="600" src={Icons.Hash} />}
                     title={t('Create Room')}
-                    subTitle="Build a Room for Real-Time Conversations."
+                    subTitle={t('Build a Room for Real-Time Conversations.')}
                   />
                   <CreateRoomForm onCreate={navigateRoom} />
                 </Box>

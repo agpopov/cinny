@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, toRem, config, Icons, Icon, Text } from 'folds';
 
@@ -12,9 +13,9 @@ export function NoStickerPacks() {
     >
       <Icon size="600" src={Icons.Sticker} />
       <Box direction="Inherit">
-        <Text align="Center">No Sticker Packs!</Text>
+        <Text align="Center">{t('No Sticker Packs!')}</Text>
         <Text priority="300" align="Center" size="T200">
-          Add stickers from user, room or space settings.
+          {t('Add stickers from user, room or space settings.')}
         </Text>
       </Box>
     </Box>

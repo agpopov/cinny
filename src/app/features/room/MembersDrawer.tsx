@@ -353,8 +353,8 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
                         }}
                         after={<Icon size="50" src={Icons.Cross} />}
                       >
-                        <Text size="B300">{`${result.items.length || 'No'} ${
-                          result.items.length === 1 ? 'Result' : 'Results'
+                        <Text size="B300">{`${result.items.length || t('No')} ${
+                          result.items.length === 1 ? t('Result') : t('Results')
                         }`}</Text>
                       </Chip>
                     )
@@ -370,7 +370,7 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
                 radii="Pill"
                 outlined
                 size="300"
-                aria-label="Scroll to Top"
+                aria-label={t('Scroll to Top')}
               >
                 <Icon src={Icons.ChevronTop} size="300" />
               </IconButton>
@@ -378,7 +378,7 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
 
             {!fetchingMembers && !result && processMembers.length === 0 && (
               <Text style={{ padding: config.space.S300 }} align="Center">
-                {`No "${membershipFilter.name}" Members`}
+                {t('No "{{value1}}" Members', { value1: membershipFilter.name })}
               </Text>
             )}
 

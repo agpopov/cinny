@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Badge,
   Box,
@@ -69,16 +70,16 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
       gap="400"
     >
       <SettingTile
-        title="Room Encryption"
+        title={t('Room Encryption')}
         description={
           enabled
-            ? 'Messages in this room are protected by end-to-end encryption.'
-            : 'Once enabled, encryption cannot be disabled!'
+            ? t('Messages in this room are protected by end-to-end encryption.')
+            : t('Once enabled, encryption cannot be disabled!')
         }
         after={
           enabled ? (
             <Badge size="500" variant="Success" fill="Solid" radii="300">
-              <Text size="L400">Enabled</Text>
+              <Text size="L400">{t('Enabled')}</Text>
             </Badge>
           ) : (
             <Button
@@ -90,7 +91,7 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
               onClick={() => setPrompt(true)}
               before={enabling && <Spinner size="100" variant="Primary" fill="Solid" />}
             >
-              <Text size="B300">Enable</Text>
+              <Text size="B300">{t('Enable')}</Text>
             </Button>
           )
         }
@@ -121,7 +122,7 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
                     size="500"
                   >
                     <Box grow="Yes">
-                      <Text size="H4">Enable Encryption</Text>
+                      <Text size="H4">{t('Enable Encryption')}</Text>
                     </Box>
                     <IconButton
                       aria-label="Закрыть"
@@ -134,10 +135,10 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
                   </Header>
                   <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                     <Text priority="400">
-                      Are you sure? Once enabled, encryption cannot be disabled!
+                      {t('Are you sure? Once enabled, encryption cannot be disabled!')}
                     </Text>
                     <Button type="submit" variant="Primary" onClick={handleEnable}>
-                      <Text size="B400">Enable E2E Encryption</Text>
+                      <Text size="B400">{t('Enable E2E Encryption')}</Text>
                     </Button>
                   </Box>
                 </Dialog>

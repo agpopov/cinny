@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { useSetAtom } from 'jotai';
 import { useParams } from 'react-router-dom';
@@ -26,7 +27,7 @@ export function CallChatView() {
         <Box grow="Yes" alignItems="Center" gap="200">
           <Box grow="Yes">
             <Text size="H5" truncate>
-              Chat
+              {t('Chat')}
             </Text>
           </Box>
           <Box shrink="No" alignItems="Center">
@@ -36,7 +37,7 @@ export function CallChatView() {
               offset={4}
               tooltip={
                 <Tooltip>
-                  <Text>Close</Text>
+                  <Text>{t('Close')}</Text>
                 </Tooltip>
               }
             >

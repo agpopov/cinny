@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useRef, useState, FormEventHandler, useEffect } from 'react';
 import { MatrixError } from 'matrix-js-sdk';
 import {
@@ -114,7 +115,7 @@ export function SendRoomEvent({ type, stateKey, requestClose }: SendRoomEventPro
               onClick={requestClose}
               before={<Icon size="100" src={Icons.ArrowLeft} />}
             >
-              <Text size="T300">Developer Tools</Text>
+              <Text size="T300">{t('Developer Tools')}</Text>
             </Chip>
           </Box>
           <Box shrink="No">
@@ -135,7 +136,9 @@ export function SendRoomEvent({ type, stateKey, requestClose }: SendRoomEventPro
           aria-disabled={submitting}
         >
           <Box shrink="No" direction="Column" gap="100">
-            <Text size="L400">{composeStateEvent ? 'State Event Type' : 'Message Event Type'}</Text>
+            <Text size="L400">
+              {composeStateEvent ? t('State Event Type') : t('Message Event Type')}
+            </Text>
             <Box gap="300">
               <Box grow="Yes" direction="Column">
                 <Input
@@ -156,7 +159,7 @@ export function SendRoomEvent({ type, stateKey, requestClose }: SendRoomEventPro
                 disabled={submitting}
                 before={submitting && <Spinner variant="Primary" fill="Solid" size="300" />}
               >
-                <Text size="B400">Send</Text>
+                <Text size="B400">{t('Send')}</Text>
               </Button>
             </Box>
 
@@ -168,7 +171,7 @@ export function SendRoomEvent({ type, stateKey, requestClose }: SendRoomEventPro
           </Box>
           {composeStateEvent && (
             <Box shrink="No" direction="Column" gap="100">
-              <Text size="L400">State Key (Optional)</Text>
+              <Text size="L400">{t('State Key (Optional)')}</Text>
               <Input
                 variant="Background"
                 name="stateKeyInput"
@@ -181,7 +184,7 @@ export function SendRoomEvent({ type, stateKey, requestClose }: SendRoomEventPro
           )}
           <Box grow="Yes" direction="Column" gap="100">
             <Box shrink="No">
-              <Text size="L400">JSON Content</Text>
+              <Text size="L400">{t('JSON Content')}</Text>
             </Box>
             <TextAreaComponent
               ref={textAreaRef}

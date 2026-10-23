@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, MouseEventHandler, useCallback, useMemo, useState } from 'react';
 import {
   Box,
@@ -120,7 +121,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
       <Box direction="Column" gap="300">
         <Box gap="200">
           <Box shrink="No" direction="Column" gap="100">
-            <Text size="L400">Color</Text>
+            <Text size="L400">{t('Color')}</Text>
             <Box gap="200">
               <HexColorPickerPopOut
                 picker={<HexColorPicker color={tagColor} onChange={setTagColor} />}
@@ -137,18 +138,18 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
                     radii="300"
                     before={<PowerColorBadge color={tagColor} />}
                   >
-                    <Text size="B300">Pick</Text>
+                    <Text size="B300">{t('Pick')}</Text>
                   </Button>
                 )}
               </HexColorPickerPopOut>
             </Box>
           </Box>
           <Box grow="Yes" direction="Column" gap="100">
-            <Text size="L400">Name</Text>
+            <Text size="L400">{t('Name')}</Text>
             <Input
               name="nameInput"
               defaultValue={tag?.name}
-              placeholder="Bot"
+              placeholder={t('Bot')}
               size="300"
               variant="Secondary"
               radii="300"
@@ -156,7 +157,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
             />
           </Box>
           <Box style={{ maxWidth: toRem(74) }} grow="Yes" direction="Column" gap="100">
-            <Text size="L400">Power</Text>
+            <Text size="L400">{t('Power')}</Text>
             <Input
               defaultValue={power}
               name="powerInput"
@@ -174,7 +175,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
         </Box>
       </Box>
       <Box direction="Column" gap="100">
-        <Text size="L400">Icon</Text>
+        <Text size="L400">{t('Icon')}</Text>
         {iconUploadAtom && !tagIconSrc ? (
           <CompactUploadCardRenderer
             uploadAtom={iconUploadAtom}
@@ -194,7 +195,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
                   fill="None"
                   radii="300"
                 >
-                  <Text size="B300">Remove</Text>
+                  <Text size="B300">{t('Remove')}</Text>
                 </Button>
               </>
             ) : (
@@ -238,7 +239,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
                         radii="300"
                         before={<Icon size="50" src={Icons.SmilePlus} />}
                       >
-                        <Text size="B300">Pick</Text>
+                        <Text size="B300">{t('Pick')}</Text>
                       </Button>
                     </PopOut>
                   )}
@@ -251,7 +252,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
                   fill="None"
                   radii="300"
                 >
-                  <Text size="B300">Import</Text>
+                  <Text size="B300">{t('Import')}</Text>
                 </Button>
               </>
             )}
@@ -267,7 +268,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
           radii="300"
           disabled={uploadingIcon}
         >
-          <Text size="B300">Save</Text>
+          <Text size="B300">{t('Save')}</Text>
         </Button>
         <Button
           type="button"
@@ -277,7 +278,7 @@ function EditPower({ maxPower, power, tag, onSave, onClose }: EditPowerProps) {
           radii="300"
           onClick={onClose}
         >
-          <Text size="B300">Cancel</Text>
+          <Text size="B300">{t('Cancel')}</Text>
         </Button>
       </Box>
     </Box>
@@ -365,7 +366,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
               onClick={requestClose}
               before={<Icon size="100" src={Icons.ArrowLeft} />}
             >
-              <Text size="T300">Permissions</Text>
+              <Text size="T300">{t('Permissions')}</Text>
             </Chip>
           </Box>
           <Box shrink="No">
@@ -381,7 +382,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
             <Box direction="Column" gap="700">
               <Box direction="Column" gap="100">
                 <Box alignItems="Baseline" gap="200" justifyContent="SpaceBetween">
-                  <Text size="L400">Power Levels</Text>
+                  <Text size="L400">{t('Power Levels')}</Text>
                   <BetaNoticeBadge />
                 </Box>
                 <SequenceCard
@@ -391,8 +392,8 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                   gap="400"
                 >
                   <SettingTile
-                    title="New Power Level"
-                    description="Create a new power level."
+                    title={t('New Power Level')}
+                    description={t('Create a new power level.')}
                     after={
                       !createTag && (
                         <Button
@@ -404,7 +405,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                           outlined
                           disabled={applyingChanges}
                         >
-                          <Text size="B300">Create</Text>
+                          <Text size="B300">{t('Create')}</Text>
                         </Button>
                       )
                     }
@@ -462,7 +463,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                                     disabled={applyingChanges}
                                     onClick={() => handleToggleDelete(power)}
                                   >
-                                    <Text size="B300">Undo</Text>
+                                    <Text size="B300">{t('Undo')}</Text>
                                   </Chip>
                                 ) : (
                                   <Box shrink="No" alignItems="Center" gap="200">
@@ -471,13 +472,15 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                                         <Tooltip style={{ maxWidth: toRem(200) }}>
                                           {usedPowers.has(power) ? (
                                             <Box direction="Column">
-                                              <Text size="L400">Used Power Level</Text>
+                                              <Text size="L400">{t('Used Power Level')}</Text>
                                               <Text size="T200">
-                                                You have to remove its use before you can delete it.
+                                                {t(
+                                                  'You have to remove its use before you can delete it.'
+                                                )}
                                               </Text>
                                             </Box>
                                           ) : (
-                                            <Text>Delete</Text>
+                                            <Text>{t('Delete')}</Text>
                                           )}
                                         </Tooltip>
                                       }
@@ -506,7 +509,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                                       disabled={applyingChanges}
                                       onClick={() => setEdit(true)}
                                     >
-                                      <Text size="B300">Edit</Text>
+                                      <Text size="B300">{t('Edit')}</Text>
                                     </Chip>
                                   </Box>
                                 )
@@ -536,11 +539,11 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                     <Box grow="Yes" direction="Column">
                       {applyState.status === AsyncStatus.Error ? (
                         <Text size="T200">
-                          <b>Failed to apply changes! Please try again.</b>
+                          <b>{t('Failed to apply changes! Please try again.')}</b>
                         </Text>
                       ) : (
                         <Text size="T200">
-                          <b>Changes saved! Apply when ready.</b>
+                          <b>{t('Changes saved! Apply when ready.')}</b>
                         </Text>
                       )}
                     </Box>
@@ -553,7 +556,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                         disabled={applyingChanges}
                         onClick={resetChanges}
                       >
-                        <Text size="B300">Reset</Text>
+                        <Text size="B300">{t('Reset')}</Text>
                       </Button>
                       <Button
                         size="300"
@@ -565,7 +568,7 @@ export function PowersEditor({ powerLevels, requestClose }: PowersEditorProps) {
                         }
                         onClick={handleApplyChanges}
                       >
-                        <Text size="B300">Apply Changes</Text>
+                        <Text size="B300">{t('Apply Changes')}</Text>
                       </Button>
                     </Box>
                   </Box>

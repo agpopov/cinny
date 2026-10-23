@@ -80,7 +80,7 @@ function EmailNotification() {
               {t('Unexpected Error!')}
             </Text>
           )}
-          {result === undefined && 'Send notification to your email.'}
+          {result === undefined && t('Send notification to your email.')}
         </>
       }
       after={

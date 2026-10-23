@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useCallback, useMemo, useState } from 'react';
 import {
   Box,
@@ -35,7 +36,7 @@ function ImagePackAvatar({ url, name }: ImagePackAvatarProps) {
   return (
     <Avatar size="500" className={ContainerColor({ variant: 'Secondary' })}>
       {url ? (
-        <AvatarImage as={AuthenticatedImage} src={url} alt={name ?? 'Unknown'} />
+        <AvatarImage as={AuthenticatedImage} src={url} alt={name ?? t('Unknown')} />
       ) : (
         <AvatarFallback>
           <Text size="H2">{nameInitials(name ?? 'Unknown')}</Text>
@@ -62,7 +63,7 @@ export function ImagePackProfile({ meta, canEdit, onEdit }: ImagePackProfileProp
       <Box grow="Yes" direction="Column" gap="300">
         <Box direction="Column" gap="100">
           <Text className={BreakWord} size="H5">
-            {meta.name ?? 'Unknown'}
+            {meta.name ?? t('Unknown')}
           </Text>
           {meta.attribution && (
             <Text className={BreakWord} size="T200">
@@ -80,7 +81,7 @@ export function ImagePackProfile({ meta, canEdit, onEdit }: ImagePackProfileProp
               onClick={onEdit}
               outlined
             >
-              <Text size="B300">Edit</Text>
+              <Text size="B300">{t('Edit')}</Text>
             </Chip>
           </Box>
         )}
@@ -148,7 +149,7 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="400">
       <Box gap="400">
         <Box grow="Yes" direction="Column" gap="100">
-          <Text size="L400">Pack Avatar</Text>
+          <Text size="L400">{t('Pack Avatar')}</Text>
           {uploadAtom ? (
             <Box gap="200" direction="Column">
               <CompactUploadCardRenderer
@@ -167,7 +168,7 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
                 radii="300"
                 onClick={() => pickFile('image/*')}
               >
-                <Text size="B300">Upload</Text>
+                <Text size="B300">{t('Upload')}</Text>
               </Button>
               {!avatar && meta.avatar && (
                 <Button
@@ -178,7 +179,7 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
                   radii="300"
                   onClick={() => setAvatar(meta.avatar)}
                 >
-                  <Text size="B300">Reset</Text>
+                  <Text size="B300">{t('Reset')}</Text>
                 </Button>
               )}
               {avatar && (
@@ -190,7 +191,7 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
                   radii="300"
                   onClick={() => setAvatar(undefined)}
                 >
-                  <Text size="B300">Remove</Text>
+                  <Text size="B300">{t('Remove')}</Text>
                 </Button>
               )}
             </Box>
@@ -201,11 +202,11 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
         </Box>
       </Box>
       <Box direction="Inherit" gap="100">
-        <Text size="L400">Name</Text>
+        <Text size="L400">{t('Name')}</Text>
         <Input name="nameInput" defaultValue={meta.name} variant="Secondary" radii="300" required />
       </Box>
       <Box direction="Inherit" gap="100">
-        <Text size="L400">Attribution</Text>
+        <Text size="L400">{t('Attribution')}</Text>
         <TextArea
           name="attributionTextArea"
           defaultValue={meta.attribution}
@@ -215,7 +216,7 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
       </Box>
       <Box gap="300">
         <Button type="submit" variant="Success" size="300" radii="300" disabled={uploadingAvatar}>
-          <Text size="B300">Save</Text>
+          <Text size="B300">{t('Save')}</Text>
         </Button>
         <Button
           type="reset"
@@ -225,7 +226,7 @@ export function ImagePackProfileEdit({ meta, onCancel, onSave }: ImagePackProfil
           size="300"
           radii="300"
         >
-          <Text size="B300">Cancel</Text>
+          <Text size="B300">{t('Cancel')}</Text>
         </Button>
       </Box>
     </Box>

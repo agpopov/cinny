@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useMemo, useState } from 'react';
 import {
   Button,
@@ -96,8 +97,10 @@ export function RoomHistoryVisibility({ permissions }: RoomHistoryVisibilityProp
       gap="400"
     >
       <SettingTile
-        title="Message History Visibility"
-        description="Changes to history visibility will only apply to future messages. The visibility of existing history will have no effect."
+        title={t('Message History Visibility')}
+        description={t(
+          'Changes to history visibility will only apply to future messages. The visibility of existing history will have no effect.'
+        )}
         after={
           <PopOut
             anchor={menuAnchor}
@@ -125,7 +128,7 @@ export function RoomHistoryVisibility({ permissions }: RoomHistoryVisibilityProp
                       aria-pressed={visibility === historyVisibility}
                     >
                       <Text as="span" size="T300" truncate>
-                        {visibilityStr[visibility]}
+                        {t(visibilityStr[visibility])}
                       </Text>
                     </MenuItem>
                   ))}
@@ -149,7 +152,7 @@ export function RoomHistoryVisibility({ permissions }: RoomHistoryVisibilityProp
                 )
               }
             >
-              <Text size="B300">{visibilityStr[historyVisibility]}</Text>
+              <Text size="B300">{t(visibilityStr[historyVisibility])}</Text>
             </Button>
           </PopOut>
         }

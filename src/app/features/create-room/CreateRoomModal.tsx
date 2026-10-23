@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import {
   Box,
@@ -59,7 +60,7 @@ function CreateRoomModal({ state }: CreateRoomModalProps) {
                 >
                   <Box grow="Yes">
                     <Text size="H4">
-                      {type === CreateRoomType.VoiceRoom ? 'New Voice Room' : 'New Chat Room'}
+                      {type === CreateRoomType.VoiceRoom ? t('New Voice Room') : t('New Chat Room')}
                     </Text>
                   </Box>
                   <Box shrink="No">

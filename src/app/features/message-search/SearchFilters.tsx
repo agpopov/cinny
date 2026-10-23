@@ -73,7 +73,7 @@ function OrderButton({ order, onChange }: OrderButtonProps) {
         >
           <Menu variant="Surface">
             <Header size="300" variant="Surface" style={{ padding: `0 ${config.space.S300}` }}>
-              <Text size="L400">Sort by</Text>
+              <Text size="L400">{t('Sort by')}</Text>
             </Header>
             <Line variant="Surface" size="300" />
             <div style={{ padding: config.space.S100 }}>
@@ -84,7 +84,7 @@ function OrderButton({ order, onChange }: OrderButtonProps) {
                 radii="300"
                 aria-pressed={!rankOrder}
               >
-                <Text size="T300">Recent</Text>
+                <Text size="T300">{t('Recent')}</Text>
               </MenuItem>
               <MenuItem
                 onClick={() => setOrder(SearchOrderBy.Rank)}
@@ -93,7 +93,7 @@ function OrderButton({ order, onChange }: OrderButtonProps) {
                 radii="300"
                 aria-pressed={rankOrder}
               >
-                <Text size="T300">Relevance</Text>
+                <Text size="T300">{t('Relevance')}</Text>
               </MenuItem>
             </div>
           </Menu>
@@ -106,7 +106,11 @@ function OrderButton({ order, onChange }: OrderButtonProps) {
         after={<Icon size="50" src={Icons.Sort} />}
         onClick={handleOpenMenu}
       >
-        {rankOrder ? <Text size="T200">Relevance</Text> : <Text size="T200">Recent</Text>}
+        {rankOrder ? (
+          <Text size="T200">{t('Relevance')}</Text>
+        ) : (
+          <Text size="T200">{t('Recent')}</Text>
+        )}
       </Chip>
     </PopOut>
   );
@@ -240,10 +244,14 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
                   }}
                 >
                   {!searchResult && <Text size="L400">{t('Rooms')}</Text>}
-                  {searchResult && <Text size="L400">{`Rooms for "${searchResult.query}"`}</Text>}
+                  {searchResult && (
+                    <Text size="L400">
+                      {t('Rooms for "{{value1}}"', { value1: searchResult.query })}
+                    </Text>
+                  )}
                   {searchResult && searchResult.items.length === 0 && (
                     <Text style={{ padding: config.space.S400 }} size="T300" align="Center">
-                      No match found!
+                      {t('No match found!')}
                     </Text>
                   )}
                   <div
@@ -293,7 +301,10 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
               <Box shrink="No" direction="Column" gap="100" style={{ padding: config.space.S200 }}>
                 <Button size="300" variant="Secondary" radii="300" onClick={handleSave}>
                   {localSelected && localSelected.length > 0 ? (
-                    <Text size="B300">Save ({localSelected.length})</Text>
+                    <Text size="B300">
+                      {t('Save (')}
+                      {localSelected.length})
+                    </Text>
                   ) : (
                     <Text size="B300">{t('Save')}</Text>
                   )}
@@ -306,7 +317,7 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
                   onClick={handleDeselectAll}
                   disabled={!localSelected || localSelected.length === 0}
                 >
-                  <Text size="B300">Deselect All</Text>
+                  <Text size="B300">{t('Deselect All')}</Text>
                 </Button>
               </Box>
             </Box>
@@ -320,7 +331,7 @@ function SelectRoomButton({ roomList, selectedRooms, onChange }: SelectRoomButto
         radii="Pill"
         before={<Icon size="100" src={Icons.PlusCircle} />}
       >
-        <Text size="T200">Select Rooms</Text>
+        <Text size="T200">{t('Select Rooms')}</Text>
       </Chip>
     </PopOut>
   );

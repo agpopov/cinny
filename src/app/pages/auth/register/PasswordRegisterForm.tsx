@@ -272,13 +272,13 @@ export function PasswordRegisterForm({
             required
           />
           {registerError?.errcode === RegisterError.UserTaken && (
-            <FieldError message="This username is already taken." />
+            <FieldError message={t('This username is already taken.')} />
           )}
           {registerError?.errcode === RegisterError.UserInvalid && (
-            <FieldError message="This username contains invalid characters." />
+            <FieldError message={t('This username contains invalid characters.')} />
           )}
           {registerError?.errcode === RegisterError.UserExclusive && (
-            <FieldError message="This username is reserved." />
+            <FieldError message={t('This username is reserved.')} />
           )}
         </Box>
         <ConfirmPasswordMatch initialValue>
@@ -302,7 +302,9 @@ export function PasswordRegisterForm({
                   <FieldError
                     message={
                       registerError.data.error ??
-                      'Weak Password. Password rejected by server please choosing more strong Password.'
+                      t(
+                        'Weak Password. Password rejected by server please choosing more strong Password.'
+                      )
                     }
                   />
                 )}
@@ -310,7 +312,9 @@ export function PasswordRegisterForm({
                   <FieldError
                     message={
                       registerError.data.error ??
-                      'Short Password. Password rejected by server please choosing more long Password.'
+                      t(
+                        'Short Password. Password rejected by server please choosing more long Password.'
+                      )
                     }
                   />
                 )}
@@ -389,16 +393,24 @@ export function PasswordRegisterForm({
           </Box>
         )}
         {registerError?.errcode === RegisterError.RateLimited && (
-          <FieldError message="Failed to register. Your register request has been rate-limited by server, Please try after some time." />
+          <FieldError
+            message={t(
+              'Failed to register. Your register request has been rate-limited by server, Please try after some time.'
+            )}
+          />
         )}
         {registerError?.errcode === RegisterError.Forbidden && (
-          <FieldError message="Failed to register. The homeserver does not permit registration." />
+          <FieldError
+            message={t('Failed to register. The homeserver does not permit registration.')}
+          />
         )}
         {registerError?.errcode === RegisterError.InvalidRequest && (
-          <FieldError message="Failed to register. Invalid request." />
+          <FieldError message={t('Failed to register. Invalid request.')} />
         )}
         {registerError?.errcode === RegisterError.Unknown && (
-          <FieldError message={registerError.data.error ?? 'Failed to register. Unknown Reason.'} />
+          <FieldError
+            message={registerError.data.error ?? t('Failed to register. Unknown Reason.')}
+          />
         )}
         <span data-spacing-node />
         <Button variant="Primary" size="500" type="submit">

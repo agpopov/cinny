@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Chip, Icon, Icons, Text, toRem } from 'folds';
 import { IContent } from 'matrix-js-sdk';
@@ -367,7 +368,7 @@ export function MFile({ content, renderFileContent, outlined }: MFileProps) {
     <Attachment outlined={outlined}>
       <AttachmentHeader>
         <FileHeader
-          body={content.filename ?? content.body ?? 'Unnamed File'}
+          body={content.filename ?? content.body ?? t('Unnamed File')}
           mimeType={fileInfo?.mimetype ?? FALLBACK_MIMETYPE}
         />
       </AttachmentHeader>
@@ -408,7 +409,7 @@ export function MLocation({ content }: MLocationProps) {
         radii="Pill"
         before={<Icon src={Icons.External} size="50" />}
       >
-        <Text size="B300">Open Location</Text>
+        <Text size="B300">{t('Open Location')}</Text>
       </Chip>
     </Box>
   );

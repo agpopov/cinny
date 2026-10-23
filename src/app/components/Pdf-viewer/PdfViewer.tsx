@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable no-param-reassign */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import React, { FormEventHandler, MouseEventHandler, useEffect, useRef, useState } from 'react';
@@ -153,7 +154,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
           {isLoading && <Spinner variant="Secondary" size="600" />}
           {isError && (
             <>
-              <Text>Failed to load PDF</Text>
+              <Text>{t('Failed to load PDF')}</Text>
               <Button
                 variant="Critical"
                 fill="Soft"
@@ -162,7 +163,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
                 before={<Icon src={Icons.Warning} size="50" />}
                 onClick={loadPdfJS}
               >
-                <Text size="B300">Retry</Text>
+                <Text size="B300">{t('Retry')}</Text>
               </Button>
             </>
           )}
@@ -189,7 +190,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               onClick={handlePrevPage}
               aria-disabled={pageNo <= 1}
             >
-              <Text size="B300">Previous</Text>
+              <Text size="B300">{t('Previous')}</Text>
             </Chip>
             <Box grow="Yes" justifyContent="Center" alignItems="Center" gap="200">
               <PopOut
@@ -224,10 +225,10 @@ export const PdfViewer = as<'div', PdfViewerProps>(
                           outlined
                           type="number"
                           radii="300"
-                          aria-label="Page Number"
+                          aria-label={t('Page Number')}
                         />
                         <Button type="submit" size="300" variant="Primary" radii="300">
-                          <Text size="B300">Jump To Page</Text>
+                          <Text size="B300">{t('Jump To Page')}</Text>
                         </Button>
                       </Box>
                     </Menu>
@@ -251,7 +252,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               onClick={handleNextPage}
               aria-disabled={pageNo >= docState.data.numPages}
             >
-              <Text size="B300">Next</Text>
+              <Text size="B300">{t('Next')}</Text>
             </Chip>
           </Header>
         )}

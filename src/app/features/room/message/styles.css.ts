@@ -4,7 +4,6 @@ import { DefaultReset, config, toRem } from 'folds';
 export const MessageBase = style({
   position: 'relative',
   '@media': {
-    '(hover: none), (pointer: coarse)': { paddingRight: toRem(52), minHeight: toRem(52) },
     '(hover: none)': { userSelect: 'none', WebkitTouchCallout: 'none' },
   },
 });
@@ -22,13 +21,7 @@ export const MessageOptionsBase = style([
     opacity: 0,
     pointerEvents: 'none',
     selectors: {
-      '&[data-visible="true"], &:focus-within': {
-        opacity: 1,
-        pointerEvents: 'auto',
-      },
-    },
-    '@media': {
-      '(hover: none), (pointer: coarse)': {
+      '&[data-visible="true"]': {
         opacity: 1,
         pointerEvents: 'auto',
       },
@@ -72,12 +65,6 @@ export const ReactionsContainer = style({
 
 export const ReactionsTooltipText = style({
   wordBreak: 'break-word',
-});
-
-globalStyle(`${MessageOptionsBase}[data-visible="false"] button:not([data-message-actions])`, {
-  '@media': {
-    '(hover: none), (pointer: coarse)': { display: 'none' },
-  },
 });
 
 globalStyle(`${MessageOptionsBase} [data-message-actions]`, {

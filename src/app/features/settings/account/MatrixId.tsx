@@ -13,7 +13,7 @@ export function MatrixId() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Matrix ID</Text>
+      <Text size="L400">{t('Matrix ID')}</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useEffect, useCallback } from 'react';
 import { Dialog, Text, Box, Button, config } from 'folds';
 import { AuthType } from 'matrix-js-sdk';
@@ -23,12 +24,12 @@ function TermsErrorDialog({
         </Box>
         <Button variant="Critical" onClick={onRetry}>
           <Text as="span" size="B400">
-            Retry
+            {t('Retry')}
           </Text>
         </Button>
         <Button variant="Critical" fill="None" outlined onClick={onCancel}>
           <Text as="span" size="B400">
-            Cancel
+            {t('Cancel')}
           </Text>
         </Button>
       </Box>
@@ -58,7 +59,7 @@ export function AutoTermsStageDialog({ stageData, submitAuthDict, onCancel }: St
     return (
       <TermsErrorDialog
         title={errorCode}
-        message={error ?? 'Failed to submit Terms and Condition Acceptance.'}
+        message={error ?? t('Failed to submit Terms and Condition Acceptance.')}
         onRetry={handleSubmit}
         onCancel={onCancel}
       />

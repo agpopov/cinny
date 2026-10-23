@@ -81,15 +81,15 @@ function InaccessibleSpaceProfile({ roomId, suggested }: InaccessibleSpaceProfil
     >
       <Box alignItems="Center" gap="200">
         <Text size="H4" truncate>
-          Unknown
+          {t('Unknown')}
         </Text>
 
         <Badge variant="Secondary" fill="Soft" radii="Pill" outlined>
-          <Text size="L400">Inaccessible</Text>
+          <Text size="L400">{t('Inaccessible')}</Text>
         </Badge>
         {suggested && (
           <Badge variant="Success" fill="Soft" radii="Pill" outlined>
-            <Text size="L400">Suggested</Text>
+            <Text size="L400">{t('Suggested')}</Text>
           </Badge>
         )}
       </Box>
@@ -145,11 +145,11 @@ function UnjoinedSpaceProfile({
     >
       <Box alignItems="Center" gap="200">
         <Text size="H4" truncate>
-          {name || 'Unknown'}
+          {name || t('Unknown')}
         </Text>
         {suggested && (
           <Badge variant="Success" fill="Soft" radii="Pill" outlined>
-            <Text size="L400">Suggested</Text>
+            <Text size="L400">{t('Suggested')}</Text>
           </Badge>
         )}
         {joinState.status === AsyncStatus.Error && (
@@ -211,7 +211,7 @@ function SpaceProfile({
         </Text>
         {suggested && (
           <Badge variant="Success" fill="Soft" radii="Pill" outlined>
-            <Text size="L400">Suggested</Text>
+            <Text size="L400">{t('Suggested')}</Text>
           </Badge>
         )}
       </Box>
@@ -236,7 +236,7 @@ function RootSpaceProfile({ closed, categoryId, handleClose }: RootSpaceProfileP
     >
       <Box alignItems="Center" gap="200">
         <Text size="H4" truncate>
-          Rooms
+          {t('Rooms')}
         </Text>
       </Box>
     </Chip>
@@ -286,7 +286,7 @@ function AddRoomButton({ item }: { item: HierarchyItem }) {
               fill="None"
               onClick={() => handleCreateRoom(CreateRoomType.TextRoom)}
             >
-              <Text size="T300">Chat Room</Text>
+              <Text size="T300">{t('Chat Room')}</Text>
             </MenuItem>
             <MenuItem
               size="300"
@@ -296,10 +296,10 @@ function AddRoomButton({ item }: { item: HierarchyItem }) {
               onClick={() => handleCreateRoom(CreateRoomType.VoiceRoom)}
               after={<BetaNoticeBadge />}
             >
-              <Text size="T300">Voice Room</Text>
+              <Text size="T300">{t('Voice Room')}</Text>
             </MenuItem>
             <MenuItem size="300" radii="300" fill="None" onClick={handleAddExisting}>
-              <Text size="T300">Existing Room</Text>
+              <Text size="T300">{t('Existing Room')}</Text>
             </MenuItem>
           </Menu>
         </FocusTrap>
@@ -312,7 +312,7 @@ function AddRoomButton({ item }: { item: HierarchyItem }) {
         onClick={handleAddRoom}
         aria-pressed={!!cords}
       >
-        <Text size="B300">Add Room</Text>
+        <Text size="B300">{t('Add Room')}</Text>
       </Chip>
       {addExisting && (
         <AddExistingModal parentId={item.roomId} requestClose={() => setAddExisting(false)} />
@@ -363,10 +363,10 @@ function AddSpaceButton({ item }: { item: HierarchyItem }) {
               fill="None"
               onClick={handleCreateSpace}
             >
-              <Text size="T300">New Space</Text>
+              <Text size="T300">{t('New Space')}</Text>
             </MenuItem>
             <MenuItem size="300" radii="300" fill="None" onClick={handleAddExisting}>
-              <Text size="T300">Existing Space</Text>
+              <Text size="T300">{t('Existing Space')}</Text>
             </MenuItem>
           </Menu>
         </FocusTrap>

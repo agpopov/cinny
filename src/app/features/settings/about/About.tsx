@@ -40,14 +40,14 @@ export function About({ requestClose }: AboutProps) {
                   <img
                     style={{ width: toRem(60), height: toRem(60) }}
                     src={CinnySVG}
-                    alt="Cinny logo"
+                    alt={t('Cinny logo')}
                   />
                 </Box>
                 <Box direction="Column" gap="300">
                   <Box direction="Column" gap="100">
                     <Box gap="100" alignItems="End">
                       <Text size="H3">Cinny</Text>
-                      <Text size="T200">v4.13.0</Text>
+                      <Text size="T200">v4.13.1</Text>
                     </Box>
                     <Text>{t('Yet another matrix client.')}</Text>
                   </Box>
@@ -127,7 +127,7 @@ export function About({ requestClose }: AboutProps) {
                   >
                     <li>
                       <Text size="T300">
-                        The{' '}
+                        {t('The')}{' '}
                         <a
                           href="https://github.com/matrix-org/matrix-js-sdk"
                           rel="noreferrer noopener"
@@ -135,7 +135,7 @@ export function About({ requestClose }: AboutProps) {
                         >
                           matrix-js-sdk
                         </a>{' '}
-                        is ©{' '}
+                        {t('is ©')}{' '}
                         <a
                           href="https://matrix.org/foundation"
                           rel="noreferrer noopener"
@@ -143,7 +143,7 @@ export function About({ requestClose }: AboutProps) {
                         >
                           The Matrix.org Foundation C.I.C
                         </a>{' '}
-                        used under the terms of{' '}
+                        {t('used under the terms of')}{' '}
                         <a
                           href="http://www.apache.org/licenses/LICENSE-2.0"
                           rel="noreferrer noopener"
@@ -156,7 +156,7 @@ export function About({ requestClose }: AboutProps) {
                     </li>
                     <li>
                       <Text size="T300">
-                        The{' '}
+                        {t('The')}{' '}
                         <a
                           href="https://github.com/mozilla/twemoji-colr"
                           target="_blank"
@@ -164,11 +164,11 @@ export function About({ requestClose }: AboutProps) {
                         >
                           twemoji-colr
                         </a>{' '}
-                        font is ©{' '}
+                        {t('font is ©')}{' '}
                         <a href="https://mozilla.org/" target="_blank" rel="noreferrer noopener">
                           Mozilla Foundation
                         </a>{' '}
-                        used under the terms of{' '}
+                        {t('used under the terms of')}{' '}
                         <a
                           href="http://www.apache.org/licenses/LICENSE-2.0"
                           target="_blank"
@@ -181,7 +181,7 @@ export function About({ requestClose }: AboutProps) {
                     </li>
                     <li>
                       <Text size="T300">
-                        The{' '}
+                        {t('The')}{' '}
                         <a
                           href="https://twemoji.twitter.com"
                           target="_blank"
@@ -189,7 +189,7 @@ export function About({ requestClose }: AboutProps) {
                         >
                           Twemoji
                         </a>{' '}
-                        emoji art is ©{' '}
+                        {t('emoji art is ©')}{' '}
                         <a
                           href="https://twemoji.twitter.com"
                           target="_blank"
@@ -197,7 +197,7 @@ export function About({ requestClose }: AboutProps) {
                         >
                           Twitter, Inc and other contributors
                         </a>{' '}
-                        used under the terms of{' '}
+                        {t('used under the terms of')}{' '}
                         <a
                           href="https://creativecommons.org/licenses/by/4.0/"
                           target="_blank"
@@ -210,19 +210,19 @@ export function About({ requestClose }: AboutProps) {
                     </li>
                     <li>
                       <Text size="T300">
-                        The{' '}
+                        {t('The')}{' '}
                         <a
                           href="https://material.io/design/sound/sound-resources.html"
                           target="_blank"
                           rel="noreferrer noopener"
                         >
-                          Material sound resources
+                          {t('Material sound resources')}
                         </a>{' '}
-                        are ©{' '}
+                        {t('are ©')}{' '}
                         <a href="https://google.com" target="_blank" rel="noreferrer noopener">
                           Google
                         </a>{' '}
-                        used under the terms of{' '}
+                        {t('used under the terms of')}{' '}
                         <a
                           href="https://creativecommons.org/licenses/by/4.0/"
                           target="_blank"

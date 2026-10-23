@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Box, config, Icon, Menu, MenuItem, PopOut, RectCords, Text } from 'folds';
 import React, { MouseEventHandler, ReactNode, useMemo, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
@@ -105,7 +106,7 @@ export function RoomNotificationModeSwitcher({
                   }
                 >
                   <Text size="T300">
-                    {mode === value ? <b>{modeToStr[mode]}</b> : modeToStr[mode]}
+                    {mode === value ? <b>{t(modeToStr[mode])}</b> : t(modeToStr[mode])}
                   </Text>
                 </MenuItem>
               ))}

@@ -114,7 +114,7 @@ function Search({ active, loading, searchInputRef, onSearch, onReset }: SearchPr
         name="searchInput"
         size="500"
         variant="Background"
-        placeholder="Search for keyword"
+        placeholder={t('Search for keyword')}
         before={
           active && loading ? (
             <Spinner variant="Secondary" size="200" />
@@ -133,7 +133,7 @@ function Search({ active, loading, searchInputRef, onSearch, onReset }: SearchPr
               after={<Icon size="50" src={Icons.Cross} />}
               onClick={onReset}
             >
-              <Text size="B300">Clear</Text>
+              <Text size="B300">{t('Clear')}</Text>
             </Chip>
           ) : (
             <Chip type="submit" variant="Primary" size="400" radii="Pill" outlined>
@@ -197,7 +197,7 @@ function ThirdPartyProtocolsSelector({
               style={{ padding: config.space.S100, minWidth: toRem(100) }}
             >
               <Text style={{ padding: config.space.S100 }} size="L400" truncate>
-                Protocols
+                {t('Protocols')}
               </Text>
               <Box direction="Column">
                 <MenuItem
@@ -289,7 +289,7 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
           <Menu variant="Surface">
             <Box direction="Column" gap="400" style={{ padding: config.space.S300 }}>
               <Box direction="Column" gap="100">
-                <Text size="L400">Presets</Text>
+                <Text size="L400">{t('Presets')}</Text>
                 <Box gap="100" wrap="Wrap">
                   <Chip variant="SurfaceVariant" onClick={() => setLimit('24')} radii="Pill">
                     <Text size="T200">24</Text>
@@ -304,7 +304,7 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
               </Box>
               <Box as="form" onSubmit={handleLimitSubmit} direction="Column" gap="300">
                 <Box direction="Column" gap="100">
-                  <Text size="L400">Custom Limit</Text>
+                  <Text size="L400">{t('Custom Limit')}</Text>
                   <Input
                     name="limitInput"
                     size="300"
@@ -315,11 +315,11 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
                     outlined
                     type="number"
                     radii="400"
-                    aria-label="Per Page Item Limit"
+                    aria-label={t('Per Page Item Limit')}
                   />
                 </Box>
                 <Button type="submit" size="300" variant="Primary" radii="400">
-                  <Text size="B300">Change Limit</Text>
+                  <Text size="B300">{t('Change Limit')}</Text>
                 </Button>
               </Box>
             </Box>
@@ -335,7 +335,9 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
         variant="SurfaceVariant"
         after={<Icon size="100" src={Icons.ChevronBottom} />}
       >
-        <Text size="T200" truncate>{`Page Limit: ${limit}`}</Text>
+        <Text size="T200" truncate>
+          {t('Page Limit: {{value1}}', { value1: limit })}
+        </Text>
       </Chip>
     </PopOut>
   );
@@ -533,14 +535,16 @@ export function PublicRooms() {
                 <Box direction="Column" gap="400">
                   <Box direction="Column" gap="300">
                     {isSearch ? (
-                      <Text size="H4">{`Results for "${serverSearchParams.term}"`}</Text>
+                      <Text size="H4">
+                        {t('Results for "{{value1}}"', { value1: serverSearchParams.term })}
+                      </Text>
                     ) : (
-                      <Text size="H4">Popular Communities</Text>
+                      <Text size="H4">{t('Popular Communities')}</Text>
                     )}
                     <Box gap="200">
                       {roomTypeFilters.map((filter) => (
                         <Chip
-                          key={filter.title}
+                          key={t(filter.title)}
                           onClick={handleRoomFilterClick}
                           data-room-filter={filter.value}
                           variant={filter.value === serverSearchParams.type ? 'Success' : 'Surface'}
@@ -552,7 +556,7 @@ export function PublicRooms() {
                           }
                           outlined
                         >
-                          <Text size="T200">{filter.title}</Text>
+                          <Text size="T200">{t(filter.title)}</Text>
                         </Chip>
                       ))}
                       {userServer === server && (
@@ -625,7 +629,7 @@ export function PublicRooms() {
                               disabled={!data.prev_batch}
                             >
                               <Text size="B300" truncate>
-                                Previous Page
+                                {t('Previous Page')}
                               </Text>
                             </Button>
                             <Box data-spacing-node grow="Yes" />
@@ -636,7 +640,7 @@ export function PublicRooms() {
                               disabled={!data.next_batch}
                             >
                               <Text size="B300" truncate>
-                                Next Page
+                                {t('Next Page')}
                               </Text>
                             </Button>
                           </Box>
@@ -652,7 +656,7 @@ export function PublicRooms() {
                       >
                         <Icon size="400" src={Icons.Info} />
                         <Text size="T300" align="Center">
-                          No communities found!
+                          {t('No communities found!')}
                         </Text>
                       </Box>
                     ))}

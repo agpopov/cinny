@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, IconButton, Text, Icon, Icons, Scroll, Chip } from 'folds';
 import { PackAddress } from '../../plugins/custom-emoji';
@@ -25,7 +26,7 @@ export function ImagePackView({ address, requestClose }: ImagePackViewProps) {
               onClick={requestClose}
               before={<Icon size="100" src={Icons.ArrowLeft} />}
             >
-              <Text size="T300">Emojis & Stickers</Text>
+              <Text size="T300">{t('Emojis & Stickers')}</Text>
             </Chip>
           </Box>
           <Box shrink="No">

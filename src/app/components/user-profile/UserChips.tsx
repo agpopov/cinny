@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FocusTrap from 'focus-trap-react';
@@ -91,7 +92,7 @@ export function ServerChip({ server }: { server: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Copy Server</Text>
+                <Text size="B300">{t('Copy Server')}</Text>
               </MenuItem>
               <MenuItem
                 variant="Surface"
@@ -103,7 +104,7 @@ export function ServerChip({ server }: { server: string }) {
                   closeProfile();
                 }}
               >
-                <Text size="B300">Explore Community</Text>
+                <Text size="B300">{t('Explore Community')}</Text>
               </MenuItem>
             </div>
             <Line size="300" />
@@ -118,7 +119,7 @@ export function ServerChip({ server }: { server: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Open in Browser</Text>
+                <Text size="B300">{t('Open in Browser')}</Text>
               </MenuItem>
             </div>
           </Menu>
@@ -187,7 +188,7 @@ export function ShareChip({ userId }: { userId: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Copy User ID</Text>
+                <Text size="B300">{t('Copy User ID')}</Text>
               </MenuItem>
               <MenuItem
                 variant="Surface"
@@ -200,7 +201,7 @@ export function ShareChip({ userId }: { userId: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Copy User Link</Text>
+                <Text size="B300">{t('Copy User Link')}</Text>
               </MenuItem>
             </div>
           </Menu>
@@ -221,7 +222,7 @@ export function ShareChip({ userId }: { userId: string }) {
         aria-pressed={!!cords}
       >
         <Text size="B300" truncate>
-          Share
+          {t('Share')}
         </Text>
       </Chip>
     </PopOut>
@@ -376,7 +377,7 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
                     {mutual.spaces.length > 0 && (
                       <Box direction="Column" gap="100">
                         <Text style={{ paddingLeft: config.space.S100 }} size="L400">
-                          Spaces
+                          {t('Spaces')}
                         </Text>
                         {mutual.spaces.map(renderItem)}
                       </Box>
@@ -384,7 +385,7 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
                     {mutual.rooms.length > 0 && (
                       <Box direction="Column" gap="100">
                         <Text style={{ paddingLeft: config.space.S100 }} size="L400">
-                          Rooms
+                          {t('Rooms')}
                         </Text>
                         {mutual.rooms.map(renderItem)}
                       </Box>
@@ -392,7 +393,7 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
                     {mutual.directs.length > 0 && (
                       <Box direction="Column" gap="100">
                         <Text style={{ paddingLeft: config.space.S100 }} size="L400">
-                          Direct Messages
+                          {t('Direct Messages')}
                         </Text>
                         {mutual.directs.map(renderItem)}
                       </Box>
@@ -417,8 +418,8 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
       >
         <Text size="B300">
           {mutualRoomsState.status === AsyncStatus.Success &&
-            `${mutualRoomsState.data.length} Mutual Rooms`}
-          {mutualRoomsState.status === AsyncStatus.Loading && 'Mutual Rooms'}
+            t('{{value1}} Mutual Rooms', { value1: mutualRoomsState.data.length })}
+          {mutualRoomsState.status === AsyncStatus.Loading && t('Mutual Rooms')}
         </Text>
       </Chip>
     </PopOut>
@@ -431,10 +432,12 @@ export function IgnoredUserAlert() {
       <SettingTile>
         <Box direction="Column" gap="200">
           <Box gap="200" justifyContent="SpaceBetween">
-            <Text size="L400">Blocked User</Text>
+            <Text size="L400">{t('Blocked User')}</Text>
           </Box>
           <Box direction="Column">
-            <Text size="T200">You do not receive any messages or invites from this user.</Text>
+            <Text size="T200">
+              {t('You do not receive any messages or invites from this user.')}
+            </Text>
           </Box>
         </Box>
       </SettingTile>
@@ -501,7 +504,7 @@ export function OptionsChip({ userId }: { userId: string }) {
                 }
                 disabled={ignoring}
               >
-                <Text size="B300">{ignored ? 'Unblock User' : 'Block User'}</Text>
+                <Text size="B300">{ignored ? t('Unblock User') : t('Block User')}</Text>
               </MenuItem>
             </div>
           </Menu>

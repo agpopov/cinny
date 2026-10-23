@@ -89,13 +89,17 @@ function LearnStartVerificationFromOtherDevice() {
             <i>{t('Settings')}</i>.
           </li>
           <li>
-            Find this device in <i>{t('Devices/Sessions')}</i> section.
+            {t('Find this device in ')}
+            <i>{t('Devices/Sessions')}</i>
+            {t(' section.')}
           </li>
           <li>{t('Initiate verification.')}</li>
         </ul>
       </Text>
       <Text size="T200">
-        If you do not have any verified device press the <i>&quot;Verify Manually&quot;</i> button.
+        {t('If you do not have any verified device press the ')}
+        <i>{t('&quot;Verify Manually&quot;')}</i>
+        {t(' button.')}
       </Text>
     </Box>
   );
@@ -123,7 +127,7 @@ export function VerifyCurrentDeviceTile({
           <>
             {t('Start verification from other device or verify manually.')}{' '}
             <Text as="a" size="T200" onClick={() => setLearnMore(!learnMore)}>
-              <b>{learnMore ? 'View Less' : 'Learn More'}</b>
+              <b>{learnMore ? t('View Less') : t('Learn More')}</b>
             </Text>
           </>
         }

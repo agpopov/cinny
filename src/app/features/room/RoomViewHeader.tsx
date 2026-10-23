@@ -178,7 +178,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           disabled={!canInvite}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Invite
+            {t('Invite')}
           </Text>
         </MenuItem>
         <MenuItem
@@ -212,7 +212,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
                 aria-pressed={promptJump}
               >
                 <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                  Jump to Time
+                  {t('Jump to Time')}
                 </Text>
               </MenuItem>
               {promptJump && (
@@ -244,7 +244,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
                 aria-pressed={promptLeave}
               >
                 <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                  Leave Room
+                  {t('Leave Room')}
                 </Text>
               </MenuItem>
               {promptLeave && (
@@ -281,7 +281,7 @@ const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
     return (
       <Menu ref={ref} style={{ padding: config.space.S200, minWidth: toRem(150) }}>
         <Box direction="Column" gap="200">
-          <Text size="L400">Start Call</Text>
+          <Text size="L400">{t('Start Call')}</Text>
           <Box direction="Column" gap="200">
             <Button
               size="300"
@@ -292,7 +292,7 @@ const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
               before={<Icon size="100" src={Icons.Phone} filled />}
               onClick={handleVoice}
             >
-              <Text size="B300">Voice</Text>
+              <Text size="B300">{t('Voice')}</Text>
             </Button>
             <Button
               size="300"
@@ -301,7 +301,7 @@ const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
               before={<Icon size="100" src={Icons.VideoCamera} filled />}
               onClick={handleVideo}
             >
-              <Text size="B300">Video</Text>
+              <Text size="B300">{t('Video')}</Text>
             </Button>
           </Box>
         </Box>
@@ -336,7 +336,7 @@ function CallButton() {
                 {t('Already in another call — End the current call to join!')}
               </Text>
             ) : (
-              <Text>Call</Text>
+              <Text>{t('Call')}</Text>
             )}
           </Tooltip>
         }
@@ -671,7 +671,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               tooltip={
                 <Tooltip>
                   {callView ? (
-                    <Text>Members</Text>
+                    <Text>{t('Members')}</Text>
                   ) : (
                     <Text>{peopleDrawer ? t('Hide Members') : t('Show Members')}</Text>
                   )}
@@ -697,7 +697,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             offset={4}
             tooltip={
               <Tooltip>
-                <Text>More Options</Text>
+                <Text>{t('More Options')}</Text>
               </Tooltip>
             }
           >

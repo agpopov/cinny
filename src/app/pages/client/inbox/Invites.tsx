@@ -453,7 +453,9 @@ function KnownInvites({
             <PageHero
               icon={<Icon size="600" src={Icons.Mail} />}
               title={t('No Invites')}
-              subTitle="When someone you share a room with sends you an invite, it’ll show up here."
+              subTitle={t(
+                'When someone you share a room with sends you an invite, it’ll show up here.'
+              )}
             />
           </PageHeroSection>
         </PageHeroEmpty>
@@ -526,7 +528,7 @@ function UnknownInvites({
             <PageHero
               icon={<Icon size="600" src={Icons.Info} />}
               title={t('No Invites')}
-              subTitle="Invites from people outside your rooms will appear here."
+              subTitle={t('Invites from people outside your rooms will appear here.')}
             />
           </PageHeroSection>
         </PageHeroEmpty>
@@ -600,8 +602,10 @@ function SpamInvites({
             <PageHeroSection>
               <PageHero
                 icon={<Icon size="600" src={Icons.Warning} />}
-                title={`${invites.length} Spam Invites`}
-                subTitle="Some of the following invites may contain harmful content or have been sent by banned users."
+                title={t('{{value1}} Spam Invites', { value1: invites.length })}
+                subTitle={t(
+                  'Some of the following invites may contain harmful content or have been sent by banned users.'
+                )}
               >
                 <Box direction="Row" gap="200" justifyContent="Center" wrap="Wrap">
                   <Button
@@ -661,7 +665,7 @@ function SpamInvites({
                   }
                   onClick={() => setShowInvites(!showInvites)}
                 >
-                  <Text size="B300">{showInvites ? 'Hide All' : 'View All'}</Text>
+                  <Text size="B300">{showInvites ? t('Hide All') : t('View All')}</Text>
                 </Button>
               </PageHero>
             </PageHeroSection>
@@ -685,7 +689,7 @@ function SpamInvites({
             <PageHero
               icon={<Icon size="600" src={Icons.Warning} />}
               title={t('No Spam Invites')}
-              subTitle="Invites detected as spam appear here."
+              subTitle={t('Invites detected as spam appear here.')}
             />
           </PageHeroSection>
         </PageHeroEmpty>

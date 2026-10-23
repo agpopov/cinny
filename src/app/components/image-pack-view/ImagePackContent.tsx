@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { as, Box, Text, config, Button, Menu, Spinner } from 'folds';
 import {
@@ -271,11 +272,11 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
               <Box grow="Yes" direction="Column">
                 {applyState.status === AsyncStatus.Error ? (
                   <Text size="T200">
-                    <b>Failed to apply changes! Please try again.</b>
+                    <b>{t('Failed to apply changes! Please try again.')}</b>
                   </Text>
                 ) : (
                   <Text size="T200">
-                    <b>Changes saved! Apply when ready.</b>
+                    <b>{t('Changes saved! Apply when ready.')}</b>
                   </Text>
                 )}
               </Box>
@@ -288,7 +289,7 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                   disabled={!canApplyChanges || applying}
                   onClick={handleResetSavedChanges}
                 >
-                  <Text size="B300">Reset</Text>
+                  <Text size="B300">{t('Reset')}</Text>
                 </Button>
                 <Button
                   size="300"
@@ -298,14 +299,14 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                   before={applying && <Spinner variant="Success" fill="Solid" size="100" />}
                   onClick={applyChanges}
                 >
-                  <Text size="B300">Apply Changes</Text>
+                  <Text size="B300">{t('Apply Changes')}</Text>
                 </Button>
               </Box>
             </Box>
           </Menu>
         )}
         <Box direction="Column" gap="100">
-          <Text size="L400">Pack</Text>
+          <Text size="L400">{t('Pack')}</Text>
           <SequenceCard
             style={{ padding: config.space.S300 }}
             variant="SurfaceVariant"
@@ -333,8 +334,10 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
             gap="400"
           >
             <SettingTile
-              title="Images Usage"
-              description="Select how the images are being used: as emojis, as stickers, or as both."
+              title={t('Images Usage')}
+              description={t(
+                'Select how the images are being used: as emojis, as stickers, or as both.'
+              )}
               after={
                 <UsageSwitcher
                   usage={currentMeta.usage}
@@ -347,7 +350,7 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
         </Box>
         {images.length === 0 && !canEdit ? null : (
           <Box direction="Column" gap="100">
-            <Text size="L400">Images</Text>
+            <Text size="L400">{t('Images')}</Text>
             {canEdit && (
               <SequenceCard
                 style={{ padding: config.space.S300 }}
@@ -356,8 +359,8 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                 gap="400"
               >
                 <SettingTile
-                  title="Upload Images"
-                  description="Select images from your storage to upload them in pack."
+                  title={t('Upload Images')}
+                  description={t('Select images from your storage to upload them in pack.')}
                   after={
                     <Button
                       variant="Secondary"
@@ -368,7 +371,7 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                       outlined
                       onClick={() => pickFiles('image/*')}
                     >
-                      <Text size="B300">Select</Text>
+                      <Text size="B300">{t('Select')}</Text>
                     </Button>
                   }
                 />

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 import { Box, Text, as } from 'folds';
 import classNames from 'classnames';
@@ -71,7 +72,7 @@ export function ReactionTooltipMsg({ room, reaction, events }: ReactionTooltipMs
         <>
           <b>{names[0]}</b>
           <Text as="span" size="Inherit" priority="300">
-            {' and '}
+            {t(' and ')}
           </Text>
           <b>{names[1]}</b>
         </>
@@ -84,7 +85,7 @@ export function ReactionTooltipMsg({ room, reaction, events }: ReactionTooltipMs
           </Text>
           <b>{names[1]}</b>
           <Text as="span" size="Inherit" priority="300">
-            {' and '}
+            {t(' and ')}
           </Text>
           <b>{names[2]}</b>
         </>
@@ -101,13 +102,16 @@ export function ReactionTooltipMsg({ room, reaction, events }: ReactionTooltipMs
           </Text>
           <b>{names[2]}</b>
           <Text as="span" size="Inherit" priority="300">
-            {' and '}
+            {t(' and ')}
           </Text>
-          <b>{names.length - 3} others</b>
+          <b>
+            {names.length - 3}
+            {t(' others')}
+          </b>
         </>
       )}
       <Text as="span" size="Inherit" priority="300">
-        {' reacted with '}
+        {t(' reacted with ')}
       </Text>
       :<b>{shortcode}</b>:
     </>

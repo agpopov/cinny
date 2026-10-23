@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Room } from 'matrix-js-sdk';
 import React from 'react';
 import { Box, Icon, Icons, Text } from 'folds';
@@ -20,7 +21,7 @@ export function MemberSpeaking({ room, speakers }: MemberSpeakingProps) {
           <>
             <b>{speakingNames[0]}</b>
             <Text as="span" size="Inherit" priority="300">
-              {' is speaking...'}
+              {t(' is speaking...')}
             </Text>
           </>
         )}
@@ -28,11 +29,11 @@ export function MemberSpeaking({ room, speakers }: MemberSpeakingProps) {
           <>
             <b>{speakingNames[0]}</b>
             <Text as="span" size="Inherit" priority="300">
-              {' and '}
+              {t(' and ')}
             </Text>
             <b>{speakingNames[1]}</b>
             <Text as="span" size="Inherit" priority="300">
-              {' are speaking...'}
+              {t(' are speaking...')}
             </Text>
           </>
         )}
@@ -44,11 +45,11 @@ export function MemberSpeaking({ room, speakers }: MemberSpeakingProps) {
             </Text>
             <b>{speakingNames[1]}</b>
             <Text as="span" size="Inherit" priority="300">
-              {' and '}
+              {t(' and ')}
             </Text>
             <b>{speakingNames[2]}</b>
             <Text as="span" size="Inherit" priority="300">
-              {' are speaking...'}
+              {t(' are speaking...')}
             </Text>
           </>
         )}
@@ -64,11 +65,14 @@ export function MemberSpeaking({ room, speakers }: MemberSpeakingProps) {
             </Text>
             <b>{speakingNames[2]}</b>
             <Text as="span" size="Inherit" priority="300">
-              {' and '}
+              {t(' and ')}
             </Text>
-            <b>{speakingNames.length - 3} others</b>
+            <b>
+              {speakingNames.length - 3}
+              {t(' others')}
+            </b>
             <Text as="span" size="Inherit" priority="300">
-              {' are speaking...'}
+              {t(' are speaking...')}
             </Text>
           </>
         )}

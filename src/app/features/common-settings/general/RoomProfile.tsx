@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import {
   Avatar,
   Box,
@@ -140,7 +141,7 @@ export function RoomProfileEdit({
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="400">
       <Box gap="400">
         <Box grow="Yes" direction="Column" gap="100">
-          <Text size="L400">Avatar</Text>
+          <Text size="L400">{t('Avatar')}</Text>
           {uploadAtom ? (
             <Box gap="200" direction="Column">
               <CompactUploadCardRenderer
@@ -160,7 +161,7 @@ export function RoomProfileEdit({
                 disabled={!canEditAvatar || submitting}
                 onClick={() => pickFile('image/*')}
               >
-                <Text size="B300">Upload</Text>
+                <Text size="B300">{t('Upload')}</Text>
               </Button>
               {!roomAvatar && avatar && (
                 <Button
@@ -172,7 +173,7 @@ export function RoomProfileEdit({
                   disabled={!canEditAvatar || submitting}
                   onClick={() => setRoomAvatar(avatar)}
                 >
-                  <Text size="B300">Reset</Text>
+                  <Text size="B300">{t('Reset')}</Text>
                 </Button>
               )}
               {roomAvatar && (
@@ -185,7 +186,7 @@ export function RoomProfileEdit({
                   disabled={!canEditAvatar || submitting}
                   onClick={() => setRoomAvatar(undefined)}
                 >
-                  <Text size="B300">Remove</Text>
+                  <Text size="B300">{t('Remove')}</Text>
                 </Button>
               )}
             </Box>
@@ -210,7 +211,7 @@ export function RoomProfileEdit({
         </Box>
       </Box>
       <Box direction="Inherit" gap="100">
-        <Text size="L400">Name</Text>
+        <Text size="L400">{t('Name')}</Text>
         <Input
           name="nameInput"
           defaultValue={name}
@@ -220,7 +221,7 @@ export function RoomProfileEdit({
         />
       </Box>
       <Box direction="Inherit" gap="100">
-        <Text size="L400">Topic</Text>
+        <Text size="L400">{t('Topic')}</Text>
         <TextArea
           name="topicTextArea"
           defaultValue={topic}
@@ -243,7 +244,7 @@ export function RoomProfileEdit({
           disabled={uploadingAvatar || submitting}
           before={submitting && <Spinner size="100" variant="Success" fill="Solid" />}
         >
-          <Text size="B300">Save</Text>
+          <Text size="B300">{t('Save')}</Text>
         </Button>
         <Button
           type="reset"
@@ -253,7 +254,7 @@ export function RoomProfileEdit({
           size="300"
           radii="300"
         >
-          <Text size="B300">Cancel</Text>
+          <Text size="B300">{t('Cancel')}</Text>
         </Button>
       </Box>
     </Box>
@@ -289,7 +290,7 @@ export function RoomProfile({ permissions }: RoomProfileProps) {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Profile</Text>
+      <Text size="L400">{t('Profile')}</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -311,7 +312,7 @@ export function RoomProfile({ permissions }: RoomProfileProps) {
             <Box grow="Yes" direction="Column" gap="300">
               <Box direction="Column" gap="100">
                 <Text className={BreakWord} size="H5">
-                  {name ?? 'Unknown'}
+                  {name ?? t('Unknown')}
                 </Text>
                 {topic && (
                   <Text className={classNames(BreakWord, LineClamp3)} size="T200">
@@ -329,7 +330,7 @@ export function RoomProfile({ permissions }: RoomProfileProps) {
                     onClick={() => setEdit(true)}
                     outlined
                   >
-                    <Text size="B300">Edit</Text>
+                    <Text size="B300">{t('Edit')}</Text>
                   </Chip>
                 </Box>
               )}

@@ -32,7 +32,7 @@ import React, {
   useState,
 } from 'react';
 import FocusTrap from 'focus-trap-react';
-import { useHover, useFocusWithin } from 'react-aria';
+import { useHover, useFocusWithin, useFocusVisible } from 'react-aria';
 import { MatrixEvent, Room } from 'matrix-js-sdk';
 import { Relations } from 'matrix-js-sdk/lib/models/relations';
 import classNames from 'classnames';
@@ -403,7 +403,7 @@ export const MessagePinItem = as<
       ref={ref}
     >
       <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-        {isPinned ? 'Unpin Message' : 'Pin Message'}
+        {isPinned ? t('Unpin Message') : t('Pin Message')}
       </Text>
     </MenuItem>
   );
@@ -521,7 +521,7 @@ export const MessageDeleteItem = as<
                   aria-disabled={deleteState.status === AsyncStatus.Loading}
                 >
                   <Text size="B400">
-                    {deleteState.status === AsyncStatus.Loading ? 'Deleting...' : t('Delete')}
+                    {deleteState.status === AsyncStatus.Loading ? t('Deleting...') : t('Delete')}
                   </Text>
                 </Button>
               </Box>
@@ -588,7 +588,7 @@ export const MessageReportItem = as<
     const reasonInput = target?.reasonInput as HTMLInputElement | undefined;
     const reason = reasonInput && reasonInput.value.trim();
     if (reasonInput) reasonInput.value = '';
-    reportMessage(eventId, reason ? -100 : -50, reason || 'No reason provided');
+    reportMessage(eventId, reason ? -100 : -50, reason || t('No reason provided'));
   };
 
   const handleClose = () => {
@@ -664,7 +664,7 @@ export const MessageReportItem = as<
                   }
                 >
                   <Text size="B400">
-                    {reportState.status === AsyncStatus.Loading ? 'Reporting...' : t('Report')}
+                    {reportState.status === AsyncStatus.Loading ? t('Reporting...') : t('Report')}
                   </Text>
                 </Button>
               </Box>
@@ -761,7 +761,9 @@ export const Message = as<'div', MessageProps>(
 
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
-    const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
+    const [focused, setFocused] = useState(false);
+    const { isFocusVisible } = useFocusVisible();
+    const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocused });
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
     useBackDismiss(!!menuAnchor, () => setMenuAnchor(undefined), 30);
     const [emojiBoardAnchor, setEmojiBoardAnchor] = useState<RectCords>();
@@ -934,7 +936,9 @@ export const Message = as<'div', MessageProps>(
         {!edit && (
           <div
             className={css.MessageOptionsBase}
-            data-visible={hover || !!menuAnchor || !!emojiBoardAnchor}
+            data-visible={
+              hover || (focused && isFocusVisible) || !!menuAnchor || !!emojiBoardAnchor
+            }
           >
             <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
               <Box gap="100">
@@ -1232,9 +1236,12 @@ export const Event = as<'div', EventProps>(
   ) => {
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
-    const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
+    const [focused, setFocused] = useState(false);
+    const { isFocusVisible } = useFocusVisible();
+    const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocused });
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
     useBackDismiss(!!menuAnchor, () => setMenuAnchor(undefined), 30);
+    const longPressProps = useLongPress((x, y) => setMenuAnchor({ x, y, width: 0, height: 0 }));
     const stateEvent = typeof mEvent.getStateKey() === 'string';
 
     const handleContextMenu: MouseEventHandler<HTMLDivElement> = (evt) => {
@@ -1278,7 +1285,10 @@ export const Event = as<'div', EventProps>(
         }}
         ref={ref}
       >
-        <div className={css.MessageOptionsBase} data-visible={hover || !!menuAnchor}>
+        <div
+          className={css.MessageOptionsBase}
+          data-visible={hover || (focused && isFocusVisible) || !!menuAnchor}
+        >
           <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
             <Box gap="100">
               <PopOut
@@ -1341,7 +1351,9 @@ export const Event = as<'div', EventProps>(
             </Box>
           </Menu>
         </div>
-        <div onContextMenu={handleContextMenu}>{children}</div>
+        <div onContextMenu={handleContextMenu} {...longPressProps}>
+          {children}
+        </div>
       </MessageBase>
     );
   }

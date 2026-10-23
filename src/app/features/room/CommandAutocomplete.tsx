@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo } from 'react';
 import { Editor } from 'slate';
 import { Box, config, MenuItem, Text } from 'folds';
@@ -74,7 +75,7 @@ export function CommandAutocomplete({
     <AutocompleteMenu
       headerContent={
         <Box grow="Yes" direction="Row" gap="200" justifyContent="SpaceBetween">
-          <Text size="L400">Commands</Text>
+          <Text size="L400">{t('Commands')}</Text>
         </Box>
       }
       requestClose={requestClose}
@@ -101,7 +102,7 @@ export function CommandAutocomplete({
               {`/${commandName}`}
             </Text>
             <Text truncate priority="300" size="T200">
-              {commands[commandName].description}
+              {t(commands[commandName].description)}
             </Text>
           </Box>
         </MenuItem>

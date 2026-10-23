@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
@@ -118,7 +119,7 @@ function StateEventEdit({ type, stateKey, content, requestClose }: StateEventEdi
       aria-disabled={submitting}
     >
       <Box shrink="No" direction="Column" gap="100">
-        <Text size="L400">State Event</Text>
+        <Text size="L400">{t('State Event')}</Text>
         <SequenceCard
           className={SequenceCardStyle}
           variant="SurfaceVariant"
@@ -138,7 +139,7 @@ function StateEventEdit({ type, stateKey, content, requestClose }: StateEventEdi
                   disabled={submitting}
                   before={submitting && <Spinner variant="Primary" fill="Solid" size="300" />}
                 >
-                  <Text size="B300">Save</Text>
+                  <Text size="B300">{t('Save')}</Text>
                 </Button>
                 <Button
                   variant="Secondary"
@@ -148,7 +149,7 @@ function StateEventEdit({ type, stateKey, content, requestClose }: StateEventEdi
                   onClick={requestClose}
                   disabled={submitting}
                 >
-                  <Text size="B300">Cancel</Text>
+                  <Text size="B300">{t('Cancel')}</Text>
                 </Button>
               </Box>
             }
@@ -163,7 +164,7 @@ function StateEventEdit({ type, stateKey, content, requestClose }: StateEventEdi
       </Box>
       <Box grow="Yes" direction="Column" gap="100">
         <Box shrink="No">
-          <Text size="L400">JSON Content</Text>
+          <Text size="L400">{t('JSON Content')}</Text>
         </Box>
         <TextAreaComponent
           ref={textAreaRef}
@@ -199,7 +200,7 @@ function StateEventView({ content, eventJSONStr, onEditContent }: StateEventView
       <Box grow="Yes" direction="Column" gap="100">
         <Box gap="200" alignItems="End">
           <Box grow="Yes">
-            <Text size="L400">State Event</Text>
+            <Text size="L400">{t('State Event')}</Text>
           </Box>
           {onEditContent && (
             <Box shrink="No" gap="200">
@@ -210,7 +211,7 @@ function StateEventView({ content, eventJSONStr, onEditContent }: StateEventView
                 outlined
                 onClick={() => onEditContent(content)}
               >
-                <Text size="B300">Edit</Text>
+                <Text size="B300">{t('Edit')}</Text>
               </Chip>
             </Box>
           )}
@@ -271,7 +272,7 @@ export function StateEventEditor({ type, stateKey, requestClose }: StateEventEdi
               onClick={requestClose}
               before={<Icon size="100" src={Icons.ArrowLeft} />}
             >
-              <Text size="T300">Developer Tools</Text>
+              <Text size="T300">{t('Developer Tools')}</Text>
             </Chip>
           </Box>
           <Box shrink="No">

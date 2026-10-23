@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useCallback, useMemo } from 'react';
 import { color, Text } from 'folds';
 import { JoinRule, MatrixError, RestrictedAllowType } from 'matrix-js-sdk';
@@ -127,11 +128,11 @@ export function RoomJoinRules({ permissions }: RoomJoinRulesProps) {
       gap="400"
     >
       <SettingTile
-        title={room.isSpaceRoom() ? 'Space Access' : 'Room Access'}
+        title={room.isSpaceRoom() ? t('Space Access') : t('Room Access')}
         description={
           room.isSpaceRoom()
-            ? 'Change how people can join the space.'
-            : 'Change how people can join the room.'
+            ? t('Change how people can join the space.')
+            : t('Change how people can join the room.')
         }
         after={
           <JoinRulesSwitcher

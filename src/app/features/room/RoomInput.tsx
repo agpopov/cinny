@@ -324,7 +324,12 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       [setSelectedFiles, room, fileLimit]
     );
     const pickFile = useFilePicker(handleFiles, true);
-    const handlePaste = useFilePasteHandler(handleFiles);
+    const filePaste = useFilePasteHandler(
+      handleFiles,
+      draftKey,
+      sending || !draftReady,
+      setSendError
+    );
     const dropZoneVisible = useFileDropZone(fileDropContainerRef, handleFiles);
     const [hideStickerBtn, setHideStickerBtn] = useState(document.body.clientWidth < 500);
 
@@ -574,6 +579,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
+        filePaste.onKeyDown(evt);
         if (
           (isKeyHotkey('mod+enter', evt) || (!enterForNewline && isKeyHotkey('enter', evt))) &&
           !isComposing(evt)
@@ -590,7 +596,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           setReplyDraft(undefined);
         }
       },
-      [submit, setReplyDraft, enterForNewline, autocompleteQuery, isComposing]
+      [submit, setReplyDraft, enterForNewline, autocompleteQuery, isComposing, filePaste]
     );
 
     const handleKeyUp: KeyboardEventHandler = useCallback(
@@ -720,7 +726,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
               >
                 <Icon size="600" src={Icons.File} />
                 <Text size="H4" align="Center">
-                  {`Drop Files in "${room?.name || 'Room'}"`}
+                  {t('Drop Files in "{{value1}}"', { value1: room?.name || t('Room') })}
                 </Text>
                 <Text align="Center">
                   {t('Drag and drop files here or click for selection dialog')}
@@ -809,7 +815,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           placeholder={placeholder}
           onKeyDown={handleKeyDown}
           onKeyUp={handleKeyUp}
-          onPaste={handlePaste}
+          onPaste={filePaste.onPaste}
           top={
             replyDraft && (
               <div>

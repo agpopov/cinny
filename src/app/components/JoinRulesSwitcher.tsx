@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, useCallback, useMemo, useState } from 'react';
 import {
   config,
@@ -112,7 +113,7 @@ export function JoinRulesSwitcher<T extends ExtendedJoinRules[]>({
                   disabled={disabled}
                 >
                   <Box grow="Yes">
-                    <Text size="T300">{labels[rule]}</Text>
+                    <Text size="T300">{t(labels[rule])}</Text>
                   </Box>
                 </MenuItem>
               ))}
@@ -138,7 +139,7 @@ export function JoinRulesSwitcher<T extends ExtendedJoinRules[]>({
         onClick={handleOpenMenu}
         disabled={disabled}
       >
-        <Text size="B300">{labels[value] ?? 'Unsupported'}</Text>
+        <Text size="B300">{t(labels[value] ?? 'Unsupported')}</Text>
       </Button>
     </PopOut>
   );

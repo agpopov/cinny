@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, forwardRef, useState } from 'react';
 import { Room } from 'matrix-js-sdk';
 import {
@@ -127,7 +128,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
             disabled={!unread && !threadUnread}
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Mark as Read
+              {t('Mark as Read')}
             </Text>
           </MenuItem>
           <RoomNotificationModeSwitcher roomId={room.roomId} value={notificationMode}>
@@ -146,7 +147,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
                 onClick={handleOpen}
               >
                 <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                  Notifications
+                  {t('Notifications')}
                 </Text>
               </MenuItem>
             )}
@@ -165,7 +166,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
             disabled={!canInvite}
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Invite
+              {t('Invite')}
             </Text>
           </MenuItem>
           <MenuItem
@@ -175,7 +176,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
             radii="300"
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Copy Link
+              {t('Copy Link')}
             </Text>
           </MenuItem>
           <MenuItem
@@ -185,7 +186,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
             radii="300"
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Room Settings
+              {t('Room Settings')}
             </Text>
           </MenuItem>
         </Box>
@@ -204,7 +205,7 @@ const RoomNavItemMenu = forwardRef<HTMLDivElement, RoomNavItemMenuProps>(
                   aria-pressed={promptLeave}
                 >
                   <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                    Leave Room
+                    {t('Leave Room')}
                   </Text>
                 </MenuItem>
                 {promptLeave && (
@@ -230,7 +231,7 @@ function CallChatToggle() {
     <IconButton
       onClick={() => setChat(!chat)}
       aria-pressed={chat}
-      aria-label="Toggle Chat"
+      aria-label={t('Toggle Chat')}
       variant="Background"
       fill="None"
       size="300"
@@ -402,7 +403,8 @@ export function RoomNavItem({
               {callMembers.length > 0 && (
                 <Badge variant="Critical" fill="Solid" size="400">
                   <Text as="span" size="L400" truncate>
-                    {callMembers.length} Live
+                    {callMembers.length}
+                    {t(' Live')}
                   </Text>
                 </Badge>
               )}
@@ -449,7 +451,7 @@ export function RoomNavItem({
                 onClick={handleOpenMenu}
                 aria-pressed={!!menuAnchor}
                 aria-controls={`menu-${room.roomId}`}
-                aria-label="More Options"
+                aria-label={t('More Options')}
                 variant="Background"
                 fill="None"
                 size="300"
