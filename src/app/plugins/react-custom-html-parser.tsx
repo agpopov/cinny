@@ -339,9 +339,9 @@ export const getReactCustomHtmlParser = (
         if (group && !ancestor) {
           return (
             <span
-              className={css.Mention({
+              className={`${css.Mention({
                 highlight: group.members.some((m) => m.id === mx.getUserId()),
-              })}
+              })} ${css.GroupMention}`}
               style={{ color: group.color, overflowWrap: 'anywhere' }}
               data-mention-group={group.id}
               title={

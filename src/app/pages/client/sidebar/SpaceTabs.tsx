@@ -148,7 +148,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(
     };
 
     return (
-      <Menu ref={ref} style={{ maxWidth: toRem(160), width: '100vw' }}>
+      <Menu ref={ref} style={{ maxWidth: toRem(240), width: '100vw' }}>
         {invitePrompt && room && (
           <InviteUserPrompt
             room={room}
@@ -178,7 +178,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(
               after={<Icon size="100" src={Icons.Pin} />}
             >
               <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                Unpin
+                {t('Unpin')}
               </Text>
             </MenuItem>
           )}
@@ -196,7 +196,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(
             disabled={!canInvite}
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Invite
+              {t('Invite')}
             </Text>
           </MenuItem>
           <MenuItem
@@ -216,7 +216,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(
             radii="300"
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Space Settings
+              {t('Space Settings')}
             </Text>
           </MenuItem>
         </Box>

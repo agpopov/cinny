@@ -226,7 +226,7 @@ export function Direct() {
                       </Avatar>
                       <Box as="span" grow="Yes">
                         <Text as="span" size="Inherit" truncate>
-                          Create Chat
+                          {t('Create Chat')}
                         </Text>
                       </Box>
                     </Box>
@@ -241,7 +241,7 @@ export function Direct() {
                   data-category-id={DEFAULT_CATEGORY_ID}
                   onClick={handleCategoryClick}
                 >
-                  Chats
+                  {t('Chats')}
                 </RoomNavCategoryButton>
               </NavCategoryHeader>
               <div

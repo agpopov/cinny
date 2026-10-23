@@ -259,3 +259,11 @@ export const highlightText = style([
     color: 'black',
   },
 ]);
+
+// Group mentions have the same hover affordance as user mention links.
+export const GroupMention = style({
+  cursor: 'pointer',
+  selectors: {
+    '&:hover': { textDecoration: 'underline' },
+  },
+});

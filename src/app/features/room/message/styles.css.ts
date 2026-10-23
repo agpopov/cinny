@@ -3,9 +3,10 @@ import { DefaultReset, config, toRem } from 'folds';
 
 export const MessageBase = style({
   position: 'relative',
-  paddingRight: '44px',
-  minHeight: '44px',
-  '@media': { '(hover: none)': { userSelect: 'none', WebkitTouchCallout: 'none' } },
+  '@media': {
+    '(hover: none), (pointer: coarse)': { paddingRight: toRem(52), minHeight: toRem(52) },
+    '(hover: none)': { userSelect: 'none', WebkitTouchCallout: 'none' },
+  },
 });
 export const MessageBaseBubbleCollapsed = style({
   paddingTop: 0,
@@ -18,9 +19,18 @@ export const MessageOptionsBase = style([
     top: 0,
     right: 0,
     zIndex: 1,
+    opacity: 0,
+    pointerEvents: 'none',
+    selectors: {
+      '&[data-visible="true"], &:focus-within': {
+        opacity: 1,
+        pointerEvents: 'auto',
+      },
+    },
     '@media': {
       '(hover: none), (pointer: coarse)': {
-        position: 'absolute',
+        opacity: 1,
+        pointerEvents: 'auto',
       },
     },
   },
@@ -65,14 +75,20 @@ export const ReactionsTooltipText = style({
 });
 
 globalStyle(`${MessageOptionsBase}[data-visible="false"] button:not([data-message-actions])`, {
-  display: 'none',
+  '@media': {
+    '(hover: none), (pointer: coarse)': { display: 'none' },
+  },
 });
 
 globalStyle(`${MessageOptionsBase} [data-message-actions]`, {
-  minWidth: '44px',
-  width: '44px',
-  height: '44px',
-  padding: '8px',
+  '@media': {
+    '(hover: none), (pointer: coarse)': {
+      minWidth: toRem(44),
+      width: toRem(44),
+      height: toRem(44),
+      padding: config.space.S200,
+    },
+  },
 });
 
 globalStyle(

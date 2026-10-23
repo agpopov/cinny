@@ -140,7 +140,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
   };
 
   return (
-    <Menu ref={ref} style={{ maxWidth: toRem(160), width: '100vw' }}>
+    <Menu ref={ref} style={{ maxWidth: toRem(240), width: '100vw' }}>
       <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
         {invitePrompt && room && (
           <InviteUserPrompt
@@ -176,7 +176,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
           disabled={!canInvite}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Invite
+            {t('Invite')}
           </Text>
         </MenuItem>
         <MenuItem
@@ -196,7 +196,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
           radii="300"
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Space Settings
+            {t('Space Settings')}
           </Text>
         </MenuItem>
         {developerTools && (
@@ -207,7 +207,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
             radii="300"
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Event Timeline
+              {t('Event Timeline')}
             </Text>
           </MenuItem>
         )}
@@ -227,7 +227,7 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
                 aria-pressed={promptLeave}
               >
                 <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                  Leave Space
+                  {t('Leave Space')}
                 </Text>
               </MenuItem>
               {promptLeave && (

@@ -105,7 +105,11 @@ with sync_playwright() as p:
             row = page.locator('[data-message-id="' + target + '"]')
             actions = row.get_by_role('button', name='Действия сообщения', exact=True)
             page.mouse.move(0, 0)
+            if width != 390:
+                row.hover()
             expect(actions).to_be_visible()
+            if width != 390:
+                row.hover()
             actions.click()
             page.wait_for_timeout(200)
             page.screenshot(path=str(OUT / f'{engine}-{width}-menu.png'))
@@ -113,13 +117,15 @@ with sync_playwright() as p:
             expect(actions).to_have_attribute('aria-expanded','true')
             page.get_by_role('button', name='Скопировать текст', exact=True).click()
             assert page.evaluate('window.__copied') == action_body
-            check(label + ' persistent actions and copy without hover')
+            check(label + ' message actions and copy')
 
+            if width != 390:
+                row.hover()
             actions.click()
             page.get_by_role('button', name='Ответить', exact=True).last.click()
             expect(editor).to_be_visible()
             assert action_body in page.locator('body').inner_text()
-            check(label + ' reply without hover')
+            check(label + ' reply from message actions')
 
             # ContextMenu/Shift+F10 operates on the focused message itself.
             row.focus()
@@ -151,6 +157,8 @@ with sync_playwright() as p:
                 expect(page.get_by_role('button', name='Скопировать текст', exact=True)).to_have_count(0)
                 check(label + ' scrolling cancels the long press')
 
+            if width != 390:
+                row.hover()
             actions.click()
             page.get_by_role('button', name='Ответить в треде', exact=True).last.click()
             thread_editor = page.locator('[data-editable-name="ThreadInput"]')
@@ -168,6 +176,8 @@ with sync_playwright() as p:
                 expect(editor).to_have_attribute('contenteditable', 'true', timeout=30000)
 
             # Reaction is a real Matrix event.
+            if width != 390:
+                row.hover()
             row.get_by_role('button', name='Действия сообщения', exact=True).click()
             page.get_by_role('button', name='Добавить реакцию', exact=True).last.click()
             page.locator('button[data-emoji-data]').first.wait_for(timeout=10000)
@@ -195,6 +205,8 @@ with sync_playwright() as p:
             check(label + ' real file upload, visible server limit and cancellation')
 
             # Delete through the menu, followed by the existing confirmation dialog.
+            if width != 390:
+                row.hover()
             row.get_by_role('button', name='Действия сообщения', exact=True).click()
             page.get_by_role('button', name='Удалить', exact=True).last.click()
             page.get_by_role('button', name='Удалить', exact=True).last.click()

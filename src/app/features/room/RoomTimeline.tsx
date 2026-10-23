@@ -518,7 +518,6 @@ export function RoomTimeline({
   const [encUrlPreview] = useSetting(settingsAtom, 'encUrlPreview');
   const showUrlPreview = room.hasEncryptionStateEvent() ? encUrlPreview : urlPreview;
   const [showHiddenEvents] = useSetting(settingsAtom, 'showHiddenEvents');
-  const [showDeveloperTools] = useSetting(settingsAtom, 'developerTools');
 
   const [hour24Clock] = useSetting(settingsAtom, 'hour24Clock');
   const [dateFormatString] = useSetting(settingsAtom, 'dateFormatString');
@@ -1185,7 +1184,6 @@ export function RoomTimeline({
           )
         )}
         hideReadReceipts={hideActivity}
-        showDeveloperTools={showDeveloperTools}
         memberPowerTag={getMemberPowerTag(mEvent.getSender() ?? '')}
         accessibleTagColors={accessiblePowerTagColors}
         legacyUsernameColor={legacyUsernameColor || direct}
@@ -1272,7 +1270,6 @@ export function RoomTimeline({
               )
             )}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
             memberPowerTag={getMemberPowerTag(senderId)}
             accessibleTagColors={accessiblePowerTagColors}
             legacyUsernameColor={legacyUsernameColor || direct}
@@ -1357,7 +1354,6 @@ export function RoomTimeline({
               )
             )}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
             memberPowerTag={getMemberPowerTag(mEvent.getSender() ?? '')}
             accessibleTagColors={accessiblePowerTagColors}
             legacyUsernameColor={legacyUsernameColor || direct}
@@ -1464,7 +1460,6 @@ export function RoomTimeline({
               )
             )}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
             memberPowerTag={getMemberPowerTag(mEvent.getSender() ?? '')}
             accessibleTagColors={accessiblePowerTagColors}
             legacyUsernameColor={legacyUsernameColor || direct}
@@ -1517,7 +1512,6 @@ export function RoomTimeline({
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
           >
             <EventContent
               messageLayout={messageLayout}
@@ -1559,7 +1553,6 @@ export function RoomTimeline({
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
           >
             <EventContent
               messageLayout={messageLayout}
@@ -1602,7 +1595,6 @@ export function RoomTimeline({
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
           >
             <EventContent
               messageLayout={messageLayout}
@@ -1645,7 +1637,6 @@ export function RoomTimeline({
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
           >
             <EventContent
               messageLayout={messageLayout}
@@ -1696,7 +1687,6 @@ export function RoomTimeline({
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
-            showDeveloperTools={showDeveloperTools}
           >
             <EventContent
               messageLayout={messageLayout}
@@ -1741,7 +1731,6 @@ export function RoomTimeline({
           messageSpacing={messageSpacing}
           canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
           hideReadReceipts={hideActivity}
-          showDeveloperTools={showDeveloperTools}
         >
           <EventContent
             messageLayout={messageLayout}
@@ -1791,7 +1780,6 @@ export function RoomTimeline({
           messageSpacing={messageSpacing}
           canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
           hideReadReceipts={hideActivity}
-          showDeveloperTools={showDeveloperTools}
         >
           <EventContent
             messageLayout={messageLayout}

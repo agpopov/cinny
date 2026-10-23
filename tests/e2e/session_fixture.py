@@ -20,7 +20,7 @@ DEVICE = 'STARTUPDEVICE'
 MESSAGE = 'Saved session restored with real Matrix SDK and Rust crypto'
 
 
-def install_session_fixture(page, hash_router=True):
+def install_session_fixture(page, hash_router=True, room_events=(), room_state=()):
     requests = []
     device_keys = {}
     sync_count = 0
@@ -63,7 +63,7 @@ def install_session_fixture(page, hash_router=True):
         event('m.room.member', {'membership': 'join', 'displayname': 'Startup peer'}, PEER, 13)])
     direct_message = event('m.room.message', {'msgtype': 'm.text', 'body': 'Direct conversation is open'}, index=14)
     state.append(event('m.room.canonical_alias', {'alias': ALIAS}, '', 15))
-    joined = {ROOM: joined_room(state, [message]),
+    joined = {ROOM: joined_room(state + list(room_state), [message, *room_events]),
               SPACE: joined_room(space_state, []),
               CHANNEL: joined_room(channel_state, [channel_message]),
               DIRECT: joined_room(direct_state, [direct_message])}

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Icon, IconButton, Icons, Scroll } from 'folds';
@@ -60,7 +61,7 @@ export function DirectCreate() {
                 <Box direction="Column" gap="700">
                   <PageHero
                     icon={<Icon size="600" src={Icons.Mention} />}
-                    title="Create Chat"
+                    title={t('Create Chat')}
                     subTitle="Start a private, encrypted chat by entering a user ID."
                   />
                   <CreateChat defaultUserId={userId} />

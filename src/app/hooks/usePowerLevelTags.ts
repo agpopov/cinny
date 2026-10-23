@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Room } from 'matrix-js-sdk';
 import { useMemo } from 'react';
 import { IPowerLevels } from './usePowerLevels';
@@ -83,7 +84,7 @@ const generateFallbackTag = (powerLevelTags: PowerLevelTags, power: number): Mem
   const tag = typeof tagPower === 'number' ? powerLevelTags[tagPower] : undefined;
 
   return {
-    name: tag ? `${tag.name} ${power}` : `Team ${power}`,
+    name: tag ? `${tag.name} ${power}` : `${t('Team')} ${power}`,
   };
 };
 
@@ -94,10 +95,13 @@ export const usePowerLevelTags = (room: Room, powerLevels: IPowerLevels): PowerL
     const content = tagsEvent?.getContent<PowerLevelTags>();
     const powerToTags: PowerLevelTags = { ...content };
 
+    const defaultTags = Object.fromEntries(
+      Object.entries(DEFAULT_TAGS).map(([key, tag]) => [key, { ...tag, name: t(tag.name) }])
+    );
     const powers = getUsedPowers(powerLevels);
     Array.from(powers).forEach((power) => {
       if (powerToTags[power]?.name === undefined) {
-        powerToTags[power] = DEFAULT_TAGS[power] ?? generateFallbackTag(DEFAULT_TAGS, power);
+        powerToTags[power] = defaultTags[power] ?? generateFallbackTag(defaultTags, power);
       }
     });
 

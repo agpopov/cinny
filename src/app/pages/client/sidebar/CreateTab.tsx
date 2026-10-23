@@ -41,7 +41,7 @@ export function CreateTab() {
 
   return (
     <SidebarItem active={createSelected}>
-      <SidebarItemTooltip tooltip="Add Space">
+      <SidebarItemTooltip tooltip={t('Add Space')}>
         {(triggerRef) => (
           <PopOut
             anchor={menuCords}
@@ -76,7 +76,7 @@ export function CreateTab() {
                       <SettingTile before={<Icon size="400" src={Icons.Space} />}>
                         <Text size="H6">{t('Create Space')}</Text>
                         <Text size="T300" priority="300">
-                          Build a space for your community.
+                          {t('Build a space for your community.')}
                         </Text>
                       </SettingTile>
                     </SequenceCard>
@@ -91,9 +91,9 @@ export function CreateTab() {
                       onClick={handleJoinWithAddress}
                     >
                       <SettingTile before={<Icon size="400" src={Icons.Link} />}>
-                        <Text size="H6">Join with Address</Text>
+                        <Text size="H6">{t('Join with Address')}</Text>
                         <Text size="T300" priority="300">
-                          Become a part of existing community.
+                          {t('Become a part of existing community.')}
                         </Text>
                       </SettingTile>
                     </SequenceCard>

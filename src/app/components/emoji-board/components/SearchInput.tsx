@@ -1,7 +1,6 @@
 import { t } from 'i18next';
 import React, { ChangeEventHandler, useRef } from 'react';
 import { Input, Chip, Icon, Icons, Text } from 'folds';
-import { mobileOrTablet } from '../../../utils/user-agent';
 
 type SearchInputProps = {
   query?: string;
@@ -28,7 +27,7 @@ export function SearchInput({
       ref={inputRef}
       variant="SurfaceVariant"
       size="400"
-      placeholder={allowTextCustomEmoji ? 'Search or Text Reaction ' : t('Search')}
+      placeholder={allowTextCustomEmoji ? t('Search or Text Reaction') : t('Search')}
       maxLength={50}
       value={query ?? ''}
       after={
@@ -40,14 +39,13 @@ export function SearchInput({
             outlined
             onClick={handleReact}
           >
-            <Text size="L400">React</Text>
+            <Text size="L400">{t('React')}</Text>
           </Chip>
         ) : (
           <Icon src={Icons.Search} size="50" />
         )
       }
       onChange={onChange}
-      autoFocus={!mobileOrTablet()}
     />
   );
 }

@@ -25,7 +25,7 @@ export function EmojiBoardTabs({
         onClick={() => onTabChange(EmojiBoardTab.Sticker)}
       >
         <Text as="span" size="L400">
-          Sticker
+          {t('Sticker')}
         </Text>
       </Badge>
       <Badge

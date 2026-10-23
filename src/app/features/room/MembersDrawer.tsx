@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   ChangeEventHandler,
   MouseEventHandler,
@@ -70,8 +71,12 @@ function MemberDrawerHeader({ room }: MemberDrawerHeaderProps) {
     <Header className={css.MembersDrawerHeader} variant="Background" size="600">
       <Box grow="Yes" alignItems="Center" gap="200">
         <Box grow="Yes" alignItems="Center" gap="200">
-          <Text title={`${room.getJoinedMemberCount()} Members`} size="H5" truncate>
-            {`${millify(room.getJoinedMemberCount())} Members`}
+          <Text
+            title={t('Members count', { count: room.getJoinedMemberCount() })}
+            size="H5"
+            truncate
+          >
+            {`${t('Members')}: ${millify(room.getJoinedMemberCount())}`}
           </Text>
         </Box>
         <Box shrink="No" alignItems="Center">
@@ -81,7 +86,7 @@ function MemberDrawerHeader({ room }: MemberDrawerHeaderProps) {
             offset={4}
             tooltip={
               <Tooltip>
-                <Text>Close</Text>
+                <Text>{t('Close')}</Text>
               </Tooltip>
             }
           >
@@ -327,7 +332,7 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
                   ref={searchInputRef}
                   onChange={handleSearchChange}
                   style={{ paddingRight: config.space.S200 }}
-                  placeholder="Type name..."
+                  placeholder={t('Type name...')}
                   variant="Surface"
                   size="400"
                   radii="400"

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, ReactNode, useCallback, useRef, useState } from 'react';
 import {
   Box,
@@ -378,7 +379,7 @@ function AddSpaceButton({ item }: { item: HierarchyItem }) {
         onClick={handleAddSpace}
         aria-pressed={!!cords}
       >
-        <Text size="B300">Add Space</Text>
+        <Text size="B300">{t('Add Space')}</Text>
       </Chip>
       {addExisting && (
         <AddExistingModal space parentId={item.roomId} requestClose={() => setAddExisting(false)} />

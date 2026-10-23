@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, {
   ChangeEventHandler,
   FocusEventHandler,
@@ -410,8 +411,9 @@ export function EmojiBoard({
   );
 
   const searchedItems = result?.items.slice(0, 100);
-  let searchLabel = 'Searching...';
-  if (searchedItems) searchLabel = searchedItems.length ? 'Search Results' : 'No Results found';
+  let searchLabel = t('Searching...');
+  if (searchedItems)
+    searchLabel = searchedItems.length ? t('Search Results') : t('No Results found');
   const [query, setQuery] = useState('');
   const [pendingGroupId, setPendingGroupId] = useState<string>();
   const handleOnChange: ChangeEventHandler<HTMLInputElement> = (evt) =>

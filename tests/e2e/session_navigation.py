@@ -73,6 +73,7 @@ def assert_client_navigation(page, output):
 
     page.goto(prefix + '/home/' + quote(ROOM, safe='!'))
     assert_session_ready(page)
+    page.get_by_text(MESSAGE, exact=True).hover()
     page.get_by_role('button', name='Действия сообщения', exact=True).first.click()
     page.get_by_role('button', name='Ответить в треде', exact=True).last.click()
     expect(page.locator('[data-editable-name="ThreadInput"]')).to_be_visible(timeout=30000)

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import React from 'react';
 import FileSaver from 'file-saver';
@@ -48,7 +49,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomOut}
-              aria-label="Zoom Out"
+              aria-label={t('Zoom Out')}
             >
               <Icon size="50" src={Icons.Minus} />
             </IconButton>
@@ -61,7 +62,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomIn}
-              aria-label="Zoom In"
+              aria-label={t('Zoom In')}
             >
               <Icon size="50" src={Icons.Plus} />
             </IconButton>
@@ -71,7 +72,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
               radii="300"
               before={<Icon size="50" src={Icons.Download} />}
             >
-              <Text size="B300">Download</Text>
+              <Text size="B300">{t('Download')}</Text>
             </Chip>
           </Box>
         </Header>

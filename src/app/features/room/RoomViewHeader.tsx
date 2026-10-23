@@ -673,7 +673,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
                   {callView ? (
                     <Text>Members</Text>
                   ) : (
-                    <Text>{peopleDrawer ? 'Hide Members' : 'Show Members'}</Text>
+                    <Text>{peopleDrawer ? t('Hide Members') : t('Show Members')}</Text>
                   )}
                 </Tooltip>
               }

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { MouseEventHandler, forwardRef, useState } from 'react';
 import {
   Avatar,
@@ -65,7 +66,7 @@ const LobbyMenu = forwardRef<HTMLDivElement, LobbyMenuProps>(
     };
 
     return (
-      <Menu ref={ref} style={{ maxWidth: toRem(160), width: '100vw' }}>
+      <Menu ref={ref} style={{ maxWidth: toRem(240), width: '100vw' }}>
         {invitePrompt && (
           <InviteUserPrompt
             room={space}
@@ -87,7 +88,7 @@ const LobbyMenu = forwardRef<HTMLDivElement, LobbyMenuProps>(
             disabled={!canInvite}
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Invite
+              {t('Invite')}
             </Text>
           </MenuItem>
           <MenuItem
@@ -97,7 +98,7 @@ const LobbyMenu = forwardRef<HTMLDivElement, LobbyMenuProps>(
             radii="300"
           >
             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-              Space Settings
+              {t('Space Settings')}
             </Text>
           </MenuItem>
         </Box>
@@ -116,7 +117,7 @@ const LobbyMenu = forwardRef<HTMLDivElement, LobbyMenuProps>(
                   aria-pressed={promptLeave}
                 >
                   <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                    Leave Space
+                    {t('Leave Space')}
                   </Text>
                 </MenuItem>
                 {promptLeave && (
