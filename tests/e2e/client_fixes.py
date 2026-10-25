@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
-from session_fixture import ROOM, DIRECT, SPACE, CHANNEL, MESSAGE, install_session_fixture, seed_session, assert_session_ready
+from session_fixture import ROOM, DIRECT, SPACE, CHANNEL, MESSAGE, USER, install_session_fixture, seed_session, assert_session_ready
 
 APP = os.environ.get('APP_URL', 'http://127.0.0.1:18102')
 OUT = Path(os.environ.get('TEST_OUTPUT', 'artifacts/client-fixes'))
@@ -60,6 +60,22 @@ with sync_playwright() as p:
         checks.append(engine + ': local echo and cleared composer before HTTP response')
 
         editor.click()
+        page.keyboard.insert_text('Mention local echo @Startup')
+        mention = page.locator('button[data-mention-user="' + USER + '"]')
+        expect(mention).to_be_visible()
+        mention.click()
+        expect(editor).to_contain_text('@Startup user')
+        editor.press('Enter')
+        expect(editor.locator('[data-slate-string]')).to_have_count(0)
+        expect(page.get_by_text('Mention local echo', exact=False).first).to_be_visible()
+        assert len(pending) == 1
+        request = pending[0].request.post_data_json
+        assert request['format'] == 'org.matrix.custom.html' and '@Startup user' in request['formatted_body'], request
+        pending.pop().fulfill(json={'event_id':'$sent-mention-client-fixes'})
+        expect(editor).to_have_attribute('contenteditable', 'true')
+        checks.append(engine + ': mention message clears before its HTTP response')
+
+        editor.click()
         page.keyboard.insert_text('Restore on failure')
         page.wait_for_timeout(150)
         editor.press('Enter')
@@ -96,10 +112,12 @@ with sync_playwright() as p:
             handled = page.evaluate("!window.dispatchEvent(new Event('cinny:back', {cancelable:true}))")
             assert handled, (engine, route)
             page.wait_for_function('(parent) => decodeURIComponent(location.hash.slice(1)).replace(/\\/$/, "") === parent.replace(/\\/$/, "")', arg=parent)
+            expect(editor).to_have_count(0)
+            page.wait_for_timeout(150)
         checks.append(engine + ': Android back returns from rooms, directs and spaces to their channel lists')
         page.screenshot(path=str(OUT / (engine + '-list.png')))
         assert not errors, errors
         context.close()
         browser.close()
-        for check in checks[-4:]: print('PASS ' + check, flush=True)
+        for check in checks[-5:]: print('PASS ' + check, flush=True)
 (OUT / 'summary.json').write_text(json.dumps(checks, indent=2) + '\n')
