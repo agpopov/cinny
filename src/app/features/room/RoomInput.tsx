@@ -172,6 +172,13 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const [sending, setSending] = useState(false);
     const [sendError, setSendError] = useState('');
     const messageAttempt = getMessageAttempt(mx, draftKey);
+    const sendScope = useRef(0);
+    useEffect(
+      () => () => {
+        sendScope.current += 1;
+      },
+      [draftKey, editor]
+    );
     useEffect(() => {
       let scopes = draftScopeUsers.get(store);
       if (!scopes) {
@@ -447,6 +454,8 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       setSending(true);
       setSendError('');
       const original = JSON.stringify(editor.children);
+      const scope = sendScope.current;
+      let cleared = false;
       const nodes = freshGroupMentionNodes(
         mentionsOutsideMarkdownCode(JSON.parse(original), undefined, isMarkdown)
       );
@@ -542,16 +551,29 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           roomId,
           threadId ?? null,
           content as any,
-          JSON.stringify([original, replyDraft])
+          JSON.stringify([original, replyDraft]),
+          () => {
+            if (scope !== sendScope.current || JSON.stringify(editor.children) !== original) return;
+            resetEditor(editor);
+            resetEditorHistory(editor);
+            setReplyDraft(undefined);
+            setAutocompleteQuery(undefined);
+            cleared = true;
+            saveDraft(editor.children);
+            sendTypingStatus(false);
+          }
         );
-        if (JSON.stringify(editor.children) !== original) return;
-        resetEditor(editor);
-        resetEditorHistory(editor);
-        setReplyDraft(undefined);
-        saveDraft(editor.children);
         await flushDraft();
-        sendTypingStatus(false);
       } catch (error) {
+        if (cleared) {
+          const message = JSON.parse(original);
+          if (scope === sendScope.current && isEmptyEditor(editor)) {
+            Transforms.insertFragment(editor, message);
+            setReplyDraft(replyDraft);
+          }
+          saveDraft(message, replyDraft);
+          await flushDraft();
+        }
         setSendError(
           error instanceof Error
             ? error.message

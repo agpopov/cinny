@@ -229,6 +229,7 @@ export function Home() {
 
   const virtualizer = useVirtualizer({
     count: sortedRooms.length,
+    getItemKey: (index) => sortedRooms[index],
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 38,
     overscan: 10,
@@ -343,7 +344,7 @@ export function Home() {
                   return (
                     <VirtualTile
                       virtualItem={vItem}
-                      key={vItem.index}
+                      key={vItem.key}
                       ref={virtualizer.measureElement}
                     >
                       <RoomNavItem

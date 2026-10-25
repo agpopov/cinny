@@ -15,6 +15,7 @@ import { settingsAtom } from '../../state/settings';
 import { useNotificationOwner } from '../../hooks/useNotificationOwner';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useSearchIndexSubscription } from '../../hooks/useLocalSearch';
+import { MobileBackNavigation } from './MobileBackNavigation';
 
 function SystemEmojiFeature() {
   const [twitterEmoji] = useSetting(settingsAtom, 'twitterEmoji');
@@ -71,6 +72,7 @@ export function ClientNonUIFeatures({ children }: ClientNonUIFeaturesProps) {
   useNotificationOwner(useMatrixClient().getSafeUserId());
   return (
     <>
+      <MobileBackNavigation />
       <SystemEmojiFeature />
       <PageZoomFeature />
       <FaviconUpdater />

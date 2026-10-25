@@ -6,9 +6,9 @@ the package under test. Run with dbus-run-session -- python3 this_file.py.
 The GTK provider owns only the isolated X11 test display clipboard.
 """
 from pathlib import Path
-import os,subprocess,time,urllib.request,json,select
+import os,subprocess,time,urllib.request,json,select,shutil
 out=Path(os.environ.get('TEST_OUTPUT','artifacts/linux-clipboard')).resolve();out.mkdir(parents=True,exist_ok=True)
-env={**os.environ,'DISPLAY':':96','GDK_BACKEND':'x11','TAURI_WEBVIEW_AUTOMATION':'true','WEBKIT_EXEC_PATH':'/tmp/cinny-platform-libs/root/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1','WEBKIT_INJECTED_BUNDLE_PATH':'/tmp/cinny-platform-libs/root/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/injected-bundle','WEBKIT_DISABLE_COMPOSITING_MODE':'1','XDG_CONFIG_HOME':'/tmp/cinny-clipboard-profile/config','XDG_DATA_HOME':'/tmp/cinny-clipboard-profile/data','XDG_CACHE_HOME':'/tmp/cinny-clipboard-profile/cache'}
+env={**os.environ,'DISPLAY':os.environ.get('CLIPBOARD_DISPLAY',':96'),'GDK_BACKEND':'x11','TAURI_WEBVIEW_AUTOMATION':'true','WEBKIT_DISABLE_COMPOSITING_MODE':'1','XDG_CONFIG_HOME':str(out/'profile/config'),'XDG_DATA_HOME':str(out/'profile/data'),'XDG_CACHE_HOME':str(out/'profile/cache')}
 procs=[];base='http://127.0.0.1:4462'
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 def req(path,body=None,method=None):
@@ -17,9 +17,9 @@ def req(path,body=None,method=None):
   with opener.open(r,timeout=40) as res:return json.load(res)['value']
  except urllib.error.HTTPError as e:raise RuntimeError(e.read().decode()) from e
 try:
- procs.append(subprocess.Popen(['/tmp/cinny-Xvfb',':96','-screen','0','1280x900x24'],env=env,stdout=(out/'xvfb.log').open('w'),stderr=subprocess.STDOUT));time.sleep(1)
+ procs.append(subprocess.Popen([os.environ.get('XVFB_BINARY',shutil.which('Xvfb') or '/tmp/cinny-Xvfb'),env['DISPLAY'],'-screen','0','1280x900x24'],env=env,stdout=(out/'xvfb.log').open('w'),stderr=subprocess.STDOUT));time.sleep(1)
  subprocess.run(['xmodmap','-e','keycode 55 = v V','-e','keycode 37 = Control_L','-e','add Control = Control_L'],env=env,check=True)
- procs.append(subprocess.Popen(['/tmp/cinny-platform-libs/root/usr/bin/WebKitWebDriver','--port=4462','--host=127.0.0.1'],cwd=os.environ.get('CINNY_RUNTIME','/tmp/cinny-linux-clipboard/Cinny.AppDir')+'/usr',env=env,stdout=(out/'driver.log').open('w'),stderr=subprocess.STDOUT));time.sleep(1)
+ procs.append(subprocess.Popen([os.environ.get('WEBKIT_WEBDRIVER',shutil.which('WebKitWebDriver') or '/tmp/cinny-platform-libs/root/usr/bin/WebKitWebDriver'),'--port=4462','--host=127.0.0.1'],cwd=os.environ.get('CINNY_RUNTIME',str(Path.cwd())),env=env,stdout=(out/'driver.log').open('w'),stderr=subprocess.STDOUT));time.sleep(1)
  session=req('/session',{'capabilities':{'alwaysMatch':{'webkitgtk:browserOptions':{'binary':os.environ.get('CINNY_BINARY','/tmp/cinny-linux-clipboard/Cinny.AppDir/usr/bin/cinny')}}}})['sessionId'];p='/session/'+session
  def js(script):return req(p+'/execute/sync',{'script':script,'args':[]})
  for _ in range(30):

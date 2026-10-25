@@ -133,8 +133,8 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
     );
 
     // Firefox replaces native DOM nodes during IME composition before React's
-    // batched removal of selected void pills. Commit that removal first so React
-    // never tries to remove a pill which the browser has already detached.
+    // batched removal of selected pills or links. Commit that removal first so
+    // React never tries to remove an inline node already detached by Firefox.
     const handleCompositionStart = useCallback(() => {
       if (!IS_FIREFOX || readOnly) return;
       const selection = window.getSelection();
@@ -142,11 +142,12 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
         selection &&
         ReactEditor.toSlateRange(editor, selection, { exactMatch: false, suppressThrow: true });
       if (!range || Range.isCollapsed(range)) return;
-      const [voidNode] = Editor.nodes(editor, {
+      const [inlineNode] = Editor.nodes(editor, {
         at: range,
-        match: (node) => SlateElement.isElement(node) && editor.isVoid(node),
+        match: (node) =>
+          SlateElement.isElement(node) && (editor.isVoid(node) || editor.isInline(node)),
       });
-      if (!voidNode) return;
+      if (!inlineNode) return;
       flushSync(() => {
         Transforms.select(editor, range);
         Editor.deleteFragment(editor);

@@ -5,11 +5,12 @@ import { getMemberAvatarMxc, getMemberDisplayName, trimReplyFromBody } from './r
 import { nameInitials } from './common';
 import { stripDataUrl } from './desktop';
 import { getPollPreviewText } from './poll';
+import { formattedMessageText } from './messagePreview';
 
 const MAX_BODY = 220;
 
 const truncate = (text: string, max = MAX_BODY) => {
-  const flat = text.replace(/\s+/g, ' ').trim();
+  const flat = text.replace(/[^\S\n]+/g, ' ').trim();
   return flat.length > max ? `${flat.slice(0, max - 1)}…` : flat;
 };
 
@@ -38,6 +39,10 @@ export const getEventPreviewText = (mEvent: MatrixEvent, room?: Room): string =>
   const pollPreview = getPollPreviewText(content);
   if (pollPreview) return truncate(pollPreview, 120);
   const body = typeof content.body === 'string' ? content.body : '';
+  const message =
+    content.format === 'org.matrix.custom.html' && typeof content.formatted_body === 'string'
+      ? formattedMessageText(content.formatted_body)
+      : trimReplyFromBody(body);
   switch (content.msgtype) {
     case MsgType.Image:
       return '🖼 Изображение';
@@ -50,14 +55,14 @@ export const getEventPreviewText = (mEvent: MatrixEvent, room?: Room): string =>
     case MsgType.Location:
       return '📍 Местоположение';
     case MsgType.Emote:
-      return `* ${truncate(resolveMentions(trimReplyFromBody(body), room))}`;
+      return `* ${truncate(resolveMentions(message, room))}`;
     default:
       break;
   }
   if (content.msgtype === undefined && mEvent.getType() === 'm.room.encrypted') {
     return 'Зашифрованное сообщение';
   }
-  const text = truncate(resolveMentions(trimReplyFromBody(body), room));
+  const text = truncate(resolveMentions(message, room));
   return text || 'Новое сообщение';
 };
 

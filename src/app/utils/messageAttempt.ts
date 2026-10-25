@@ -29,7 +29,8 @@ export class MessageAttempt {
     roomId: string,
     threadId: string | null,
     content: RoomMessageEventContent,
-    draftRevision?: string
+    draftRevision?: string,
+    onDispatch?: () => void
   ) {
     if (this.busy) throw new Error('Сообщение уже отправляется');
     this.busy = true;
@@ -60,6 +61,9 @@ export class MessageAttempt {
       const accepted = confirmed ?? (pending?.status === 'sent' ? pending : undefined);
       if (!accepted && pending && pending.status !== 'not_sent')
         throw new Error('Предыдущая попытка ещё выполняется. Дождитесь результата.');
+      // The transaction is durable. Clear the composer before the SDK publishes
+      // its local echo, without waiting for HTTP or encrypted storage cleanup.
+      onDispatch?.();
       let response: Awaited<ReturnType<MatrixClient['sendMessage']>>;
       const confirmedId = accepted?.getId();
       if (confirmedId) {

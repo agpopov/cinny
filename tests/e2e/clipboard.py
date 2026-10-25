@@ -45,13 +45,13 @@ with sync_playwright() as p:
           window.isTauri=true;window.clipboardCalls=[];window.holdClipboard=false;
           window.__TAURI_INTERNALS__={invoke:async(command,payload)=>{
             clipboardCalls.push(command);
-            if(command==='plugin:clipboard-manager|read_image') {
+            if(command==='desktop_read_clipboard_image') {
               if(holdClipboard) await new Promise(resolve=>window.releaseClipboard=resolve);
-              return 7;
+              const canvas=document.createElement('canvas');canvas.width=2;canvas.height=1;
+              const ctx=canvas.getContext('2d');
+              ctx.putImageData(new ImageData(new Uint8ClampedArray([255,0,0,255,0,255,0,255]),2,1),0,0);
+              return canvas.toDataURL('image/png').split(',')[1];
             }
-            if(command==='plugin:image|size')return {width:2,height:1};
-            if(command==='plugin:image|rgba')return new Uint8Array([255,0,0,255,0,255,0,255]);
-            if(command==='plugin:resources|close')return;
             throw new Error(command);
           }};
         }''')
@@ -62,7 +62,7 @@ with sync_playwright() as p:
         editor.evaluate('''node=>pasteData(node,new DataTransfer())''')
         expect(page.locator('img[alt^="screenshot-"]')).to_have_count(1)
         expect(editor.locator('img')).to_have_count(0)
-        assert page.evaluate('clipboardCalls.filter(c=>c==="plugin:clipboard-manager|read_image").length') == 1
+        assert page.evaluate('clipboardCalls.filter(c=>c==="desktop_read_clipboard_image").length') == 1
         checks.append(engine + ': empty Linux WebView paste reaches native bridge and adds one PNG to the real upload queue')
         page.get_by_label('Отменить загрузку', exact=True).click()
         expect(page.locator('img[alt^="screenshot-"]')).to_have_count(0)
@@ -70,7 +70,7 @@ with sync_playwright() as p:
         editor.click()
         editor.evaluate('''node=>{const data=new DataTransfer();data.setData('text/plain','Clipboard text');pasteData(node,data);}''')
         expect(editor).to_contain_text('Clipboard text')
-        assert page.evaluate('clipboardCalls.filter(c=>c==="plugin:clipboard-manager|read_image").length') == 1
+        assert page.evaluate('clipboardCalls.filter(c=>c==="desktop_read_clipboard_image").length') == 1
         checks.append(engine + ': Linux fallback preserves ordinary text paste')
 
         page.evaluate('holdClipboard=true')

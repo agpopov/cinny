@@ -2,7 +2,7 @@ import { atom } from 'jotai';
 import { MatrixClient } from 'matrix-js-sdk';
 import { useMemo } from 'react';
 import { Membership } from '../../../types/matrix/room';
-import { RoomsAction, useBindRoomsWithMembershipsAtom } from './utils';
+import { type RoomsAction, useBindRoomsWithMembershipsAtom } from './utils';
 
 const baseRoomsAtom = atom<string[]>([]);
 export const allRoomsAtom = atom<string[], [RoomsAction], undefined>(
@@ -13,9 +13,8 @@ export const allRoomsAtom = atom<string[], [RoomsAction], undefined>(
       return;
     }
     set(baseRoomsAtom, (ids) => {
-      const newIds = ids.filter((id) => id !== action.roomId);
-      if (action.type === 'PUT') newIds.push(action.roomId);
-      return newIds;
+      if (action.type === 'PUT') return ids.includes(action.roomId) ? ids : [...ids, action.roomId];
+      return ids.includes(action.roomId) ? ids.filter((id) => id !== action.roomId) : ids;
     });
   }
 );

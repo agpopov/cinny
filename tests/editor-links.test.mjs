@@ -82,6 +82,30 @@ test('backward selections and formatted text retain their text and marks', () =>
   ]);
 });
 
+test('typing after a link at the paragraph end stays outside the link', () => {
+  for (const [start, end] of [
+    [0, 5],
+    [2, 5],
+    [5, 0],
+  ]) {
+    const e = editor([paragraph([{ text: 'hello' }])]);
+    select(e, start, end);
+    assert.equal(pasteLink(e, url), true);
+    const label = Node.string(links(e)[0][0]);
+    e.insertText(' ordinary text');
+    assert.equal(Node.string(links(e)[0][0]), label);
+    assert.equal(Editor.string(e, []), 'hello ordinary text');
+    e.insertText('!');
+    assert.equal(Node.string(links(e)[0][0]), label);
+  }
+  const e = editor([paragraph([{ text: '' }])]);
+  select(e, 0, 0);
+  setLink(e, url, 'label');
+  e.insertText(' text');
+  assert.equal(Node.string(links(e)[0][0]), 'label');
+  assert.equal(Editor.string(e, []), 'label text');
+});
+
 test('plain text, multiple URLs and a collapsed caret retain normal paste behavior', () => {
   for (const value of [
     'ordinary text',

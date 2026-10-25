@@ -1,4 +1,4 @@
-import { Editor, Element, Range, Transforms } from 'slate';
+import { Editor, Element, Path, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import type { LinkElement } from './slate';
 import { BlockType } from './types';
@@ -81,8 +81,10 @@ export const setLink = (editor: Editor, value: string, text?: string): boolean =
     // Continue typing outside the link rather than extending its label.
     const link = getSelectedLink(editor);
     if (link && editor.selection && Editor.isEnd(editor, editor.selection.focus, link[1])) {
-      const after = Editor.after(editor, link[1]);
-      if (after) Transforms.select(editor, after);
+      // Normalization supplies an empty text sibling even at the paragraph end.
+      // Editor.after skips that empty node, leaving the caret inside the link.
+      const next = Path.next(link[1]);
+      if (Editor.hasPath(editor, next)) Transforms.select(editor, Editor.start(editor, next));
     }
   });
   return true;

@@ -189,6 +189,51 @@ test('uncertain send retries the same transaction without duplicating the local 
   assert.equal(calls.length, 2);
   assert.equal(attempt.pending, false);
 });
+
+test('composer clears after durable transaction storage and before the local echo', async () => {
+  const order = [];
+  const storage = {
+    get: async () => undefined,
+    set: async (_key, value) => {
+      order.push(value ? 'persist transaction' : 'clear transaction');
+    },
+  };
+  const { mx } = clientFixture();
+  mx.sendMessage = async () => {
+    order.push('local echo');
+    assert.deepEqual(order, ['persist transaction', 'clear composer', 'local echo']);
+    return { event_id: '$ok' };
+  };
+  const attempt = new MessageAttempt(storage, 'room');
+  await attempt.send(mx, '!room:test', null, { body: 'hello' }, undefined, () =>
+    order.push('clear composer')
+  );
+  assert.deepEqual(order, [
+    'persist transaction',
+    'clear composer',
+    'local echo',
+    'clear transaction',
+  ]);
+});
+
+test('storage failure keeps the composer and never dispatches a message', async () => {
+  const { mx, calls } = clientFixture();
+  const attempt = new MessageAttempt({
+    get: async () => undefined,
+    set: async () => {
+      throw new Error('disk failed');
+    },
+  });
+  let cleared = false;
+  await assert.rejects(
+    attempt.send(mx, '!room:test', null, { body: 'hello' }, undefined, () => {
+      cleared = true;
+    }),
+    /disk failed/
+  );
+  assert.equal(cleared, false);
+  assert.equal(calls.length, 0);
+});
 test('HTTP retry without a pending echo keeps transaction ID; cancellation unlocks editing', async () => {
   const { mx, calls } = clientFixture();
   const attempt = new MessageAttempt();

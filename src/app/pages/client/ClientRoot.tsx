@@ -14,7 +14,7 @@ import {
   Spinner,
   Text,
 } from 'folds';
-import { HttpApiEvent, HttpApiEventHandlerMap, MatrixClient } from 'matrix-js-sdk';
+import { HttpApiEvent, HttpApiEventHandlerMap, MatrixClient, SyncState } from 'matrix-js-sdk';
 import FocusTrap from 'focus-trap-react';
 import React, { MouseEventHandler, ReactNode, useCallback, useEffect, useState } from 'react';
 import { clearPrivateStorage } from '../../utils/privateStorage';
@@ -39,7 +39,7 @@ import { AuthMetadataProvider } from '../../hooks/useAuthMetadata';
 import { getFallbackSession } from '../../state/sessions';
 import { AutoDiscovery } from './AutoDiscovery';
 
-function ClientRootLoading() {
+export function ClientRootLoading() {
   return (
     <SplashScreen>
       <Box direction="Column" grow="Yes" alignItems="Center" justifyContent="Center" gap="400">
@@ -148,6 +148,7 @@ type ClientRootProps = {
 };
 export function ClientRoot({ children }: ClientRootProps) {
   const [loading, setLoading] = useState(true);
+  const [cachePrepared, setCachePrepared] = useState(false);
   const { baseUrl, userId } = getFallbackSession() ?? {};
 
   const [loadState, loadMatrix] = useAsyncCallback<MatrixClient, Error, []>(
@@ -181,11 +182,20 @@ export function ClientRoot({ children }: ClientRootProps) {
   useSyncState(
     mx,
     useCallback((state) => {
-      if (state === 'PREPARED') {
+      if (state === SyncState.Prepared) setCachePrepared(true);
+      if (state === SyncState.Syncing) {
         setLoading(false);
       }
     }, [])
   );
+
+  useEffect(() => {
+    if (!cachePrepared || !loading) return undefined;
+    // PREPARED may contain only cached rooms. Prefer the first network sync,
+    // but keep the cache available if the server cannot be reached.
+    const timer = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timer);
+  }, [cachePrepared, loading]);
 
   return (
     <AutoDiscovery userId={userId!} baseUrl={baseUrl!}>

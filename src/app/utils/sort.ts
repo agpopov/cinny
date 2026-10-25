@@ -10,7 +10,7 @@ export const factoryRoomIdByActivity =
 
     return (
       (room2?.getLastActiveTimestamp() ?? Number.MIN_SAFE_INTEGER) -
-      (room1?.getLastActiveTimestamp() ?? Number.MIN_SAFE_INTEGER)
+        (room1?.getLastActiveTimestamp() ?? Number.MIN_SAFE_INTEGER) || a.localeCompare(b)
     );
   };
 
@@ -31,7 +31,7 @@ export const factoryRoomIdByAtoZ =
     if (aName.toLowerCase() > bName.toLowerCase()) {
       return 1;
     }
-    return 0;
+    return a.localeCompare(b);
   };
 
 export const factoryRoomIdByUnreadCount =

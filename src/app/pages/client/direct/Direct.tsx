@@ -199,6 +199,7 @@ export function Direct() {
 
   const virtualizer = useVirtualizer({
     count: sortedDirects.length,
+    getItemKey: (index) => sortedDirects[index],
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 38,
     overscan: 10,
@@ -259,7 +260,7 @@ export function Direct() {
                   return (
                     <VirtualTile
                       virtualItem={vItem}
-                      key={vItem.index}
+                      key={vItem.key}
                       ref={virtualizer.measureElement}
                     >
                       <RoomNavItem

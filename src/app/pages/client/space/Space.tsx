@@ -433,8 +433,9 @@ export function Space() {
 
   const virtualizer = useVirtualizer({
     count: hierarchy.length,
+    getItemKey: (index) => `${hierarchy[index].parentId}/${hierarchy[index].roomId}`,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 0,
+    estimateSize: () => 38,
     overscan: 10,
   });
 
@@ -505,11 +506,7 @@ export function Space() {
                 const categoryId = makeNavCategoryId(space.roomId, roomId);
 
                 return (
-                  <VirtualTile
-                    virtualItem={vItem}
-                    key={vItem.index}
-                    ref={virtualizer.measureElement}
-                  >
+                  <VirtualTile virtualItem={vItem} key={vItem.key} ref={virtualizer.measureElement}>
                     <div style={{ paddingTop: vItem.index === 0 ? undefined : config.space.S400 }}>
                       <NavCategoryHeader>
                         <RoomNavCategoryButton
@@ -526,7 +523,7 @@ export function Space() {
               }
 
               return (
-                <VirtualTile virtualItem={vItem} key={vItem.index} ref={virtualizer.measureElement}>
+                <VirtualTile virtualItem={vItem} key={vItem.key} ref={virtualizer.measureElement}>
                   <RoomNavItem
                     room={room}
                     selected={selectedRoomId === roomId}
