@@ -1,6 +1,7 @@
 import parse from 'html-dom-parser';
 import { isTag, isText, type ChildNode } from 'domhandler';
 import { sanitizeCustomHtml } from './sanitize';
+import { trimReplyFromBody } from './room';
 
 const BLOCK = /^(p|div|h[1-6]|blockquote|pre|ul|ol|li|tr|table|details|summary)$/;
 
@@ -26,3 +27,9 @@ export const formattedMessageText = (html: string): string => {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 };
+
+/** Match the channel renderer, including bots which omit the optional format field. */
+export const getMessagePreviewText = (content: Record<string, unknown>): string =>
+  typeof content.formatted_body === 'string'
+    ? formattedMessageText(content.formatted_body)
+    : trimReplyFromBody(typeof content.body === 'string' ? content.body : '');

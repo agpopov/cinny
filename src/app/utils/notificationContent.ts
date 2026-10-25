@@ -1,11 +1,11 @@
 import { MatrixClient, MatrixEvent, MsgType, Room } from 'matrix-js-sdk';
 import { cssColorMXID } from '../../util/colorMXID';
 import { downloadMedia, getMxIdLocalPart, mxcUrlToHttp } from './matrix';
-import { getMemberAvatarMxc, getMemberDisplayName, trimReplyFromBody } from './room';
+import { getMemberAvatarMxc, getMemberDisplayName } from './room';
 import { nameInitials } from './common';
 import { stripDataUrl } from './desktop';
 import { getPollPreviewText } from './poll';
-import { formattedMessageText } from './messagePreview';
+import { getMessagePreviewText } from './messagePreview';
 
 const MAX_BODY = 220;
 
@@ -39,10 +39,7 @@ export const getEventPreviewText = (mEvent: MatrixEvent, room?: Room): string =>
   const pollPreview = getPollPreviewText(content);
   if (pollPreview) return truncate(pollPreview, 120);
   const body = typeof content.body === 'string' ? content.body : '';
-  const message =
-    content.format === 'org.matrix.custom.html' && typeof content.formatted_body === 'string'
-      ? formattedMessageText(content.formatted_body)
-      : trimReplyFromBody(body);
+  const message = getMessagePreviewText(content);
   switch (content.msgtype) {
     case MsgType.Image:
       return '🖼 Изображение';

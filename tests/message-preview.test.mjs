@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import './register-unread-source.mjs';
-const { formattedMessageText } = await import('../src/app/utils/messagePreview.ts');
+const { formattedMessageText, getMessagePreviewText } = await import(
+  '../src/app/utils/messagePreview.ts'
+);
 
 test('notification HTML renders headings, breaks, lists and tables as readable text', () => {
   assert.equal(
@@ -41,5 +43,23 @@ test('reply fallbacks, active HTML and spoiler contents do not leak into notific
   assert.equal(
     formattedMessageText('<pre><code>&lt;h4&gt;literal code&lt;/h4&gt;</code></pre>'),
     '<h4>literal code</h4>'
+  );
+});
+
+test('preview uses the same formatted body as the channel, including incomplete bot events', () => {
+  for (const format of ['org.matrix.custom.html', undefined]) {
+    assert.equal(
+      getMessagePreviewText({
+        body: '<h4>raw fallback</h4>',
+        format,
+        formatted_body: '<h4>Alert</h4><p>Readable <b>message</b></p>',
+      }),
+      'Alert\n\nReadable message'
+    );
+  }
+  assert.equal(getMessagePreviewText({ body: 'Use <h4> in HTML' }), 'Use <h4> in HTML');
+  assert.equal(
+    getMessagePreviewText({ body: '> <@sender:example.org> Original\n\nActual reply' }),
+    'Actual reply'
   );
 });
