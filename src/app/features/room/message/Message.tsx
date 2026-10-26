@@ -64,6 +64,7 @@ import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { EmojiBoard } from '../../../components/emoji-board';
 import { ReactionViewer } from '../reaction-viewer';
 import { MessageEditor } from './MessageEditor';
+import { MessageOptions } from './MessageOptions';
 import { UserAvatar } from '../../../components/user-avatar';
 import { copyToClipboard } from '../../../utils/dom';
 import { stopPropagation } from '../../../utils/keyboard';
@@ -814,7 +815,7 @@ export const Message = as<'div', MessageProps>(
           </Username>
           {tagIconSrc && <PowerIcon size="100" iconSrc={tagIconSrc} />}
         </Box>
-        <Box shrink="No" gap="100">
+        <Box className={css.MessageTimestamp} data-message-timestamp shrink="No" gap="100">
           <Time
             ts={mEvent.getTs()}
             compact={messageLayout === MessageLayout.Compact}
@@ -934,11 +935,8 @@ export const Message = as<'div', MessageProps>(
         ref={ref}
       >
         {!edit && (
-          <div
-            className={css.MessageOptionsBase}
-            data-visible={
-              hover || (focused && isFocusVisible) || !!menuAnchor || !!emojiBoardAnchor
-            }
+          <MessageOptions
+            visible={hover || (focused && isFocusVisible) || !!menuAnchor || !!emojiBoardAnchor}
           >
             <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
               <Box gap="100">
@@ -1183,7 +1181,7 @@ export const Message = as<'div', MessageProps>(
                 </PopOut>
               </Box>
             </Menu>
-          </div>
+          </MessageOptions>
         )}
         {messageLayout === MessageLayout.Compact && (
           <CompactLayout before={headerJSX} onContextMenu={handleContextMenu} {...longPressProps}>
@@ -1285,10 +1283,7 @@ export const Event = as<'div', EventProps>(
         }}
         ref={ref}
       >
-        <div
-          className={css.MessageOptionsBase}
-          data-visible={hover || (focused && isFocusVisible) || !!menuAnchor}
-        >
+        <MessageOptions visible={hover || (focused && isFocusVisible) || !!menuAnchor}>
           <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
             <Box gap="100">
               <PopOut
@@ -1350,7 +1345,7 @@ export const Event = as<'div', EventProps>(
               </PopOut>
             </Box>
           </Menu>
-        </div>
+        </MessageOptions>
         <div onContextMenu={handleContextMenu} {...longPressProps}>
           {children}
         </div>

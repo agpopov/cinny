@@ -12,7 +12,8 @@ import { useAtom, useAtomValue, useStore } from 'jotai';
 import { isKeyHotkey } from 'is-hotkey';
 import { EventType, IContent, MsgType, RelationType, Room } from 'matrix-js-sdk';
 import { ReactEditor } from 'slate-react';
-import { Transforms, Editor } from 'slate';
+import { Descendant, Transforms, Editor } from 'slate';
+import { flushSync } from 'react-dom';
 import {
   Box,
   Button,
@@ -30,6 +31,7 @@ import {
   config,
   toRem,
 } from 'folds';
+import { takeEditorSubmission, restoreEditorSubmission } from '../../components/editor/submission';
 import { getMessageAttempt, getAttachmentAttempt } from '../../utils/messageAttempt';
 import { mentionsOutsideMarkdownCode } from '../../components/editor/markdownCode';
 
@@ -83,6 +85,7 @@ import {
   roomIdToUploadItemsAtomFamily,
   roomUploadAtomFamily,
   getUploadKey,
+  IReplyDraft,
 } from '../../state/room/roomInputDrafts';
 import { UploadCardRenderer } from '../../components/upload-card';
 import {
@@ -137,6 +140,7 @@ import { resolveSticker } from '../../plugins/custom-emoji/resolveSticker';
 import { usePersistentDraft } from '../../hooks/usePersistentDraft';
 
 const draftScopeUsers = new WeakMap<ReturnType<typeof useStore>, Map<string, number>>();
+type SubmissionDraft = { message: Descendant[]; reply?: IReplyDraft };
 
 interface RoomInputProps {
   editor: Editor;
@@ -171,14 +175,18 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const sendingRef = useRef(false);
     const [sending, setSending] = useState(false);
     const [sendError, setSendError] = useState('');
+    const [failedDraft, setFailedDraft] = useState<SubmissionDraft>();
     const messageAttempt = getMessageAttempt(mx, draftKey);
     const sendScope = useRef(0);
-    useEffect(
-      () => () => {
+    useEffect(() => {
+      sendingRef.current = false;
+      setSending(false);
+      setSendError('');
+      setFailedDraft(undefined);
+      return () => {
         sendScope.current += 1;
-      },
-      [draftKey, editor]
-    );
+      };
+    }, [draftKey, editor]);
     useEffect(() => {
       let scopes = draftScopeUsers.get(store);
       if (!scopes) {
@@ -331,12 +339,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       [setSelectedFiles, room, fileLimit]
     );
     const pickFile = useFilePicker(handleFiles, true);
-    const filePaste = useFilePasteHandler(
-      handleFiles,
-      draftKey,
-      sending || !draftReady,
-      setSendError
-    );
+    const filePaste = useFilePasteHandler(handleFiles, draftKey, !draftReady, setSendError);
     const dropZoneVisible = useFileDropZone(fileDropContainerRef, handleFiles);
     const [hideStickerBtn, setHideStickerBtn] = useState(document.body.clientWidth < 500);
 
@@ -448,166 +451,200 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       }
     };
 
-    const submit = useCallback(async () => {
-      if (sendingRef.current) return;
-      sendingRef.current = true;
-      setSending(true);
-      setSendError('');
-      const original = JSON.stringify(editor.children);
-      const scope = sendScope.current;
-      let cleared = false;
-      const nodes = freshGroupMentionNodes(
-        mentionsOutsideMarkdownCode(JSON.parse(original), undefined, isMarkdown)
-      );
-      const sendEditor = { ...editor, children: nodes };
-      try {
-        const groupMentions = await resolveGroupMentions(mx, room, nodes);
-        uploadBoardHandlers.current
-          ?.handleSend()
-          .catch((cause) => setSendError(cause instanceof Error ? cause.message : String(cause)));
-
-        const commandName = getBeginCommand(editor);
-        let plainText = toPlainText(nodes, isMarkdown, groupMentions).trim();
-        let customHtml = trimCustomHtml(
-          toMatrixCustomHTML(nodes, {
-            groupMentions,
-            allowTextFormatting: true,
-            allowBlockMarkdown: isMarkdown,
-            allowInlineMarkdown: isMarkdown,
-          })
-        );
-        let msgType = MsgType.Text;
-
-        if (commandName) {
-          plainText = trimCommand(commandName, plainText);
-          customHtml = trimCommand(commandName, customHtml);
-        }
-        if (commandName === Command.Me) {
-          msgType = MsgType.Emote;
-        } else if (commandName === Command.Notice) {
-          msgType = MsgType.Notice;
-        } else if (commandName === Command.Shrug) {
-          plainText = `${SHRUG} ${plainText}`;
-          customHtml = `${SHRUG} ${customHtml}`;
-        } else if (commandName === Command.TableFlip) {
-          plainText = `${TABLEFLIP} ${plainText}`;
-          customHtml = `${TABLEFLIP} ${customHtml}`;
-        } else if (commandName === Command.UnFlip) {
-          plainText = `${UNFLIP} ${plainText}`;
-          customHtml = `${UNFLIP} ${customHtml}`;
-        } else if (commandName) {
-          const commandContent = commands[commandName as Command];
-          if (commandContent) {
-            commandContent.exe(plainText);
-          }
-          resetEditor(editor);
-          resetEditorHistory(editor);
-          saveDraft(editor.children, replyDraft);
-          await flushDraft();
-          sendTypingStatus(false);
+    const send = useCallback(
+      async (retryDraft?: SubmissionDraft) => {
+        if (sendingRef.current || !draftReady) return;
+        if (
+          failedDraft &&
+          !retryDraft &&
+          JSON.stringify([editor.children, replyDraft]) !==
+            JSON.stringify([failedDraft.message, failedDraft.reply])
+        ) {
+          setSendError(
+            'Повторите отправку предыдущего сообщения или отмените её. Новый текст сохранён в поле ввода.'
+          );
           return;
         }
-
-        if (plainText === '') return;
-
-        const body = plainText;
-        const formattedBody = customHtml;
-        const mentionData = getMentions(mx, roomId, sendEditor, groupMentions, customHtml);
-
-        const content: IContent = {
-          msgtype: msgType,
-          body,
-        };
-
-        if (replyDraft && replyDraft.userId !== mx.getUserId()) {
-          mentionData.users.add(replyDraft.userId);
+        if (!retryDraft && isEmptyEditor(editor)) {
+          uploadBoardHandlers.current?.handleSend().catch((cause) => {
+            setSendError(cause instanceof Error ? cause.message : String(cause));
+          });
+          return;
         }
-
-        const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
-        content['m.mentions'] = mMentions;
-
-        if (replyDraft || !customHtmlEqualsPlainText(formattedBody, body)) {
-          content.format = 'org.matrix.custom.html';
-          content.formatted_body = formattedBody;
-        }
-        if (replyDraft) {
-          content['m.relates_to'] = {
-            'm.in_reply_to': {
-              event_id: replyDraft.eventId,
-            },
-          };
-          if (!threadId && replyDraft.relation?.rel_type === RelationType.Thread) {
-            content['m.relates_to'].event_id = replyDraft.relation.event_id;
-            content['m.relates_to'].rel_type = RelationType.Thread;
-            content['m.relates_to'].is_falling_back = false;
-          }
-        }
-        assertMentionContentSize(
-          content,
-          !!room.currentState.getStateEvents('m.room.encryption', '')
-        );
-        await messageAttempt.send(
-          mx,
-          roomId,
-          threadId ?? null,
-          content as any,
-          JSON.stringify([original, replyDraft]),
-          () => {
-            if (scope !== sendScope.current || JSON.stringify(editor.children) !== original) return;
-            resetEditor(editor);
-            resetEditorHistory(editor);
-            setReplyDraft(undefined);
-            setAutocompleteQuery(undefined);
-            cleared = true;
+        sendingRef.current = true;
+        setSending(true);
+        setSendError('');
+        const scope = sendScope.current;
+        const sendUploads = retryDraft ? undefined : uploadBoardHandlers.current?.handleSend;
+        const submittedReply = retryDraft ? retryDraft.reply : replyDraft;
+        let message = retryDraft?.message ?? structuredClone(editor.children);
+        const original = JSON.stringify(message);
+        try {
+          if (
+            !retryDraft ||
+            JSON.stringify([editor.children, replyDraft]) ===
+              JSON.stringify([retryDraft.message, retryDraft.reply])
+          ) {
+            flushSync(() => {
+              message = takeEditorSubmission(editor);
+              setReplyDraft(undefined);
+              setAutocompleteQuery(undefined);
+            });
             saveDraft(editor.children);
+            ReactEditor.focus(editor);
             sendTypingStatus(false);
           }
-        );
-        await flushDraft();
-      } catch (error) {
-        if (cleared) {
-          const message = JSON.parse(original);
-          if (scope === sendScope.current && isEmptyEditor(editor)) {
-            Transforms.insertFragment(editor, message);
-            setReplyDraft(replyDraft);
+          const nodes = freshGroupMentionNodes(
+            mentionsOutsideMarkdownCode(structuredClone(message), undefined, isMarkdown)
+          );
+          const sendEditor = { ...editor, children: nodes };
+          const groupMentions = await resolveGroupMentions(mx, room, nodes);
+          sendUploads?.().catch((cause) => {
+            if (scope === sendScope.current) {
+              setSendError(cause instanceof Error ? cause.message : String(cause));
+            }
+          });
+
+          const commandName = getBeginCommand(sendEditor);
+          let plainText = toPlainText(nodes, isMarkdown, groupMentions).trim();
+          let customHtml = trimCustomHtml(
+            toMatrixCustomHTML(nodes, {
+              groupMentions,
+              allowTextFormatting: true,
+              allowBlockMarkdown: isMarkdown,
+              allowInlineMarkdown: isMarkdown,
+            })
+          );
+          let msgType = MsgType.Text;
+
+          if (commandName) {
+            plainText = trimCommand(commandName, plainText);
+            customHtml = trimCommand(commandName, customHtml);
           }
-          saveDraft(message, replyDraft);
+          if (commandName === Command.Me) {
+            msgType = MsgType.Emote;
+          } else if (commandName === Command.Notice) {
+            msgType = MsgType.Notice;
+          } else if (commandName === Command.Shrug) {
+            plainText = `${SHRUG} ${plainText}`;
+            customHtml = `${SHRUG} ${customHtml}`;
+          } else if (commandName === Command.TableFlip) {
+            plainText = `${TABLEFLIP} ${plainText}`;
+            customHtml = `${TABLEFLIP} ${customHtml}`;
+          } else if (commandName === Command.UnFlip) {
+            plainText = `${UNFLIP} ${plainText}`;
+            customHtml = `${UNFLIP} ${customHtml}`;
+          } else if (commandName) {
+            const commandContent = commands[commandName as Command];
+            if (commandContent) {
+              commandContent.exe(plainText);
+            }
+            await flushDraft();
+            return;
+          }
+
+          if (plainText === '') return;
+
+          const body = plainText;
+          const formattedBody = customHtml;
+          const mentionData = getMentions(mx, roomId, sendEditor, groupMentions, customHtml);
+
+          const content: IContent = {
+            msgtype: msgType,
+            body,
+          };
+
+          if (submittedReply && submittedReply.userId !== mx.getUserId()) {
+            mentionData.users.add(submittedReply.userId);
+          }
+
+          const mMentions = getMentionContent(Array.from(mentionData.users), mentionData.room);
+          content['m.mentions'] = mMentions;
+
+          if (submittedReply || !customHtmlEqualsPlainText(formattedBody, body)) {
+            content.format = 'org.matrix.custom.html';
+            content.formatted_body = formattedBody;
+          }
+          if (submittedReply) {
+            content['m.relates_to'] = {
+              'm.in_reply_to': {
+                event_id: submittedReply.eventId,
+              },
+            };
+            if (!threadId && submittedReply.relation?.rel_type === RelationType.Thread) {
+              content['m.relates_to'].event_id = submittedReply.relation.event_id;
+              content['m.relates_to'].rel_type = RelationType.Thread;
+              content['m.relates_to'].is_falling_back = false;
+            }
+          }
+          assertMentionContentSize(
+            content,
+            !!room.currentState.getStateEvents('m.room.encryption', '')
+          );
+          await messageAttempt.send(
+            mx,
+            roomId,
+            threadId ?? null,
+            content as any,
+            JSON.stringify([original, submittedReply])
+          );
+          if (scope === sendScope.current) setFailedDraft(undefined);
           await flushDraft();
+        } catch (error) {
+          if (scope === sendScope.current) {
+            let restored = false;
+            flushSync(() => {
+              restored = restoreEditorSubmission(editor, message);
+              if (restored) setReplyDraft(submittedReply);
+              setFailedDraft(
+                restored && !messageAttempt.pending ? undefined : { message, reply: submittedReply }
+              );
+            });
+            if (restored) saveDraft(editor.children, submittedReply);
+            await flushDraft();
+          }
+          if (scope === sendScope.current) {
+            setSendError(
+              error instanceof Error
+                ? error.message
+                : 'Не удалось отправить сообщение. Повторите попытку.'
+            );
+          }
+        } finally {
+          if (scope === sendScope.current) {
+            sendingRef.current = false;
+            setSending(false);
+          }
         }
-        setSendError(
-          error instanceof Error
-            ? error.message
-            : 'Не удалось отправить сообщение. Повторите попытку.'
-        );
-      } finally {
-        sendingRef.current = false;
-        setSending(false);
-      }
-    }, [
-      mx,
-      room,
-      roomId,
-      threadId,
-      editor,
-      replyDraft,
-      sendTypingStatus,
-      setReplyDraft,
-      saveDraft,
-      flushDraft,
-      messageAttempt,
-      isMarkdown,
-      commands,
-    ]);
+      },
+      [
+        mx,
+        room,
+        roomId,
+        threadId,
+        editor,
+        replyDraft,
+        sendTypingStatus,
+        setReplyDraft,
+        saveDraft,
+        flushDraft,
+        messageAttempt,
+        isMarkdown,
+        commands,
+        draftReady,
+        failedDraft,
+      ]
+    );
+    const submit = useCallback(() => send(), [send]);
 
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
         filePaste.onKeyDown(evt);
-        if (
-          (isKeyHotkey('mod+enter', evt) || (!enterForNewline && isKeyHotkey('enter', evt))) &&
-          !isComposing(evt)
-        ) {
+        if (evt.defaultPrevented || !draftReady || isComposing(evt)) return;
+        if (isKeyHotkey('mod+enter', evt) || (!enterForNewline && isKeyHotkey('enter', evt))) {
           evt.preventDefault();
-          submit();
+          if (!evt.repeat) submit();
+          return;
         }
         if (isKeyHotkey('escape', evt)) {
           evt.preventDefault();
@@ -618,7 +655,15 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           setReplyDraft(undefined);
         }
       },
-      [submit, setReplyDraft, enterForNewline, autocompleteQuery, isComposing, filePaste]
+      [
+        submit,
+        setReplyDraft,
+        enterForNewline,
+        autocompleteQuery,
+        isComposing,
+        filePaste,
+        draftReady,
+      ]
     );
 
     const handleKeyUp: KeyboardEventHandler = useCallback(
@@ -794,32 +839,67 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             {sendError || draftError}
           </Text>
         )}
-        {sendError && messageAttempt.pending && (
-          <Box gap="200" wrap="Wrap">
-            <Button size="300" variant="Secondary" disabled={sending} onClick={submit}>
-              <Text>Повторить отправку</Text>
-            </Button>
-            <Button
-              size="300"
-              variant="Secondary"
-              disabled={sending}
-              onClick={async () => {
-                try {
-                  await messageAttempt.cancel(mx, roomId);
-                  setSendError(
-                    'Локальная попытка отменена. Текст сохранён. Если сервер уже принял сообщение, оно останется в истории.'
-                  );
-                } catch (cause) {
-                  setSendError(cause instanceof Error ? cause.message : String(cause));
-                }
-              }}
-            >
-              <Text>Отменить локальную попытку</Text>
-            </Button>
+        {sendError && (messageAttempt.pending || failedDraft) && (
+          <Box direction="Column" gap="200">
+            {failedDraft && (
+              <Text size="T300" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                Неотправленное сообщение: {toPlainText(failedDraft.message, isMarkdown)}
+              </Text>
+            )}
+            <Box gap="200" wrap="Wrap">
+              <Button
+                size="300"
+                variant="Secondary"
+                disabled={sending}
+                onClick={() => send(failedDraft)}
+              >
+                <Text>Повторить отправку</Text>
+              </Button>
+              <Button
+                size="300"
+                variant="Secondary"
+                disabled={sending}
+                onClick={async () => {
+                  const scope = sendScope.current;
+                  try {
+                    await messageAttempt.cancel(mx, roomId);
+                    if (scope !== sendScope.current) return;
+                    if (failedDraft) {
+                      let recoveredReply = replyDraft;
+                      flushSync(() => {
+                        if (restoreEditorSubmission(editor, failedDraft.message)) {
+                          recoveredReply = failedDraft.reply;
+                          setReplyDraft(failedDraft.reply);
+                        } else if (
+                          JSON.stringify(editor.children) !== JSON.stringify(failedDraft.message)
+                        ) {
+                          // Cancellation keeps both texts available for editing.
+                          Transforms.insertNodes(editor, structuredClone(failedDraft.message), {
+                            at: [0],
+                          });
+                          editor.onChange();
+                        }
+                      });
+                      saveDraft(editor.children, recoveredReply);
+                      setFailedDraft(undefined);
+                    }
+                    setSendError(
+                      'Локальная попытка отменена. Неотправленный текст сохранён в черновике. Если сервер уже принял сообщение, оно останется в истории.'
+                    );
+                  } catch (cause) {
+                    if (scope === sendScope.current) {
+                      setSendError(cause instanceof Error ? cause.message : String(cause));
+                    }
+                  }
+                }}
+              >
+                <Text>Отменить локальную попытку</Text>
+              </Button>
+            </Box>
           </Box>
         )}
         <CustomEditor
-          readOnly={sending || !draftReady}
+          readOnly={!draftReady}
           onChange={() => {
             if (
               draftReady &&
@@ -971,6 +1051,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
               <IconButton
                 aria-label={t('Send message')}
                 disabled={sending}
+                onMouseDown={(evt) => evt.preventDefault()}
                 onClick={submit}
                 variant="SurfaceVariant"
                 size="300"

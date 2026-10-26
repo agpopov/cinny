@@ -1,8 +1,11 @@
 import { globalStyle, style } from '@vanilla-extract/css';
 import { DefaultReset, config, toRem } from 'folds';
 
+export const MessageOptionsTimeSpace = '--cinny-message-options-time-space';
+
 export const MessageBase = style({
   position: 'relative',
+  containerType: 'inline-size',
   '@media': {
     '(hover: none)': { userSelect: 'none', WebkitTouchCallout: 'none' },
   },
@@ -17,6 +20,8 @@ export const MessageOptionsBase = style([
     position: 'absolute',
     top: 0,
     right: 0,
+    maxWidth: '100%',
+    vars: { [MessageOptionsTimeSpace]: '0px' },
     zIndex: 1,
     opacity: 0,
     pointerEvents: 'none',
@@ -32,11 +37,30 @@ export const MessageOptionsBar = style([
   DefaultReset,
   {
     padding: config.space.S100,
+    paddingInlineEnd: `calc(${config.space.S100} + var(${MessageOptionsTimeSpace}))`,
   },
 ]);
 
+// The timestamp stays in the header's normal flow and above the floating
+// menu background when the shared outline extends around it.
+export const MessageTimestamp = style({
+  position: 'relative',
+  zIndex: 2,
+});
+
 export const BubbleAvatarBase = style({
   paddingTop: 0,
+});
+
+// A thread pane can be narrow even on a large desktop. All quick actions are
+// also available from the menu, so show only its button in narrow panes.
+globalStyle(`${MessageOptionsBase} button:not([data-message-actions])`, {
+  '@container': {
+    '(max-width: 600px)': { display: 'none' },
+  },
+  '@media': {
+    '(hover: none), (pointer: coarse)': { display: 'none' },
+  },
 });
 
 export const MessageAvatar = style({
