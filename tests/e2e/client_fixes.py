@@ -10,6 +10,17 @@ OUT = Path(os.environ.get('TEST_OUTPUT', 'artifacts/client-fixes'))
 OUT.mkdir(parents=True, exist_ok=True)
 checks = []
 
+
+def wait_pending(page, pending):
+    # Clearing the composer is synchronous; durable transaction storage and
+    # HTTP dispatch may still be pending, particularly in WebKit.
+    for _ in range(200):
+        if pending:
+            break
+        page.wait_for_timeout(50)
+    assert len(pending) == 1
+
+
 with sync_playwright() as p:
     for engine in os.environ.get('BROWSERS', 'chromium,firefox,webkit').split(','):
         browser = getattr(p, engine).launch(**({'args': ['--no-sandbox']} if engine == 'chromium' else {}))
@@ -53,7 +64,7 @@ with sync_playwright() as p:
         editor.press('Enter')
         expect(editor.locator('[data-slate-string]')).to_have_count(0, timeout=10000)
         expect(page.get_by_text('Immediate local echo', exact=True)).to_be_visible()
-        assert len(pending) == 1
+        wait_pending(page, pending)
         # HTTP is still pending: the composer must already be empty.
         pending.pop().fulfill(json={'event_id': '$sent-client-fixes'})
         expect(editor).to_have_attribute('contenteditable', 'true')
@@ -68,7 +79,7 @@ with sync_playwright() as p:
         editor.press('Enter')
         expect(editor.locator('[data-slate-string]')).to_have_count(0)
         expect(page.get_by_text('Mention local echo', exact=False).first).to_be_visible()
-        assert len(pending) == 1
+        wait_pending(page, pending)
         request = pending[0].request.post_data_json
         assert request['format'] == 'org.matrix.custom.html' and '@Startup user' in request['formatted_body'], request
         pending.pop().fulfill(json={'event_id':'$sent-mention-client-fixes'})
@@ -81,7 +92,7 @@ with sync_playwright() as p:
         editor.press('Enter')
         expect(editor.locator('[data-slate-string]')).to_have_count(0)
         page.wait_for_timeout(100)
-        assert len(pending) == 1
+        wait_pending(page, pending)
         pending.pop().fulfill(status=403, json={'errcode':'M_FORBIDDEN','error':'Test send denied'})
         expect(editor).to_have_text('Restore on failure', timeout=10000)
         expect(editor).to_have_attribute('contenteditable', 'true')

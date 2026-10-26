@@ -126,10 +126,11 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
     const handleKeydown: KeyboardEventHandler = useCallback(
       (evt) => {
         onKeyDown?.(evt);
+        if (evt.defaultPrevented || evt.nativeEvent.isComposing || readOnly) return;
         const shortcutToggled = toggleKeyboardShortcut(editor, evt);
         if (shortcutToggled) evt.preventDefault();
       },
-      [editor, onKeyDown]
+      [editor, onKeyDown, readOnly]
     );
 
     // Firefox replaces native DOM nodes during IME composition before React's

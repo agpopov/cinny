@@ -23,6 +23,7 @@
     "test:media": "node tests/media.test.mjs",
     "test:mobile-media": "node tests/mobile-media.test.mjs",
     "test:editor-links": "node tests/editor-links.test.mjs",
+    "test:composer": "node tests/composer.test.mjs",
     "test:audit:source": "node tests/platform-audit.test.mjs",
     "test:stickers": "node tests/stickers.test.mjs",
     "test:mentions": "node --import ./tests/register-unread-source.mjs tests/mention-groups.test.ts",
