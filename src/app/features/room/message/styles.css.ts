@@ -3,9 +3,6 @@ import { DefaultReset, config, toRem } from 'folds';
 
 export const MessageBase = style({
   position: 'relative',
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1fr) auto',
-  columnGap: config.space.S200,
   containerType: 'inline-size',
   '@media': {
     '(hover: none)': { userSelect: 'none', WebkitTouchCallout: 'none' },
@@ -18,10 +15,10 @@ export const MessageBaseBubbleCollapsed = style({
 export const MessageOptionsBase = style([
   DefaultReset,
   {
-    position: 'relative',
-    gridColumn: 2,
-    gridRow: 1,
-    alignSelf: 'start',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    maxWidth: '100%',
     zIndex: 1,
     opacity: 0,
     pointerEvents: 'none',
@@ -44,16 +41,8 @@ export const BubbleAvatarBase = style({
   paddingTop: 0,
 });
 
-// Keep the action column reserved even while hidden: dates, text and images
-// retain their width when a mouse or keyboard reveals the buttons.
-globalStyle(`${MessageBase} > :not(${MessageOptionsBase})`, {
-  gridColumn: 1,
-  gridRow: 1,
-  minWidth: 0,
-});
-
 // A thread pane can be narrow even on a large desktop. All quick actions are
-// also available from the menu, so reserve only its button in narrow panes.
+// also available from the menu, so show only its button in narrow panes.
 globalStyle(`${MessageOptionsBase} button:not([data-message-actions])`, {
   '@container': {
     '(max-width: 600px)': { display: 'none' },

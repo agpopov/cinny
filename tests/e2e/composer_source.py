@@ -142,8 +142,13 @@ with sync_playwright() as p:
                 for message in page.locator('.message').all():
                     bar = message.locator('[data-visible]')
                     action = message.locator('[data-message-actions]')
+                    bar.evaluate('node => node.style.display = "none"')
+                    without_actions = message.locator('.layout').bounding_box()
+                    bar.evaluate('node => node.style.display = ""')
                     before = message.locator('.layout').bounding_box()
+                    assert before == without_actions, (engine, width, 'actions reserve message width', before, without_actions)
                     bar.evaluate('node => node.dataset.visible = "true"')
+                    bar.evaluate('node => window.positionMessageOptions(node)')
                     after = message.locator('.layout').bounding_box()
                     assert before == after, (engine, width, 'hover reflow', before, after)
                     for time in message.locator('time').all():
@@ -155,7 +160,7 @@ with sync_playwright() as p:
                     bar.evaluate('node => node.dataset.visible = "false"')
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (engine, width, 'horizontal overflow')
                 page.screenshot(path=str(OUT / f'{engine}-{touch}-{width}.png'), full_page=True)
-            checks.append(f'{engine} touch={touch}: actions/date do not intersect or reflow at 320,360,390,768,1024,1920px in modern,bubble,compact layouts')
+            checks.append(f'{engine} touch={touch}: floating actions preserve full message width and avoid date overlap at 320,360,390,768,1024,1920px in modern,bubble,compact layouts')
             assert not errors, errors
             context.close()
         browser.close()

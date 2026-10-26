@@ -56,6 +56,10 @@ for (const [name, value] of Object.entries(config.space))
   variables[value.slice(4, -1)] = `${(Number(name.slice(1)) / 100) * 4}px`;
 
 const runtime = `
+window.positionMessageOptions = (element) => {
+  const optionsRef = {current:element};
+  (${sourceCallback('../../src/app/features/room/message/MessageOptions.tsx', 'updatePosition')})();
+};
 window.process = { env: { NODE_ENV: 'development' } };
 const modules = ${JSON.stringify(modules)};
 const cache = {};
