@@ -21,7 +21,6 @@ export function MessageOptions({ visible, children }: MessageOptionsProps) {
     const time = message.querySelector('time');
     if (!time) return;
     const timestampContainer = time.closest<HTMLElement>('[data-message-timestamp]');
-    timestampContainer?.style.removeProperty('transform');
 
     const actions = options.getBoundingClientRect();
     const timestamp = time.getBoundingClientRect();
@@ -35,13 +34,10 @@ export function MessageOptions({ visible, children }: MessageOptionsProps) {
       // the menu sat to the left of the date. Message layout is unaffected.
       options.style.setProperty(css.MessageOptionsTimeSpace, `${right}px`);
       const frame = options.getBoundingClientRect();
-      const top = Math.max(0, timestamp.top - row.top + (timestamp.height - frame.height) / 2);
+      // Position the frame around the timestamp's existing center, including
+      // above the row when needed. Hover must never move the timestamp.
+      const top = timestamp.top - row.top + (timestamp.height - frame.height) / 2;
       options.style.top = `${top}px`;
-      // The frame cannot move above the row. Center the timestamp visually
-      // when that limit leaves extra space below it, without moving the text
-      // or changing the header's layout height.
-      const offset = row.top + top + frame.height / 2 - (timestamp.top + timestamp.height / 2);
-      timestampContainer.style.transform = `translateY(${offset}px)`;
       options.dataset.combinedTime = 'true';
       return;
     }
@@ -77,7 +73,6 @@ export function MessageOptions({ visible, children }: MessageOptionsProps) {
     if (time) observer.observe(time);
     return () => {
       observer.disconnect();
-      time?.closest<HTMLElement>('[data-message-timestamp]')?.style.removeProperty('transform');
     };
   }, [children, visible, updatePosition]);
 

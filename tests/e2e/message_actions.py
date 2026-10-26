@@ -150,7 +150,7 @@ with sync_playwright() as p:
                     timestamp_after = row.evaluate(TIMESTAMP_GEOMETRY)
                     assert len(timestamp_before) == len(timestamp_after)
                     for old, new in zip(timestamp_before, timestamp_after):
-                        assert [old[0], old[2], old[3]] == [new[0], new[2], new[3]], (engine, layout, width, 'hover changes timestamp width or horizontal position')
+                        assert old == new, (engine, layout, width, 'hover moves timestamp', old, new)
                     if layout in [0, 2] and label != 'collapsed':
                         expect(bar).to_have_attribute('data-combined-time', 'true')
                     if label == 'collapsed':
@@ -163,7 +163,10 @@ with sync_playwright() as p:
                     assert dimensions['beforeScroll'] <= dimensions['withoutScroll'] + 1, (engine, layout, width, label, 'actions add horizontal overflow')
                     if label == 'reply' and width in [390, 1024]:
                         page.screenshot(path=str(OUT / f'{engine}-layout-{layout}-{width}.png'))
-                checks.append(f'{engine}: layout={layout}, width={width}: date centered in shared frame; full message width, wrapping and horizontal timestamp position stay unchanged')
+                    page.mouse.move(0, 0)
+                    expect(bar).to_have_css('opacity', '0')
+                    assert row.evaluate(TIMESTAMP_GEOMETRY) == timestamp_before, (engine, layout, width, 'mouseleave moves timestamp')
+                checks.append(f'{engine}: layout={layout}, width={width}: date centered in shared frame; timestamp stays fixed before/during/after hover; full message width and wrapping unchanged')
             page.set_viewport_size({'width': 1280, 'height': 1000})
             target = page.get_by_text(REPLY_BODY, exact=True).first
             target.scroll_into_view_if_needed()
@@ -208,11 +211,13 @@ with sync_playwright() as p:
                 row = target.locator('xpath=ancestor::div[@tabindex="0"][1]')
                 bar = row.locator('[data-visible]').first
                 expect(bar).to_have_css('opacity', '0')
+                timestamp_before = row.evaluate(TIMESTAMP_GEOMETRY)
                 target.tap()
                 expect(bar).to_have_css('opacity', '0')
                 long_press(page, target)
                 expect(bar).to_have_css('opacity', '1')
                 wait_actions_layout(page, row)
+                assert row.evaluate(TIMESTAMP_GEOMETRY) == timestamp_before, (engine, layout, width, 'long press moves timestamp')
                 buttons = bar.locator('button:visible')
                 expect(buttons).to_have_count(1)
                 action = bar.locator('[data-message-actions]')
@@ -231,6 +236,7 @@ with sync_playwright() as p:
                 close_reply.tap()
                 page.locator('[data-editable-name="RoomInput"]').tap()
                 expect(bar).to_have_css('opacity', '0')
+                assert row.evaluate(TIMESTAMP_GEOMETRY) == timestamp_before, (engine, layout, width, 'touch dismiss moves timestamp')
                 checks.append(f'{engine}: touch layout={layout}, width={width}: single 44px menu, long press, reply action, dismiss and full message width passed')
             page.get_by_role('button', name='Открыть тред: 1 ответ', exact=True).tap()
             thread = page.get_by_text(THREAD_BODY, exact=True).last
