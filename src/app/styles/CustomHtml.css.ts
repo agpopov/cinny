@@ -227,7 +227,7 @@ export const Emoticon = recipe({
 
       height: '1em',
       minWidth: '1em',
-      fontSize: '1.33em',
+      fontSize: '1em',
       lineHeight: '1em',
       verticalAlign: 'middle',
       position: 'relative',
