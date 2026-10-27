@@ -25,6 +25,7 @@ import classNames from 'classnames';
 import { ReactEditor } from 'slate-react';
 import * as css from './Thread.css';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
+import { AppHeader, RoomViewRegion } from '../../../styles/telegramTheme.css';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { UserAvatar } from '../../../components/user-avatar';
@@ -78,7 +79,11 @@ function PanelHeader({
   onClose,
 }: PanelHeaderProps) {
   return (
-    <Header className={css.PanelHeader} variant="Background" size="600">
+    <Header
+      className={classNames(css.PanelHeader, ContainerColor({ variant: 'Background' }), AppHeader)}
+      variant="Background"
+      size="600"
+    >
       <Box grow="Yes" alignItems="Center" gap="200">
         {onBack && (
           <IconButton variant="Background" onClick={onBack} aria-label="К списку тредов">
@@ -522,6 +527,7 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
     <Box
       className={classNames(css.Panel, ContainerColor({ variant: 'Background' }), {
         [css.PanelMobile]: mobile,
+        [RoomViewRegion]: state.view === 'thread',
       })}
       direction="Column"
       style={mobile ? undefined : { maxWidth: toRem(560) }}
