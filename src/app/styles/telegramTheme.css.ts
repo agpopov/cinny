@@ -25,6 +25,7 @@ import { UserAvatarContainer } from '../components/user-profile/styles.css';
 export const RoomViewRegion = style({});
 export const RoundAvatar = style({});
 export const DayDivider = style({});
+export const NewMessagesDivider = style({});
 export const UnreadCounter = style({});
 export const AppHeader = style({});
 export const EventBubble = style({});
@@ -349,6 +350,12 @@ globalStyle(`${theme} ${DayDivider} > span`, {
   borderRadius: config.radii.Pill,
   padding: `0 ${config.space.S300}`,
   minHeight: toRem(26),
+});
+
+// "New messages" keeps the date chip shape but stays green.
+globalStyle(`${theme} ${DayDivider}${NewMessagesDivider} > span`, {
+  backgroundColor: `color-mix(in srgb, ${color.Success.Main} 55%, transparent)`,
+  color: color.Success.OnMain,
 });
 
 // "Jump to latest" styled like the date chip.

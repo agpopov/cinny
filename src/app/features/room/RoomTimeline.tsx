@@ -98,7 +98,12 @@ import { POLL_START_TYPE, POLL_START_TYPE_STABLE } from '../../utils/poll';
 import { Reactions, Message, Event, EncryptedContent } from './message';
 import { useMemberEventParser } from '../../hooks/useMemberEventParser';
 import * as customHtmlCss from '../../styles/CustomHtml.css';
-import { DayDivider, FloatingChip, RoomIntroBubble } from '../../styles/telegramTheme.css';
+import {
+  DayDivider,
+  FloatingChip,
+  NewMessagesDivider,
+  RoomIntroBubble,
+} from '../../styles/telegramTheme.css';
 import { RoomIntro } from '../../components/room-intro';
 import {
   getIntersectionObserverEntry,
@@ -1855,7 +1860,11 @@ export function RoomTimeline({
     const newDividerJSX =
       newDivider && eventJSX && eventSender !== mx.getUserId() ? (
         <MessageBase space={messageSpacing}>
-          <TimelineDivider style={{ color: color.Success.Main }} variant="Inherit">
+          <TimelineDivider
+            style={{ color: color.Success.Main }}
+            variant="Inherit"
+            className={classNames(DayDivider, NewMessagesDivider)}
+          >
             <Badge as="span" size="500" variant="Success" fill="Solid" radii="300">
               <Text size="L400">{t('New Messages')}</Text>
             </Badge>
