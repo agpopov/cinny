@@ -427,6 +427,8 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const [peopleDrawer, setPeopleDrawer] = useSetting(settingsAtom, 'isPeopleDrawer');
   const [threadPanel, setThreadPanel] = useAtom(roomIdToThreadPanelAtomFamily(room.roomId));
   const threadsUnread = useUnreadFollowedThreads(mx, room);
+  // Members and threads share the right side: only one of them is shown at a time.
+  const membersVisible = peopleDrawer && !threadPanel;
   const handleThreadsToggle = () => {
     setThreadPanel(threadPanel ? undefined : { view: 'list' });
   };
@@ -454,6 +456,11 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const handleMemberToggle = () => {
     if (callView) {
       openSettings(room.roomId, parentSpace?.roomId, RoomSettingsPage.MembersPage);
+      return;
+    }
+    if (threadPanel) {
+      setThreadPanel(undefined);
+      setPeopleDrawer(true);
       return;
     }
     setPeopleDrawer(!peopleDrawer);
@@ -674,14 +681,14 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
                   {callView ? (
                     <Text>{t('Members')}</Text>
                   ) : (
-                    <Text>{peopleDrawer ? t('Hide Members') : t('Show Members')}</Text>
+                    <Text>{membersVisible ? t('Hide Members') : t('Show Members')}</Text>
                   )}
                 </Tooltip>
               }
             >
               {(triggerRef) => (
                 <IconButton
-                  aria-label={peopleDrawer ? 'Скрыть участников' : 'Показать участников'}
+                  aria-label={membersVisible ? 'Скрыть участников' : 'Показать участников'}
                   fill="None"
                   ref={triggerRef}
                   onClick={handleMemberToggle}

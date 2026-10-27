@@ -61,3 +61,15 @@ test('chat list, thread panel and members drawer are resizable on desktop only',
   assert.match(resizer, /onDoubleClick=\{\(\) => onChange\(undefined\)\}/);
   assert.match(resizer, /const direction = edge === 'Left' \? -1 : 1;/);
 });
+
+test('members and threads take turns on the right side', () => {
+  const room = source('../src/app/features/room/Room.tsx');
+  assert.match(room, /!threadPanel && screenSize === ScreenSize\.Desktop && isDrawer/);
+
+  const header = source('../src/app/features/room/RoomViewHeader.tsx');
+  assert.match(header, /const membersVisible = peopleDrawer && !threadPanel;/);
+  assert.match(
+    header,
+    /if \(threadPanel\) \{\s*setThreadPanel\(undefined\);\s*setPeopleDrawer\(true\);/
+  );
+});
