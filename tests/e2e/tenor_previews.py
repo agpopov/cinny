@@ -18,7 +18,9 @@ def assert_tenor_preview(page, output):
     requests = install_session_fixture(page, room_events=[{
         'type': 'm.room.message', 'event_id': '$localized-tenor', 'sender': USER,
         'origin_server_ts': int(time.time() * 1000),
-        'content': {'msgtype': 'm.text', 'body': SHARE},
+        'content': {'msgtype': 'm.text', 'body': '[' + SHARE + '](' + SHARE + ')',
+                    'format': 'org.matrix.custom.html',
+                    'formatted_body': '<a href="' + SHARE + '">' + SHARE + '</a>'},
     }])
     # A real looping, two-frame GIF. Only provider bytes and Matrix HTTP are
     # fixtures; link parsing, message rendering and image decoding are real.
@@ -36,6 +38,7 @@ def assert_tenor_preview(page, output):
 
     page.route(MEDIA, provider)
     seed_session(page)
+    page.evaluate('localStorage.setItem("settings", JSON.stringify({...JSON.parse(localStorage.getItem("settings")), messageLayout:2, urlPreview:true, encUrlPreview:true, mediaAutoLoad:true, isPeopleDrawer:false}))')
     page.goto(origin + '/#/home/' + ROOM + '/')
     assert_session_ready(page)
     row = page.locator('[data-message-id="$localized-tenor"]')
@@ -59,4 +62,41 @@ def assert_tenor_preview(page, output):
         'share': SHARE, 'media': MEDIA, 'animated': animated,
         'matrix_preview_requests': 0, 'fixture': 'two-frame GIF',
     }, indent=2))
-    print('PASS localized Tenor: original link retained, GIF decodes and animates without Matrix preview API', flush=True)
+    print('PASS formatted Tenor in bubble layout: original link retained, GIF decodes and animates without Matrix preview API', flush=True)
+
+    # Send through the actual editor as a formatted hyperlink, rather than only
+    # displaying a synthetic plain-text event. This is the reported failure path.
+    from urllib.parse import unquote, urlsplit
+    sent = []
+
+    def send(route):
+        content = route.request.post_data_json
+        remote = {'type': 'm.room.message', 'event_id': '$tenor-editor-sent',
+                  'sender': USER, 'origin_server_ts': int(time.time() * 1000),
+                  'content': content, 'unsigned': {'transaction_id': unquote(urlsplit(route.request.url).path).rsplit('/', 1)[-1]}}
+        sent.append(remote)
+        route.fulfill(json={'event_id': remote['event_id']})
+
+    page.route('**/send/m.room.message/*', send)
+    editor = page.locator('[data-editable-name="RoomInput"]')
+    editor.click()
+    page.keyboard.insert_text(SHARE)
+    editor.press('Control+A')
+    page.wait_for_function('text => getSelection().toString() === text', arg=SHARE)
+    editor.evaluate('''(node, url) => {
+        const data = new DataTransfer(); data.setData('text/plain', url);
+        const event = new ClipboardEvent('paste', {bubbles:true, cancelable:true});
+        Object.defineProperty(event, 'clipboardData', {value:data}); node.dispatchEvent(event);
+    }''', SHARE)
+    expect(editor.locator('a')).to_have_attribute('href', SHARE)
+    editor.press('Enter')
+    sent_row = page.locator('[data-message-id="$tenor-editor-sent"]')
+    sent_image = sent_row.locator('img[src="' + MEDIA + '"]')
+    expect(sent_image).to_be_visible(timeout=30000)
+    sent_image.evaluate('(img) => img.decode()')
+    assert sent[0]['content']['body'] == '[' + SHARE + '](' + SHARE + ')', sent
+    assert SHARE in sent[0]['content']['formatted_body'], sent
+    assert not any('preview_url' in item['path'] for item in requests), requests
+    (output / 'tenor-editor-message.json').write_text(json.dumps(sent[0]['content'], ensure_ascii=False, indent=2), encoding='utf-8')
+    page.screenshot(path=str(output / 'tenor-editor-sent.png'))
+    print('PASS actual editor hyperlink send: serialized Markdown fallback, correct GIF preview after server acknowledgement', flush=True)
