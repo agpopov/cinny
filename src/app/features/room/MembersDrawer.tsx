@@ -45,6 +45,8 @@ import { getMemberDisplayName, getMemberSearchStr } from '../../utils/room';
 import { getMxIdLocalPart } from '../../utils/matrix';
 import { useSetSetting, useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
+import { PanelResizable, PanelResizer } from '../../components/panel-resizer';
+import { MEMBERS_DRAWER_WIDTH, panelWidthStyle } from '../../utils/panelWidth';
 import { millify } from '../../plugins/millify';
 import { ScrollTopContainer } from '../../components/scroll-top-container';
 import { UserAvatar } from '../../components/user-avatar';
@@ -191,6 +193,8 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
   const mx = useMatrixClient();
   const useAuthentication = useMediaAuthentication();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const [drawerWidth, setDrawerWidth] = useSetting(settingsAtom, 'membersDrawerWidth');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scrollTopAnchorRef = useRef<HTMLDivElement>(null);
   const powerLevels = usePowerLevelsContext();
@@ -257,7 +261,13 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
 
   return (
     <Box
-      className={classNames(css.MembersDrawer, ContainerColor({ variant: 'Background' }))}
+      ref={drawerRef}
+      className={classNames(
+        css.MembersDrawer,
+        ContainerColor({ variant: 'Background' }),
+        PanelResizable
+      )}
+      style={panelWidthStyle(drawerWidth, MEMBERS_DRAWER_WIDTH)}
       shrink="No"
       direction="Column"
     >
@@ -448,6 +458,14 @@ export function MembersDrawer({ room, members }: MembersDrawerProps) {
           </Box>
         </Scroll>
       </Box>
+      <PanelResizer
+        panelRef={drawerRef}
+        edge="Left"
+        limits={MEMBERS_DRAWER_WIDTH}
+        label="Ширина панели участников"
+        width={drawerWidth}
+        onChange={setDrawerWidth}
+      />
     </Box>
   );
 }

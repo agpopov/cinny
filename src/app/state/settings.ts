@@ -42,6 +42,11 @@ export interface Settings {
 
   /** Показывать активные треды под комнатами в списке слева. */
   showThreadsInNav: boolean;
+  /** Ширина списка чатов в px; без значения действует ширина темы. */
+  navWidth?: number;
+  /** Ширина боковых панелей тредов и участников в px; без значения — по умолчанию. */
+  threadPanelWidth?: number;
+  membersDrawerWidth?: number;
 
   showNotifications: boolean;
   isNotificationSounds: boolean;

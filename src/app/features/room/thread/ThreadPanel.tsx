@@ -26,6 +26,10 @@ import { ReactEditor } from 'slate-react';
 import * as css from './Thread.css';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
 import { AppHeader, RoomViewRegion } from '../../../styles/telegramTheme.css';
+import { PanelResizable, PanelResizer } from '../../../components/panel-resizer';
+import { useSetting } from '../../../state/hooks/settings';
+import { settingsAtom } from '../../../state/settings';
+import { THREAD_PANEL_WIDTH, panelWidthStyle } from '../../../utils/panelWidth';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { UserAvatar } from '../../../components/user-avatar';
@@ -522,15 +526,23 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
   const close = useCallback(() => setPanel(undefined), [setPanel]);
   const main = state.view === 'thread' && !!state.main;
   const mobile = screenSize !== ScreenSize.Desktop || main;
+  const [panelWidth, setPanelWidth] = useSetting(settingsAtom, 'threadPanelWidth');
+  const panelRef = useRef<HTMLDivElement>(null);
 
   return (
     <Box
+      ref={panelRef}
       className={classNames(css.Panel, ContainerColor({ variant: 'Background' }), {
         [css.PanelMobile]: mobile,
         [RoomViewRegion]: state.view === 'thread',
+        [PanelResizable]: !mobile,
       })}
       direction="Column"
-      style={mobile ? undefined : { maxWidth: toRem(560) }}
+      style={
+        mobile
+          ? undefined
+          : panelWidthStyle(panelWidth, THREAD_PANEL_WIDTH) ?? { maxWidth: toRem(560) }
+      }
     >
       {state.view === 'list' ? (
         <ThreadList
@@ -548,6 +560,16 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
           onBack={main ? undefined : () => setPanel({ view: 'list' })}
           onToggleMain={() => setPanel({ ...state, main: !main })}
           onClose={close}
+        />
+      )}
+      {!mobile && (
+        <PanelResizer
+          panelRef={panelRef}
+          edge="Left"
+          limits={THREAD_PANEL_WIDTH}
+          label="Ширина панели тредов"
+          width={panelWidth}
+          onChange={setPanelWidth}
         />
       )}
     </Box>

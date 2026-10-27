@@ -1,10 +1,14 @@
-import React, { ComponentProps, MutableRefObject, ReactNode } from 'react';
+import React, { ComponentProps, MutableRefObject, ReactNode, useRef } from 'react';
 import { Box, Header, Line, Scroll, Text, as } from 'folds';
 import classNames from 'classnames';
 import { ContainerColor } from '../../styles/ContainerColor.css';
 import * as css from './style.css';
 import { AppHeader, ChatListNav } from '../../styles/telegramTheme.css';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
+import { useSetting } from '../../state/hooks/settings';
+import { settingsAtom } from '../../state/settings';
+import { NAV_WIDTH, panelWidthStyle } from '../../utils/panelWidth';
+import { PanelResizable, PanelResizer } from '../panel-resizer';
 
 type PageRootProps = {
   nav: ReactNode;
@@ -31,16 +35,36 @@ type ClientDrawerLayoutProps = {
 export function PageNav({ size, children }: ClientDrawerLayoutProps & css.PageNavVariants) {
   const screenSize = useScreenSizeContext();
   const isMobile = screenSize === ScreenSize.Mobile;
+  const resizable = !isMobile && size !== '300';
+  const [navWidth, setNavWidth] = useSetting(settingsAtom, 'navWidth');
+  const navRef = useRef<HTMLDivElement>(null);
+  const width = resizable ? navWidth : undefined;
 
   return (
     <Box
+      ref={navRef}
       grow={isMobile ? 'Yes' : undefined}
-      className={classNames(css.PageNav({ size }), size !== '300' && ChatListNav)}
+      className={classNames(
+        css.PageNav({ size }),
+        size !== '300' && ChatListNav,
+        resizable && PanelResizable
+      )}
       shrink={isMobile ? 'Yes' : 'No'}
+      style={panelWidthStyle(width, NAV_WIDTH)}
     >
       <Box grow="Yes" direction="Column">
         {children}
       </Box>
+      {resizable && (
+        <PanelResizer
+          panelRef={navRef}
+          edge="Right"
+          limits={NAV_WIDTH}
+          label="Ширина списка чатов"
+          width={width}
+          onChange={setNavWidth}
+        />
+      )}
     </Box>
   );
 }

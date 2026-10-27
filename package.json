@@ -35,7 +35,7 @@
     "test:routes": "node --import ./tests/register-unread-source.mjs tests/routes.test.mjs",
     "test:clipboard": "node tests/clipboard.test.mjs && node tests/native-clipboard.test.mjs",
     "test:i18n": "node tests/i18n.test.mjs",
-    "test:client-fixes": "node tests/message-preview.test.mjs && node tests/message-urls.test.mjs && node tests/back-navigation.test.mjs && node tests/room-navigation.test.mjs"
+    "test:client-fixes": "node tests/message-preview.test.mjs && node tests/message-urls.test.mjs && node tests/back-navigation.test.mjs && node tests/room-navigation.test.mjs && node tests/panel-width.test.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": "eslint",
