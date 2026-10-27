@@ -52,7 +52,13 @@ export const serveStaticAssets =
   async (req, res, next) => {
     let pathname;
     try {
-      pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      const url = new URL(req.url, 'http://localhost');
+      // Module imports (e.g. bundled locale JSON) must be transformed by Vite.
+      if (url.searchParams.has('import')) {
+        next();
+        return;
+      }
+      pathname = decodeURIComponent(url.pathname);
     } catch {
       res.statusCode = 400;
       res.end();

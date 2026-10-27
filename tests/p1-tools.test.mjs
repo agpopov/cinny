@@ -62,6 +62,7 @@ test('static asset middleware handles base paths, WASM MIME and traversal', asyn
   assert.equal((await request('/cinny/public/call/%2e%2e%2fsecret')).statusCode, 403);
   assert.equal((await request('/cinny/public/call/%zz')).statusCode, 400);
   assert.equal((await request('/cinny/public/call/missing.js')).next, true);
+  assert.equal((await request('/cinny/public/call/assets/file.wasm?import')).next, true);
 });
 test('CSP permits pinned bootstrap hashes and WASM without universal script or eval permissions', () => {
   const csp = productionCsp();
