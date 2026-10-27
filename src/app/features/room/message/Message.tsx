@@ -58,6 +58,8 @@ import { MessageLayout, MessageSpacing } from '../../../state/settings';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useRecentEmoji } from '../../../hooks/useRecentEmoji';
 import * as css from './styles.css';
+import { isTelegramTheme, useTheme } from '../../../hooks/useTheme';
+import { RoundAvatar } from '../../../styles/telegramTheme.css';
 import { EventReaders } from '../../../components/event-readers';
 import { TextViewer } from '../../../components/text-viewer';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
@@ -67,6 +69,7 @@ import { MessageEditor } from './MessageEditor';
 import { MessageOptions } from './MessageOptions';
 import { UserAvatar } from '../../../components/user-avatar';
 import { copyToClipboard } from '../../../utils/dom';
+import { timeHourMinute } from '../../../utils/time';
 import { stopPropagation } from '../../../utils/keyboard';
 import { getMatrixToRoomEvent } from '../../../plugins/matrix-to';
 import { getViaServers } from '../../../plugins/via-servers';
@@ -785,9 +788,14 @@ export const Message = as<'div', MessageProps>(
       ? getPowerTagIconSrc(mx, useAuthentication, memberPowerTag.icon)
       : undefined;
 
-    const usernameColor = legacyUsernameColor ? colorMXID(senderId) : tagColor;
+    // Telegram theme always colors names per sender. Its bubbles show only the
+    // sender name, without a timestamp and without the own name.
+    const telegramStyle = isTelegramTheme(useTheme());
+    const telegramBubble = telegramStyle && messageLayout === MessageLayout.Bubble;
+    const usernameColor = legacyUsernameColor || telegramStyle ? colorMXID(senderId) : tagColor;
+    const hideHeader = telegramBubble && senderId === mx.getUserId();
 
-    const headerJSX = !collapse && (
+    const headerJSX = !collapse && !hideHeader && (
       <Box
         gap="300"
         direction={messageLayout === MessageLayout.Compact ? 'RowReverse' : 'Row'}
@@ -815,14 +823,16 @@ export const Message = as<'div', MessageProps>(
           </Username>
           {tagIconSrc && <PowerIcon size="100" iconSrc={tagIconSrc} />}
         </Box>
-        <Box className={css.MessageTimestamp} data-message-timestamp shrink="No" gap="100">
-          <Time
-            ts={mEvent.getTs()}
-            compact={messageLayout === MessageLayout.Compact}
-            hour24Clock={hour24Clock}
-            dateFormatString={dateFormatString}
-          />
-        </Box>
+        {!telegramBubble && (
+          <Box className={css.MessageTimestamp} data-message-timestamp shrink="No" gap="100">
+            <Time
+              ts={mEvent.getTs()}
+              compact={messageLayout === MessageLayout.Compact}
+              hour24Clock={hour24Clock}
+              dateFormatString={dateFormatString}
+            />
+          </Box>
+        )}
       </Box>
     );
 
@@ -831,7 +841,7 @@ export const Message = as<'div', MessageProps>(
         className={messageLayout === MessageLayout.Bubble ? css.BubbleAvatarBase : undefined}
       >
         <Avatar
-          className={css.MessageAvatar}
+          className={classNames(css.MessageAvatar, RoundAvatar)}
           as="button"
           aria-label={`Профиль: ${senderDisplayName}`}
           size="300"
@@ -855,7 +865,7 @@ export const Message = as<'div', MessageProps>(
     const msgContentJSX = (
       <Box direction="Column" alignSelf="Start" style={{ maxWidth: '100%' }}>
         {reply}
-        {edit && onEditId ? (
+        {edit && onEditId && (
           <MessageEditor
             style={{
               maxWidth: '100%',
@@ -867,9 +877,17 @@ export const Message = as<'div', MessageProps>(
             imagePackRooms={imagePackRooms}
             onCancel={() => onEditId()}
           />
-        ) : (
-          children
         )}
+        {!(edit && onEditId) && telegramBubble && (
+          <div className={css.BubbleTimeFlow}>
+            {children}
+            {/* A plain span, not <time>: message options anchor themselves to <time>. */}
+            <Text as="span" size="T200" className={css.BubbleTime}>
+              {timeHourMinute(mEvent.getTs(), hour24Clock)}
+            </Text>
+          </div>
+        )}
+        {!(edit && onEditId) && !telegramBubble && children}
         {reactions}
       </Box>
     );
@@ -1192,6 +1210,7 @@ export const Message = as<'div', MessageProps>(
           <BubbleLayout
             before={avatarJSX}
             header={headerJSX}
+            headerInside={telegramStyle}
             onContextMenu={handleContextMenu}
             {...longPressProps}
           >

@@ -43,6 +43,7 @@ import { getHomeSearchPath, getSpaceSearchPath, withSearchParam } from '../../pa
 import { getCanonicalAliasOrRoomId, isRoomAlias, mxcUrlToHttp } from '../../utils/matrix';
 import { _SearchPathSearchParams } from '../../pages/paths';
 import * as css from './RoomViewHeader.css';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 import { useRoomUnread } from '../../state/hooks/unread';
 import { usePowerLevelsContext } from '../../hooks/usePowerLevels';
 import { markAsRead } from '../../utils/notifications';
@@ -480,7 +481,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
         )}
         <Box grow="Yes" alignItems="Center" gap="300">
           {screenSize !== ScreenSize.Mobile && (
-            <Avatar size="300">
+            <Avatar size="300" className={RoundAvatar}>
               <RoomAvatar
                 roomId={room.roomId}
                 src={avatarUrl}

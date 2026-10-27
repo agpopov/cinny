@@ -2,6 +2,8 @@ import { Box, Icon, IconSrc } from 'folds';
 import React, { ReactNode } from 'react';
 import { BubbleLayout, CompactLayout, ModernLayout } from '..';
 import { MessageLayout } from '../../../state/settings';
+import { isTelegramTheme, useTheme } from '../../../hooks/useTheme';
+import { EventBubble } from '../../../styles/telegramTheme.css';
 
 export type EventContentProps = {
   messageLayout: number;
@@ -10,6 +12,8 @@ export type EventContentProps = {
   content: ReactNode;
 };
 export function EventContent({ messageLayout, time, iconSrc, content }: EventContentProps) {
+  // Telegram theme shows room events in full-width bubbles.
+  const telegramStyle = isTelegramTheme(useTheme());
   const beforeJSX = (
     <Box gap="300" justifyContent="SpaceBetween" alignItems="Center" grow="Yes">
       {messageLayout === MessageLayout.Compact && time}
@@ -35,7 +39,11 @@ export function EventContent({ messageLayout, time, iconSrc, content }: EventCon
   }
   if (messageLayout === MessageLayout.Bubble) {
     return (
-      <BubbleLayout hideBubble before={beforeJSX}>
+      <BubbleLayout
+        hideBubble={!telegramStyle}
+        className={telegramStyle ? EventBubble : undefined}
+        before={beforeJSX}
+      >
         {msgContentJSX}
       </BubbleLayout>
     );

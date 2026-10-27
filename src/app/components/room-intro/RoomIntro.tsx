@@ -17,6 +17,7 @@ import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { InviteUserPrompt } from '../invite-user-prompt';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 export type RoomIntroProps = {
   room: Room;
@@ -51,7 +52,7 @@ export const RoomIntro = as<'div', RoomIntroProps>(({ room, ...props }, ref) => 
   return (
     <Box direction="Column" grow="Yes" gap="500" {...props} ref={ref}>
       <Box>
-        <Avatar size="500">
+        <Avatar size="500" className={RoundAvatar}>
           <RoomAvatar
             roomId={room.roomId}
             src={avatarHttpUrl ?? undefined}

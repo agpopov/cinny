@@ -65,6 +65,7 @@ import { useAutoDiscoveryInfo } from '../../hooks/useAutoDiscoveryInfo';
 import { livekitSupport } from '../../hooks/useLivekitSupport';
 import { StateEvent } from '../../../types/matrix/room';
 import { webRTCSupported } from '../../utils/rtc';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 type RoomNavItemMenuProps = {
   room: Room;
@@ -344,7 +345,7 @@ export function RoomNavItem({
         <NavLink to={linkPath} onClick={handleLinkClick}>
           <NavItemContent>
             <Box as="span" grow="Yes" alignItems="Center" gap="200">
-              <Avatar size="200" radii="400">
+              <Avatar size="200" radii="400" className={RoundAvatar}>
                 {showAvatar ? (
                   <RoomAvatar
                     roomId={room.roomId}

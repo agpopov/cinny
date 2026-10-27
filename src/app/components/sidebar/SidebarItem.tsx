@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { as, Avatar, Text, Tooltip, TooltipProvider, toRem } from 'folds';
 import React, { ComponentProps, ReactNode, RefCallback } from 'react';
 import * as css from './Sidebar.css';
+import { SidebarTooltip } from '../../styles/telegramTheme.css';
 
 export const SidebarItem = as<'div', css.SidebarItemVariants>(
   ({ as: AsSidebarAvatarBox = 'div', className, active, ...props }, ref) => (
@@ -39,7 +40,7 @@ export function SidebarItemTooltip({
       delay={400}
       position="Right"
       tooltip={
-        <Tooltip style={{ maxWidth: toRem(280) }}>
+        <Tooltip className={SidebarTooltip} style={{ maxWidth: toRem(280) }}>
           <Text size="H5">{tooltip}</Text>
         </Tooltip>
       }

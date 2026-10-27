@@ -44,7 +44,7 @@ const getVariant = (variant: ContainerColor): ComplexStyleRule => ({
   },
 });
 
-const NavItemBase = style({
+export const NavItemBase = style({
   width: '100%',
   display: 'flex',
   justifyContent: 'start',

@@ -1,6 +1,9 @@
 import { style } from '@vanilla-extract/css';
 import { config, toRem } from 'folds';
 
+// Sender color of the replied event, for themes that tint the reply block.
+export const ReplyColorVar = '--cinny-reply-user-color';
+
 export const ReplyBend = style({
   flexShrink: 0,
 });

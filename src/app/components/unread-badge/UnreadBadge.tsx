@@ -2,6 +2,7 @@ import { t } from 'i18next';
 import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Badge, toRem, Text } from 'folds';
 import { millify } from '../../plugins/millify';
+import { UnreadCounter } from '../../styles/telegramTheme.css';
 
 type UnreadBadgeProps = {
   highlight?: boolean;
@@ -24,6 +25,8 @@ export function UnreadBadge({ highlight, count }: UnreadBadgeProps) {
       aria-label={
         count > 0 ? t('Unread messages: {{value1}}', { value1: count }) : t('Unread messages')
       }
+      className={UnreadCounter}
+      data-highlight={!!highlight}
       variant={highlight ? 'Success' : 'Secondary'}
       size={count > 0 ? '400' : '200'}
       fill="Solid"

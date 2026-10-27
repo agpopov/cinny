@@ -25,6 +25,7 @@ import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoom } from '../../hooks/useRoom';
 import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
+import { RoomViewRegion } from '../../styles/telegramTheme.css';
 
 export function RoomView({ eventId }: { eventId?: string }) {
   const roomInputRef = useRef<HTMLDivElement>(null);
@@ -73,7 +74,7 @@ export function RoomView({ eventId }: { eventId?: string }) {
   );
 
   return (
-    <Page ref={roomViewRef}>
+    <Page ref={roomViewRef} className={RoomViewRegion}>
       <Box grow="Yes" direction="Column">
         <RoomTimeline
           key={roomId}

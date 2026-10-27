@@ -58,6 +58,7 @@ import { MemberSortMenu } from '../../components/MemberSortMenu';
 import { useOpenUserRoomProfile, useUserRoomProfileState } from '../../state/hooks/userRoomProfile';
 import { useSpaceOptionally } from '../../hooks/useSpace';
 import { ContainerColor } from '../../styles/ContainerColor.css';
+import { AppHeader, RoundAvatar } from '../../styles/telegramTheme.css';
 import { useFlattenPowerTagMembers, useGetMemberPowerTag } from '../../hooks/useMemberPowerTag';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 
@@ -68,7 +69,11 @@ function MemberDrawerHeader({ room }: MemberDrawerHeaderProps) {
   const setPeopleDrawer = useSetSetting(settingsAtom, 'isPeopleDrawer');
 
   return (
-    <Header className={css.MembersDrawerHeader} variant="Background" size="600">
+    <Header
+      className={classNames(css.MembersDrawerHeader, AppHeader)}
+      variant="Background"
+      size="600"
+    >
       <Box grow="Yes" alignItems="Center" gap="200">
         <Box grow="Yes" alignItems="Center" gap="200">
           <Text
@@ -141,7 +146,7 @@ function MemberItem({
       radii="400"
       onClick={onClick}
       before={
-        <Avatar size="200">
+        <Avatar size="200" className={RoundAvatar}>
           <UserAvatar
             userId={member.userId}
             src={avatarUrl ?? undefined}

@@ -1,7 +1,7 @@
 import { createTheme } from '@vanilla-extract/css';
 import { color } from 'folds';
 
-export const silverTheme = createTheme(color, {
+const silverThemeData = {
   Background: {
     Container: '#DEDEDE',
     ContainerHover: '#D3D3D3',
@@ -96,7 +96,9 @@ export const silverTheme = createTheme(color, {
     Shadow: 'rgba(0 0 0 / 20%)',
     Overlay: 'rgba(0 0 0 / 50%)',
   },
-});
+};
+
+export const silverTheme = createTheme(color, silverThemeData);
 
 const darkThemeData = {
   Background: {
@@ -234,5 +236,112 @@ export const butterTheme = createTheme(color, {
     ContainerActive: '#59584E',
     ContainerLine: '#666459',
     OnContainer: '#F2EED3',
+  },
+});
+
+export const telegramTheme = createTheme(color, {
+  ...silverThemeData,
+  Background: {
+    Container: '#FFFFFF',
+    ContainerHover: '#F4F4F5',
+    ContainerActive: '#EBEDF0',
+    ContainerLine: '#E4E6EA',
+    OnContainer: '#000000',
+  },
+
+  Surface: {
+    Container: '#FFFFFF',
+    ContainerHover: '#F4F4F5',
+    ContainerActive: '#EBEDF0',
+    ContainerLine: '#E4E6EA',
+    OnContainer: '#000000',
+  },
+
+  SurfaceVariant: {
+    Container: '#F1F3F5',
+    ContainerHover: '#E8EBEE',
+    ContainerActive: '#DFE3E7',
+    ContainerLine: '#D5DADF',
+    OnContainer: '#000000',
+  },
+
+  Primary: {
+    Main: '#419FD9',
+    MainHover: '#3A94CC',
+    MainActive: '#358BC1',
+    MainLine: '#3183B6',
+    OnMain: '#FFFFFF',
+    Container: '#E6F3FB',
+    ContainerHover: '#D8ECF8',
+    ContainerActive: '#CAE5F5',
+    ContainerLine: '#BCDDF2',
+    OnContainer: '#1B6A9E',
+  },
+
+  Secondary: {
+    Main: '#000000',
+    MainHover: '#1A1A1A',
+    MainActive: '#262626',
+    MainLine: '#333333',
+    OnMain: '#FFFFFF',
+    Container: '#E8EAED',
+    ContainerHover: '#DFE1E5',
+    ContainerActive: '#D5D8DC',
+    ContainerLine: '#CBCED3',
+    OnContainer: '#0C0C0C',
+  },
+});
+
+// Telegram Desktop "Night" palette.
+export const telegramDarkTheme = createTheme(color, {
+  ...darkThemeData,
+  Background: {
+    Container: '#17212B',
+    ContainerHover: '#202B36',
+    ContainerActive: '#2B3846',
+    ContainerLine: '#101921',
+    OnContainer: '#F5F5F5',
+  },
+
+  Surface: {
+    Container: '#17212B',
+    ContainerHover: '#202B36',
+    ContainerActive: '#2B3846',
+    ContainerLine: '#101921',
+    OnContainer: '#F5F5F5',
+  },
+
+  SurfaceVariant: {
+    Container: '#242F3D',
+    ContainerHover: '#2B3846',
+    ContainerActive: '#32404F',
+    ContainerLine: '#3A4959',
+    OnContainer: '#F5F5F5',
+  },
+
+  Primary: {
+    Main: '#5288C1',
+    MainHover: '#5A92CC',
+    MainActive: '#629BD6',
+    MainLine: '#6AA4E0',
+    OnMain: '#FFFFFF',
+    Container: '#1E3A55',
+    ContainerHover: '#22415F',
+    ContainerActive: '#264869',
+    ContainerLine: '#2A4F73',
+    OnContainer: '#D6E6F5',
+  },
+
+  Secondary: {
+    Main: '#F5F5F5',
+    MainHover: '#E5E5E5',
+    MainActive: '#D9D9D9',
+    MainLine: '#CCCCCC',
+    OnMain: '#17212B',
+    Container: '#2B3846',
+    ContainerHover: '#32404F',
+    ContainerActive: '#3A4959',
+    ContainerLine: '#435263',
+    OnContainer: '#F5F5F5',
   },
 });

@@ -38,6 +38,14 @@
   --font-secondary: 'InterVariable', var(--font-emoji), sans-serif;
 }
 
+/* Resolved here so Vite bundles the asset; used by src/app/styles/telegramTheme.css.ts. */
+.telegram-theme {
+  --telegram-wallpaper-pattern: url('./app/styles/corporate-pattern.svg');
+}
+.telegram-theme.telegram-dark-theme {
+  --telegram-wallpaper-pattern: url('./app/styles/corporate-pattern-dark.svg');
+}
+
 html {
   height: 100%;
   overflow: hidden;

@@ -64,41 +64,40 @@ export const DropTarget = style({
 });
 
 const PUSH_X = 2;
-export const SidebarItem = recipe({
-  base: [
-    DefaultReset,
-    {
-      minWidth: toRem(42),
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      transition: 'transform 200ms cubic-bezier(0, 0.8, 0.67, 0.97)',
+export const SidebarItemBase = style([
+  DefaultReset,
+  {
+    minWidth: toRem(42),
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    transition: 'transform 200ms cubic-bezier(0, 0.8, 0.67, 0.97)',
 
-      selectors: {
-        '&:hover': {
-          transform: `translateX(${toRem(PUSH_X)})`,
-        },
-        '&::before': {
-          content: '',
-          display: 'none',
-          position: 'absolute',
-          left: toRem(-11.5 - PUSH_X),
-          width: toRem(3 + PUSH_X),
-          height: toRem(16),
-          borderRadius: `0 ${toRem(4)} ${toRem(4)} 0`,
-          background: 'CurrentColor',
-          transition: 'height 200ms linear',
-        },
-        '&:hover::before': {
-          display: 'block',
-          width: toRem(3),
-        },
+    selectors: {
+      '&:hover': {
+        transform: `translateX(${toRem(PUSH_X)})`,
+      },
+      '&::before': {
+        content: '',
+        display: 'none',
+        position: 'absolute',
+        left: toRem(-11.5 - PUSH_X),
+        width: toRem(3 + PUSH_X),
+        height: toRem(16),
+        borderRadius: `0 ${toRem(4)} ${toRem(4)} 0`,
+        background: 'CurrentColor',
+        transition: 'height 200ms linear',
+      },
+      '&:hover::before': {
+        display: 'block',
+        width: toRem(3),
       },
     },
-    Disabled,
-    DropTarget,
-  ],
+  },
+]);
+export const SidebarItem = recipe({
+  base: [SidebarItemBase, Disabled, DropTarget],
   variants: {
     active: {
       true: {
@@ -117,16 +116,17 @@ export const SidebarItem = recipe({
 });
 export type SidebarItemVariants = RecipeVariants<typeof SidebarItem>;
 
+export const SidebarItemBadgeBase = style([
+  DefaultReset,
+  {
+    pointerEvents: 'none',
+    position: 'absolute',
+    zIndex: 1,
+    lineHeight: 0,
+  },
+]);
 export const SidebarItemBadge = recipe({
-  base: [
-    DefaultReset,
-    {
-      pointerEvents: 'none',
-      position: 'absolute',
-      zIndex: 1,
-      lineHeight: 0,
-    },
-  ],
+  base: [SidebarItemBadgeBase],
   variants: {
     hasCount: {
       true: {
@@ -145,16 +145,15 @@ export const SidebarItemBadge = recipe({
 });
 export type SidebarItemBadgeVariants = RecipeVariants<typeof SidebarItemBadge>;
 
-export const SidebarAvatar = recipe({
-  base: [
-    {
-      selectors: {
-        'button&': {
-          cursor: 'pointer',
-        },
-      },
+export const SidebarAvatarBase = style({
+  selectors: {
+    'button&': {
+      cursor: 'pointer',
     },
-  ],
+  },
+});
+export const SidebarAvatar = recipe({
+  base: [SidebarAvatarBase],
   variants: {
     size: {
       '200': {

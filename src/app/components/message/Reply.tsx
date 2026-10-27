@@ -1,7 +1,7 @@
 import { t } from 'i18next';
 import { Box, Icon, Icons, Text, as, color, toRem } from 'folds';
 import { EventTimelineSet, Room } from 'matrix-js-sdk';
-import React, { MouseEventHandler, ReactNode, useCallback, useMemo } from 'react';
+import React, { CSSProperties, MouseEventHandler, ReactNode, useCallback, useMemo } from 'react';
 import classNames from 'classnames';
 import { getMemberDisplayName, trimReplyFromBody } from '../../utils/room';
 import { getMxIdLocalPart } from '../../utils/matrix';
@@ -13,17 +13,19 @@ import { scaleSystemEmoji } from '../../plugins/react-custom-html-parser';
 import { useRoomEvent } from '../../hooks/useRoomEvent';
 import colorMXID from '../../../util/colorMXID';
 import { GetMemberPowerTag } from '../../hooks/useMemberPowerTag';
+import { isTelegramTheme, useTheme } from '../../hooks/useTheme';
 
 type ReplyLayoutProps = {
   userColor?: string;
   username?: ReactNode;
 };
 export const ReplyLayout = as<'div', ReplyLayoutProps>(
-  ({ username, userColor, className, children, ...props }, ref) => (
+  ({ username, userColor, className, style, children, ...props }, ref) => (
     <Box
       className={classNames(css.Reply, className)}
       alignItems="Center"
       gap="100"
+      style={userColor ? ({ ...style, [css.ReplyColorVar]: userColor } as CSSProperties) : style}
       {...props}
       ref={ref}
     >
@@ -90,7 +92,10 @@ export const Reply = as<'div', ReplyProps>(
     const powerTag = sender ? getMemberPowerTag?.(sender) : undefined;
     const tagColor = powerTag?.color ? accessibleTagColors?.get(powerTag.color) : undefined;
 
-    const usernameColor = legacyUsernameColor ? colorMXID(sender ?? replyEventId) : tagColor;
+    // Telegram theme colors reply senders like message senders.
+    const telegramStyle = isTelegramTheme(useTheme());
+    const usernameColor =
+      legacyUsernameColor || telegramStyle ? colorMXID(sender ?? replyEventId) : tagColor;
 
     const fallbackBody = replyEvent?.isRedacted() ? (
       <MessageDeletedContent />

@@ -3,6 +3,7 @@ import { Box, Header, Line, Scroll, Text, as } from 'folds';
 import classNames from 'classnames';
 import { ContainerColor } from '../../styles/ContainerColor.css';
 import * as css from './style.css';
+import { AppHeader, ChatListNav } from '../../styles/telegramTheme.css';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
 
 type PageRootProps = {
@@ -34,7 +35,7 @@ export function PageNav({ size, children }: ClientDrawerLayoutProps & css.PageNa
   return (
     <Box
       grow={isMobile ? 'Yes' : undefined}
-      className={css.PageNav({ size })}
+      className={classNames(css.PageNav({ size }), size !== '300' && ChatListNav)}
       shrink={isMobile ? 'Yes' : 'No'}
     >
       <Box grow="Yes" direction="Column">
@@ -47,7 +48,7 @@ export function PageNav({ size, children }: ClientDrawerLayoutProps & css.PageNa
 export const PageNavHeader = as<'header', css.PageNavHeaderVariants>(
   ({ className, outlined, ...props }, ref) => (
     <Header
-      className={classNames(css.PageNavHeader({ outlined }), className)}
+      className={classNames(css.PageNavHeader({ outlined }), AppHeader, className)}
       variant="Background"
       size="600"
       {...props}
@@ -94,7 +95,7 @@ export const PageHeader = as<'div', css.PageHeaderVariants>(
     <Header
       as="header"
       size="600"
-      className={classNames(css.PageHeader({ balance, outlined }), className)}
+      className={classNames(css.PageHeader({ balance, outlined }), AppHeader, className)}
       {...props}
       ref={ref}
     />

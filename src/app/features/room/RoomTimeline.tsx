@@ -98,6 +98,7 @@ import { POLL_START_TYPE, POLL_START_TYPE_STABLE } from '../../utils/poll';
 import { Reactions, Message, Event, EncryptedContent } from './message';
 import { useMemberEventParser } from '../../hooks/useMemberEventParser';
 import * as customHtmlCss from '../../styles/CustomHtml.css';
+import { DayDivider, FloatingChip, RoomIntroBubble } from '../../styles/telegramTheme.css';
 import { RoomIntro } from '../../components/room-intro';
 import {
   getIntersectionObserverEntry,
@@ -134,7 +135,7 @@ import { useSpaceOptionally } from '../../hooks/useSpace';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { useAccessiblePowerTagColors, useGetMemberPowerTag } from '../../hooks/useMemberPowerTag';
-import { useTheme } from '../../hooks/useTheme';
+import { isTelegramTheme, useTheme } from '../../hooks/useTheme';
 import { useRoomCreatorsTag } from '../../hooks/useRoomCreatorsTag';
 import { usePowerLevelTags } from '../../hooks/usePowerLevelTags';
 
@@ -534,6 +535,10 @@ export function RoomTimeline({
   const getMemberPowerTag = useGetMemberPowerTag(room, creators, powerLevels);
 
   const theme = useTheme();
+  // Telegram theme bubbles show event times without the date.
+  const compactEventTime =
+    messageLayout === MessageLayout.Compact ||
+    (isTelegramTheme(theme) && messageLayout === MessageLayout.Bubble);
   const accessiblePowerTagColors = useAccessiblePowerTagColors(
     theme.kind,
     creatorsTag,
@@ -1489,7 +1494,7 @@ export function RoomTimeline({
         const timeJSX = (
           <Time
             ts={mEvent.getTs()}
-            compact={messageLayout === MessageLayout.Compact}
+            compact={compactEventTime}
             hour24Clock={hour24Clock}
             dateFormatString={dateFormatString}
           />
@@ -1530,7 +1535,7 @@ export function RoomTimeline({
         const timeJSX = (
           <Time
             ts={mEvent.getTs()}
-            compact={messageLayout === MessageLayout.Compact}
+            compact={compactEventTime}
             hour24Clock={hour24Clock}
             dateFormatString={dateFormatString}
           />
@@ -1572,7 +1577,7 @@ export function RoomTimeline({
         const timeJSX = (
           <Time
             ts={mEvent.getTs()}
-            compact={messageLayout === MessageLayout.Compact}
+            compact={compactEventTime}
             hour24Clock={hour24Clock}
             dateFormatString={dateFormatString}
           />
@@ -1614,7 +1619,7 @@ export function RoomTimeline({
         const timeJSX = (
           <Time
             ts={mEvent.getTs()}
-            compact={messageLayout === MessageLayout.Compact}
+            compact={compactEventTime}
             hour24Clock={hour24Clock}
             dateFormatString={dateFormatString}
           />
@@ -1664,7 +1669,7 @@ export function RoomTimeline({
         const timeJSX = (
           <Time
             ts={mEvent.getTs()}
-            compact={messageLayout === MessageLayout.Compact}
+            compact={compactEventTime}
             hour24Clock={hour24Clock}
             dateFormatString={dateFormatString}
           />
@@ -1708,7 +1713,7 @@ export function RoomTimeline({
       const timeJSX = (
         <Time
           ts={mEvent.getTs()}
-          compact={messageLayout === MessageLayout.Compact}
+          compact={compactEventTime}
           hour24Clock={hour24Clock}
           dateFormatString={dateFormatString}
         />
@@ -1757,7 +1762,7 @@ export function RoomTimeline({
       const timeJSX = (
         <Time
           ts={mEvent.getTs()}
-          compact={messageLayout === MessageLayout.Compact}
+          compact={compactEventTime}
           hour24Clock={hour24Clock}
           dateFormatString={dateFormatString}
         />
@@ -1861,7 +1866,7 @@ export function RoomTimeline({
     const dayDividerJSX =
       dayDivider && eventJSX ? (
         <MessageBase space={messageSpacing}>
-          <TimelineDivider variant="Surface">
+          <TimelineDivider variant="Surface" className={DayDivider}>
             <Badge as="span" size="500" variant="Secondary" fill="None" radii="300">
               <Text size="L400">
                 {(() => {
@@ -1951,7 +1956,7 @@ export function RoomTimeline({
                 }`,
               }}
             >
-              <RoomIntro room={room} />
+              <RoomIntro room={room} className={RoomIntroBubble} />
             </div>
           )}
           {(canPaginateBack || !rangeAtStart) &&
@@ -2027,6 +2032,7 @@ export function RoomTimeline({
       {(!atBottom || !liveTimelineLinked || !rangeAtEnd) && (
         <TimelineFloat position="Bottom">
           <Chip
+            className={FloatingChip}
             variant="SurfaceVariant"
             radii="Pill"
             outlined

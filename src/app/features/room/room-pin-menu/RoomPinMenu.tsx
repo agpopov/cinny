@@ -73,6 +73,7 @@ import { VirtualTile } from '../../../components/virtualizer';
 import { usePowerLevelsContext } from '../../../hooks/usePowerLevels';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
+import { RoundAvatar } from '../../../styles/telegramTheme.css';
 import { usePowerLevelTags } from '../../../hooks/usePowerLevelTags';
 import { useTheme } from '../../../hooks/useTheme';
 import { PowerIcon } from '../../../components/power';
@@ -195,7 +196,7 @@ function PinnedMessage({
     <ModernLayout
       before={
         <AvatarBase>
-          <Avatar size="300">
+          <Avatar size="300" className={RoundAvatar}>
             <UserAvatar
               userId={sender}
               src={

@@ -1,5 +1,7 @@
 import { globalStyle, style } from '@vanilla-extract/css';
 import { DefaultReset, config, toRem } from 'folds';
+import { MessageTextBodyBase } from '../../../components/message/layout/layout.css';
+import { tg } from '../../../styles/telegramTheme.css';
 
 export const MessageOptionsTimeSpace = '--cinny-message-options-time-space';
 
@@ -50,6 +52,22 @@ export const MessageTimestamp = style({
 
 export const BubbleAvatarBase = style({
   paddingTop: 0,
+});
+
+// The time floats at the end of the last text line and moves below it only
+// when that line has no room, like Telegram.
+export const BubbleTimeFlow = style({
+  display: 'flow-root',
+});
+globalStyle(`${BubbleTimeFlow} > ${MessageTextBodyBase}`, {
+  display: 'inline',
+});
+export const BubbleTime = style({
+  float: 'right',
+  marginLeft: config.space.S300,
+  marginTop: toRem(6),
+  color: tg.bubble.time,
+  whiteSpace: 'nowrap',
 });
 
 // A thread pane can be narrow even on a large desktop. All quick actions are

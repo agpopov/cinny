@@ -30,16 +30,18 @@ type BubbleLayoutProps = {
   hideBubble?: boolean;
   before?: ReactNode;
   header?: ReactNode;
+  /** Render the header inside the bubble instead of above it. */
+  headerInside?: boolean;
 };
 
 export const BubbleLayout = as<'div', BubbleLayoutProps>(
-  ({ hideBubble, before, header, children, ...props }, ref) => (
+  ({ hideBubble, before, header, headerInside, children, ...props }, ref) => (
     <Box gap="300" {...props} ref={ref}>
       <Box className={css.BubbleBefore} shrink="No">
         {before}
       </Box>
       <Box grow="Yes" direction="Column">
-        {header}
+        {(hideBubble || !headerInside) && header}
         {hideBubble ? (
           children
         ) : (
@@ -53,6 +55,7 @@ export const BubbleLayout = as<'div', BubbleLayoutProps>(
               direction="Column"
             >
               {before ? <BubbleLeftArrow variant="SurfaceVariant" /> : null}
+              {headerInside && header}
               {children}
             </Box>
           </Box>

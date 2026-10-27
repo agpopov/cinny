@@ -22,6 +22,7 @@ import { UserPresence } from '../../hooks/useUserPresence';
 import { AvatarPresence, PresenceBadge } from '../presence';
 import { ImageViewer } from '../image-viewer';
 import { stopPropagation } from '../../utils/keyboard';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 type UserHeroProps = {
   userId: string;
@@ -59,7 +60,7 @@ export function UserHero({ userId, avatarUrl, presence }: UserHeroProps) {
           <Avatar
             as={avatarUrl ? 'button' : 'div'}
             onClick={avatarUrl ? () => setViewAvatar(avatarUrl) : undefined}
-            className={css.UserHeroAvatar}
+            className={classNames(css.UserHeroAvatar, RoundAvatar)}
             size="500"
           >
             <UserAvatar

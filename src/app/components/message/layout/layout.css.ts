@@ -179,10 +179,12 @@ export const UsernameBold = style({
   fontWeight: 550,
 });
 
+export const MessageTextBodyBase = style({
+  wordBreak: 'break-word',
+});
+
 export const MessageTextBody = recipe({
-  base: {
-    wordBreak: 'break-word',
-  },
+  base: [MessageTextBodyBase],
   variants: {
     preWrap: {
       true: {
