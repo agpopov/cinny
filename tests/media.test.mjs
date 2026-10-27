@@ -309,6 +309,21 @@ test('Tenor IDs keep full precision beyond JavaScript safe integers', () => {
     'https://tenor.com/view/12345678901234567890.gif'
   );
 });
+test('localized Tenor share links resolve without Matrix preview metadata', () => {
+  for (const url of [
+    'https://tenor.com/ru/view/craving-break-me-if-you-can-gif-12802980',
+    'https://www.tenor.com/ru/view/craving-break-me-if-you-can-gif-12802980?utm_source=share',
+    'https://tenor.com/de/view/12802980/',
+    'https://tenor.com/pt-BR/view/craving-break-me-if-you-can-gif-12802980.gif',
+    'https://tenor.com/zh-CN/embed/12802980',
+  ]) {
+    assert.deepEqual(
+      getProviderMedia(url),
+      { url: 'https://tenor.com/view/12802980.gif', kind: 'image' },
+      url
+    );
+  }
+});
 test('provider media rejects spoofed hosts, HTML pages, collections and arbitrary players', () => {
   for (const url of [
     'https://tenor.com.evil.example/view/cat-18240062',
@@ -318,6 +333,11 @@ test('provider media rejects spoofed hosts, HTML pages, collections and arbitrar
     'https://tenor.com/search',
     'https://tenor.com/about',
     'https://tenor.com/view/cat-18240062/extra',
+    'https://tenor.com/ru/search/cat-gifs',
+    'https://tenor.com/ru/view/cat-18240062/extra',
+    'https://tenor.com/ru/ru/view/cat-18240062',
+    'https://tenor.com/arbitrary/view/cat-18240062',
+    'https://tenor.com.evil.example/ru/view/cat-18240062',
     'https://giphy.com/explore/cat-typing',
     'https://giphy.com/gifs/cat-123<script>',
     'https://giphy.com/gifs/cat-123456/extra',
