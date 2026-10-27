@@ -20,7 +20,7 @@ DEVICE = 'STARTUPDEVICE'
 MESSAGE = 'Saved session restored with real Matrix SDK and Rust crypto'
 
 
-def install_session_fixture(page, hash_router=True, room_events=(), room_state=()):
+def install_session_fixture(page, hash_router=True, room_events=(), room_state=(), live_events=None):
     requests = []
     device_keys = {}
     sync_count = 0
@@ -109,6 +109,9 @@ def install_session_fixture(page, hash_router=True, room_events=(), room_state=(
         elif path.endswith('/room_keys/version'):
             status, body = 404, {'errcode': 'M_NOT_FOUND', 'error': 'No key backup'}
         elif path.endswith('/sync'):
+            for room_id, events in (live_events or {}).items():
+                joined[room_id]['timeline']['events'].extend(events)
+                events.clear()
             sync_count += 1
             # A short delay keeps the SDK's long-poll loop bounded in a fixture.
             time.sleep(0.15)

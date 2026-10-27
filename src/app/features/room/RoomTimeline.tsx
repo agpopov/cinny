@@ -570,10 +570,7 @@ export function RoomTimeline({
   atBottomRef.current = atBottom;
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollToBottomRef = useRef({
-    count: 0,
-    smooth: true,
-  });
+  const scrollToBottomRef = useRef(0);
 
   const [focusItem, setFocusItem] = useState<
     | {
@@ -670,8 +667,7 @@ export function RoomTimeline({
     useCallback(() => {
       if (!alive()) return;
       setTimeline(getInitialTimeline(viewTimelineSet));
-      scrollToBottomRef.current.count += 1;
-      scrollToBottomRef.current.smooth = false;
+      scrollToBottomRef.current += 1;
     }, [alive, viewTimelineSet])
   );
 
@@ -701,8 +697,7 @@ export function RoomTimeline({
           setUnreadInfo(getRoomUnreadInfo(room, thread));
         }
 
-        scrollToBottomRef.current.count += 1;
-        scrollToBottomRef.current.smooth = true;
+        scrollToBottomRef.current += 1;
 
         // A reset can start with an empty live timeline; redactions and remote
         // echoes may not add an item at all. Derive the range from actual events.
@@ -943,13 +938,13 @@ export function RoomTimeline({
     }, 2000);
   }, [alive, focusItem, scrollToItem]);
 
-  // scroll to bottom of timeline
-  const scrollToBottomCount = scrollToBottomRef.current.count;
+  // Live updates change message IDs, heights and the rendered range together.
+  // A smooth scroll keeps an obsolete target in WebKit after those layout changes.
+  const scrollToBottomCount = scrollToBottomRef.current;
   useLayoutEffect(() => {
     if (scrollToBottomCount > 0) {
       const scrollEl = scrollRef.current;
-      if (scrollEl)
-        scrollToBottom(scrollEl, scrollToBottomRef.current.smooth ? 'smooth' : 'instant');
+      if (scrollEl) scrollToBottom(scrollEl, 'instant');
     }
   }, [scrollToBottomCount]);
 
@@ -981,8 +976,7 @@ export function RoomTimeline({
       navigateRoom(room.roomId, undefined, { replace: true });
     }
     setTimeline(getInitialTimeline(viewTimelineSet));
-    scrollToBottomRef.current.count += 1;
-    scrollToBottomRef.current.smooth = false;
+    scrollToBottomRef.current += 1;
   };
 
   const handleJumpToUnread = () => {
@@ -1151,7 +1145,7 @@ export function RoomTimeline({
 
     return (
       <Message
-        key={mEvent.getId()}
+        key={mEvent.getTxnId() ?? mEvent.getId()}
         data-message-item={item}
         data-message-id={mEventId}
         room={room}
@@ -1220,7 +1214,7 @@ export function RoomTimeline({
 
         return (
           <Message
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1304,7 +1298,7 @@ export function RoomTimeline({
 
         return (
           <Message
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1427,7 +1421,7 @@ export function RoomTimeline({
 
         return (
           <Message
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1503,7 +1497,7 @@ export function RoomTimeline({
 
         return (
           <Event
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1544,7 +1538,7 @@ export function RoomTimeline({
 
         return (
           <Event
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1586,7 +1580,7 @@ export function RoomTimeline({
 
         return (
           <Event
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1628,7 +1622,7 @@ export function RoomTimeline({
 
         return (
           <Event
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1678,7 +1672,7 @@ export function RoomTimeline({
 
         return (
           <Event
-            key={mEvent.getId()}
+            key={mEvent.getTxnId() ?? mEvent.getId()}
             data-message-item={item}
             data-message-id={mEventId}
             room={room}
@@ -1722,7 +1716,7 @@ export function RoomTimeline({
 
       return (
         <Event
-          key={mEvent.getId()}
+          key={mEvent.getTxnId() ?? mEvent.getId()}
           data-message-item={item}
           data-message-id={mEventId}
           room={room}
@@ -1771,7 +1765,7 @@ export function RoomTimeline({
 
       return (
         <Event
-          key={mEvent.getId()}
+          key={mEvent.getTxnId() ?? mEvent.getId()}
           data-message-item={item}
           data-message-id={mEventId}
           room={room}
@@ -1805,6 +1799,7 @@ export function RoomTimeline({
   let isPrevRendered = false;
   let newDivider = false;
   let dayDivider = false;
+  // Transaction IDs survive the local-to-remote echo transition, keeping DOM anchors stable.
   const eventRenderer = (item: number) => {
     const [eventTimeline, baseIndex] = getTimelineAndBaseIndex(timeline.linkedTimelines, item);
     if (!eventTimeline) return null;
@@ -1885,7 +1880,7 @@ export function RoomTimeline({
       if (dayDividerJSX) dayDivider = false;
 
       return (
-        <React.Fragment key={mEventId}>
+        <React.Fragment key={mEvent.getTxnId() ?? mEventId}>
           {newDividerJSX}
           {dayDividerJSX}
           {eventJSX}
