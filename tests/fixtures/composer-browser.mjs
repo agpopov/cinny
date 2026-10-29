@@ -47,10 +47,14 @@ const styles = new Function(
   'DefaultReset',
   'config',
   'toRem',
+  'MessageTextBodyBase',
+  'tg',
   `${sourceModule(
     '../../src/app/features/room/message/styles.css.ts'
   )}; return { MessageBase, MessageOptionsBase, MessageOptionsBar, MessageTimestamp, MessageOptionsTimeSpace };`
-)(style, globalStyle, DefaultReset, config, toRem);
+)(style, globalStyle, DefaultReset, config, toRem, 'sourceMessageText', {
+  bubble: { time: 'inherit' },
+});
 const variables = {};
 for (const [name, value] of Object.entries(config.space))
   variables[value.slice(4, -1)] = `${(Number(name.slice(1)) / 100) * 4}px`;
@@ -107,6 +111,7 @@ const customHtmlEqualsPlainText = (a,b) => a === b;
 const getMentions = () => ({users:new Set(),room:false});
 const getMentionContent = (users, room) => ({user_ids:users,room});
 const assertMentionContentSize = () => {};
+const submission = undefined, EventType = {RoomMessage:'m.room.message'};
 const MsgType = {Text:'m.text'}, Command = {}, commands = {}, RelationType = {Thread:'m.thread'};
 const sendTypingStatus = () => {};
 const saveDraft = (nodes, reply) => probe.saved.push(structuredClone({nodes, reply}));

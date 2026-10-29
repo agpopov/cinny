@@ -1,52 +1,24 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Box, Button, Icon, IconButton, Icons, Input, Scroll, Spinner, Text } from 'folds';
-import { EventType, MsgType, Room } from 'matrix-js-sdk';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Box, Button, Icon, Icons, Input, Scroll, Spinner, Text } from 'folds';
+import { EventType, Room } from 'matrix-js-sdk';
 import { ReactEditor } from 'slate-react';
-import { isKeyHotkey } from 'is-hotkey';
-import {
-  AUTOCOMPLETE_PREFIXES,
-  AutocompletePrefix,
-  AutocompleteQuery,
-  CustomEditor,
-  RoomMentionAutocomplete,
-  Toolbar,
-  UserMentionAutocomplete,
-  customHtmlEqualsPlainText,
-  getAutocompleteQuery,
-  getMentions,
-  getPrevWordRange,
-  isEmptyEditor,
-  resetEditor,
-  toMatrixCustomHTML,
-  toPlainText,
-  trimCustomHtml,
-  useEditor,
-} from '../../../components/editor';
-import { mentionsOutsideMarkdownCode } from '../../../components/editor/markdownCode';
+import { useEditor } from '../../../components/editor';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { usePersistentDraft } from '../../../hooks/usePersistentDraft';
 import { useComposingCheck } from '../../../hooks/useComposingCheck';
 import { usePowerLevelsContext } from '../../../hooks/usePowerLevels';
 import { useRoomCreators } from '../../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../../hooks/useRoomPermissions';
-import { useSetting } from '../../../state/hooks/settings';
-import { settingsAtom } from '../../../state/settings';
 import { PrivateStorage, privateAccountKey } from '../../../utils/privateStorage';
 import {
   THREAD_NAME_MAX_LENGTH,
   ThreadCreationState,
   getNewThreadDraftKey,
   getThreadCreationAttempt,
+  getThreadEventFingerprint,
 } from '../../../utils/threadCreation';
-import {
-  assertMentionContentSize,
-  freshGroupMentionNodes,
-  resolveGroupMentions,
-} from '../../../utils/mentionGroups';
-import { getMentionContent } from '../../../utils/room';
+import { getThreadDraftKey } from '../../../state/room/threadPanel';
+import { RoomInput, RoomInputSubmission } from '../RoomInput';
 import * as css from './Thread.css';
-
-const ignoreReply = () => undefined;
 
 type NewThreadProps = {
   room: Room;
@@ -61,17 +33,20 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
   const messageId = useId();
   const [title, setTitle] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const [composerReady, setComposerReady] = useState(false);
   const [sending, setSending] = useState(false);
-  const busy = useRef(false);
   const mounted = useRef(true);
   const nameRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const actions = useRef<Parameters<RoomInputSubmission['onReady']>[0]>();
+  const rootId = useRef<string>();
+  const finishing = useRef(false);
+  const firstEvent = useRef<{ fingerprint: string; eventId?: string }>();
+  const queue = useRef(Promise.resolve());
   const [pending, setPending] = useState<ThreadCreationState>();
   const [error, setError] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
-  const [toolbar, setToolbar] = useState(false);
-  const [query, setQuery] = useState<AutocompleteQuery<AutocompletePrefix>>();
   const isComposing = useComposingCheck();
-  const [markdown] = useSetting(settingsAtom, 'isMarkdown');
   const draftKey = getNewThreadDraftKey(room.roomId);
   const attempt = useMemo(() => getThreadCreationAttempt(mx, room.roomId), [mx, room.roomId]);
   const titles = useMemo(
@@ -82,14 +57,17 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
       ),
     [mx]
   );
-  const draft = usePersistentDraft(editor, draftKey, ignoreReply);
   const powerLevels = usePowerLevelsContext();
   const creators = useRoomCreators(room);
   const permissions = useRoomPermissions(creators, powerLevels);
   const canMessage = permissions.event(EventType.RoomMessage, mx.getSafeUserId());
-  const ready = loaded && draft.ready;
+  const ready = loaded && composerReady;
   const locked = sending || !!pending;
   const valid = !!title.trim() && hasMessage && ready && canMessage;
+  const onReady = useCallback<RoomInputSubmission['onReady']>((value) => {
+    actions.current = value;
+    setComposerReady(true);
+  }, []);
 
   useEffect(() => {
     mounted.current = true;
@@ -98,9 +76,8 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
     };
   }, []);
   useEffect(() => {
-    if (ready && !locked) nameRef.current?.focus();
-  }, [ready, locked]);
-
+    if (ready) nameRef.current?.focus();
+  }, [ready]);
   useEffect(() => {
     let active = true;
     Promise.all([titles.get<string>(draftKey), attempt.load()])
@@ -108,6 +85,16 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
         if (!active) return;
         setTitle(state?.title ?? savedTitle ?? '');
         setPending(state);
+        if (state?.replyId) {
+          rootId.current = state.rootId;
+          firstEvent.current = {
+            fingerprint: getThreadEventFingerprint(
+              state.eventType ?? EventType.RoomMessage,
+              state.content
+            ),
+            eventId: state.replyId,
+          };
+        }
         setLoaded(true);
       })
       .catch(() => {
@@ -119,79 +106,94 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
     };
   }, [titles, draftKey, attempt]);
 
-  const closeAutocomplete = () => {
-    setQuery(undefined);
-    ReactEditor.focus(editor);
-  };
-
-  const create = async () => {
-    if (busy.current || !ready || !canMessage || (!pending && !valid)) return;
-    busy.current = true;
+  const complete = async () => {
+    if (!rootId.current || finishing.current) return;
+    finishing.current = true;
     setSending(true);
-    setError('');
-    setQuery(undefined);
     try {
-      let content = pending?.content;
-      if (!content) {
-        const nodes = freshGroupMentionNodes(
-          mentionsOutsideMarkdownCode(structuredClone(editor.children), undefined, markdown)
-        );
-        const groups = await resolveGroupMentions(
-          mx,
-          room,
-          mentionsOutsideMarkdownCode(nodes, undefined, markdown)
-        );
-        const options = {
-          allowTextFormatting: true,
-          allowBlockMarkdown: markdown,
-          allowInlineMarkdown: markdown,
-          groupMentions: groups,
-        };
-        const body = toPlainText(nodes, markdown, groups).trim();
-        if (!body) throw new Error('Напишите первое сообщение треда.');
-        const html = trimCustomHtml(toMatrixCustomHTML(nodes, options));
-        const mentions = getMentions(mx, room.roomId, { ...editor, children: nodes }, groups, html);
-        content = {
-          msgtype: MsgType.Text,
-          body,
-          'm.mentions': getMentionContent(Array.from(mentions.users), mentions.room),
-          ...(!customHtmlEqualsPlainText(html, body)
-            ? { format: 'org.matrix.custom.html' as const, formatted_body: html }
-            : {}),
-        };
-        assertMentionContentSize(content, room.hasEncryptionStateEvent());
-        // Save the editable draft before the first network request.
-        await titles.set(draftKey, title);
-        draft.save(nodes);
-        await draft.flush();
-      }
-      const rootId = await attempt.send(mx, pending?.title ?? title, content, pending?.rootTxn);
+      await actions.current?.clear(getThreadDraftKey(room.roomId, rootId.current));
       await titles.set(draftKey, undefined);
-      resetEditor(editor);
-      draft.save(editor.children);
-      await draft.flush();
       await attempt.clear();
-      if (mounted.current) onCreated(rootId);
+      if (mounted.current) onCreated(rootId.current);
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : 'Не удалось создать тред. Повторите попытку.'
-      );
-      setPending(await attempt.load().catch(() => undefined));
+      finishing.current = false;
+      throw cause;
     } finally {
-      busy.current = false;
       setSending(false);
     }
   };
 
-  const updateQuery = () => {
-    const range = getPrevWordRange(editor);
-    setQuery(range ? getAutocompleteQuery(editor, range, AUTOCOMPLETE_PREFIXES) : undefined);
+  const sendEvent = useCallback<RoomInputSubmission['sendEvent']>(
+    (eventType, content, send) => {
+      const task = queue.current.then(async () => {
+        if (finishing.current)
+          throw new Error('Тред уже создан. Откройте его в списке обсуждений.');
+        if (!ready || !canMessage || !permissions.event(eventType, mx.getSafeUserId()))
+          throw new Error('Нет прав на отправку этого сообщения.');
+        if (!title.trim()) throw new Error('Введите название треда.');
+        if (pending && (await attempt.load())?.rootTxn !== pending.rootTxn)
+          throw new Error(
+            'Эта попытка уже завершена. Откройте созданный тред в списке обсуждений.'
+          );
+        setSending(true);
+        setError('');
+        try {
+          // Later attachments in the same submission use the newly created root.
+          const fingerprint = getThreadEventFingerprint(eventType, content);
+          if (rootId.current) {
+            // The saved first event may still be in the composer after a failed
+            // later attachment. A retry drains the queue without repeating it.
+            if (firstEvent.current?.fingerprint === fingerprint)
+              return { event_id: firstEvent.current.eventId };
+            return await send(rootId.current);
+          }
+          await titles.set(draftKey, title);
+          const createdRoot = await attempt.send(mx, title, content, pending?.rootTxn, eventType);
+          const state = await attempt.load();
+          rootId.current = createdRoot;
+          firstEvent.current = { fingerprint, eventId: state?.replyId };
+          return { event_id: state?.replyId };
+        } catch (cause) {
+          setPending(await attempt.load().catch(() => undefined));
+          throw cause;
+        } finally {
+          setSending(false);
+        }
+      });
+      queue.current = task.then(
+        () => undefined,
+        () => undefined
+      );
+      return task;
+    },
+    [ready, canMessage, permissions, mx, title, titles, draftKey, attempt, pending]
+  );
+
+  const create = async () => {
+    if (!ready || sending || (!pending && !valid)) return;
+    setError('');
+    try {
+      if (pending) {
+        await sendEvent(
+          pending.eventType ?? EventType.RoomMessage,
+          pending.content,
+          async () => undefined
+        );
+        // Text restored by the failed submit is already in the saved event.
+        if (['m.text', 'm.notice', 'm.emote'].includes(pending.content.msgtype ?? ''))
+          await actions.current?.clear();
+        if (await actions.current?.resumeAttachments()) await complete();
+      } else await actions.current?.submit();
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : 'Не удалось создать тред. Повторите попытку.'
+      );
+    }
   };
-  const textError = error || draft.error;
   const createLabel = pending ? 'Повторить создание' : 'Создать тред';
 
   return (
-    <Box direction="Column" grow="Yes" className={css.CreateBody}>
+    <Box direction="Column" grow="Yes" className={css.CreateBody} ref={containerRef}>
       <Scroll visibility="Hover" hideTrack>
         <Box direction="Column" className={css.CreateContent}>
           <div className={css.CreateIcon}>
@@ -219,7 +221,7 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
               autoFocus
               value={title}
               disabled={!ready || !canMessage}
-              readOnly={locked}
+              readOnly={locked || !!rootId.current}
               onChange={(evt) => {
                 const { value } = evt.currentTarget;
                 setTitle(value);
@@ -243,86 +245,44 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
           </Box>
           <Box direction="Column" gap="200" className={css.CreateField}>
             <Text id={messageId} size="L400" className={css.CreateLabel}>
-              Первое сообщение <span className={css.Required}>*</span>
+              Сообщение в треде <span className={css.Required}>*</span>
             </Text>
-            {query?.prefix === AutocompletePrefix.UserMention && (
-              <UserMentionAutocomplete
+            <Text size="T200" priority="300">
+              Название станет первым сообщением в комнате. В тред можно отправить текст, опрос, файл
+              или стикер.
+            </Text>
+            <fieldset
+              disabled={!ready || !canMessage || !title.trim() || locked}
+              className={css.CreateComposer}
+              aria-labelledby={messageId}
+            >
+              <RoomInput
+                editor={editor}
                 room={room}
-                editor={editor}
-                query={query}
-                requestClose={closeAutocomplete}
-              />
-            )}
-            {query?.prefix === AutocompletePrefix.RoomMention && (
-              <RoomMentionAutocomplete
                 roomId={room.roomId}
-                editor={editor}
-                query={query}
-                requestClose={closeAutocomplete}
-              />
-            )}
-            <div className={css.CreateEditor} role="group" aria-labelledby={messageId}>
-              <CustomEditor
-                editor={editor}
+                fileDropContainerRef={containerRef}
+                draftKey={draftKey}
                 editableName="NewThreadInput"
                 placeholder="Начните обсуждение…"
-                readOnly={!ready || !canMessage || locked}
-                maxHeight="35vh"
-                onChange={() => {
-                  setHasMessage(!isEmptyEditor(editor));
-                  if (
-                    ready &&
-                    !locked &&
-                    editor.operations.some((op) => op.type !== 'set_selection')
-                  )
-                    draft.save(editor.children);
-                  updateQuery();
+                readOnly={locked}
+                submission={{
+                  disabled: !ready || !canMessage || !title.trim() || sending,
+                  sendEvent,
+                  onComplete: complete,
+                  onReady,
+                  onChange: setHasMessage,
                 }}
-                onKeyUp={updateQuery}
-                onKeyDown={(evt) => {
-                  if (isComposing(evt)) return;
-                  if (isKeyHotkey('mod+enter', evt)) {
-                    evt.preventDefault();
-                    if (!evt.repeat) create();
-                  }
-                  if (evt.key === 'Escape' && query) {
-                    evt.preventDefault();
-                    setQuery(undefined);
-                  }
-                }}
-                bottom={toolbar && <Toolbar />}
               />
-              <Box
-                className={css.CreateEditorBar}
-                alignItems="Center"
-                justifyContent="SpaceBetween"
-              >
-                <IconButton
-                  type="button"
-                  variant="SurfaceVariant"
-                  size="300"
-                  radii="300"
-                  aria-label="Форматирование первого сообщения"
-                  aria-pressed={toolbar}
-                  onClick={() => setToolbar(!toolbar)}
-                  disabled={locked}
-                >
-                  <Icon src={Icons.Alphabet} />
-                </IconButton>
-                <Text size="T200" priority="300">
-                  Ctrl + Enter — создать тред
-                </Text>
-              </Box>
-            </div>
+            </fieldset>
           </Box>
           {!canMessage && (
             <Text role="alert" size="T300">
               Нет прав на отправку сообщений в этой комнате.
             </Text>
           )}
-          {textError && (
+          {error && (
             <Text role="alert" size="T300" className={css.CreateError}>
-              {textError}
+              {error}
             </Text>
           )}
           {pending && (

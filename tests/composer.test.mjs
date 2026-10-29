@@ -51,6 +51,8 @@ function composer(text = 'Первое сообщение', overrides = {}) {
     sendScope: { current: 0 },
     draftReady: true,
     failedDraft: undefined,
+    submission: undefined,
+    EventType: { RoomMessage: 'm.room.message' },
     replyDraft: undefined,
     room: { currentState: { getStateEvents: () => undefined } },
     roomId: '!room:test',
@@ -265,4 +267,83 @@ test('Enter preference, Shift+Enter, Ctrl+Enter, IME, prevented keys and key rep
   c.handler(event);
   assert.equal(c.sends(), 0);
   assert.equal(event.defaultPrevented, false);
+});
+
+test('a new-thread composer sends emoji through the thread creator and completes only after acceptance', async () => {
+  const gate = deferred();
+  const calls = [];
+  const c = composer('😺', {
+    submission: {
+      disabled: false,
+      sendEvent: async (eventType, content) => {
+        calls.push([eventType, content.body]);
+        await gate.promise;
+      },
+      onComplete: async () => calls.push('completed'),
+    },
+  });
+  const sending = c.send();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls, [['m.room.message', '😺']]);
+  assert.equal(Editor.string(c.editor, []), '');
+  assert.equal(c.state.requests.length, 0, 'the first event cannot escape into the room timeline');
+  gate.resolve();
+  await sending;
+  assert.deepEqual(calls, [['m.room.message', '😺'], 'completed']);
+});
+
+test('a creation submission waits for its first text before sending selected attachments', async () => {
+  const gate = deferred();
+  const calls = [];
+  const c = composer(undefined, {
+    submission: {
+      disabled: false,
+      sendEvent: async () => {
+        calls.push('text');
+        await gate.promise;
+      },
+      onComplete: async () => calls.push('completed'),
+    },
+    uploadBoardHandlers: { current: { handleSend: async () => calls.push('attachments') } },
+  });
+  const sending = c.send();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls, ['text']);
+  gate.resolve();
+  await sending;
+  assert.deepEqual(calls, ['text', 'attachments']);
+});
+
+test('a failed first-event send restores the text and never starts attachments or completes creation', async () => {
+  const calls = [];
+  const c = composer(undefined, {
+    submission: {
+      disabled: false,
+      sendEvent: async () => {
+        throw new Error('thread reply refused');
+      },
+      onComplete: async () => calls.push('completed'),
+    },
+    uploadBoardHandlers: { current: { handleSend: async () => calls.push('attachments') } },
+  });
+  await c.send();
+  assert.equal(Editor.string(c.editor, []), 'Первое сообщение');
+  assert.equal(c.state.error, 'thread reply refused');
+  assert.deepEqual(calls, []);
+});
+
+test('without text the creation button sends attachments; a disabled creation sends nothing', async () => {
+  const calls = [];
+  const c = composer('', {
+    submission: { disabled: true },
+    uploadBoardHandlers: { current: { handleSend: async () => calls.push('attachments') } },
+  });
+  await c.send();
+  assert.deepEqual(calls, []);
+  const enabled = composer('', {
+    submission: { disabled: false },
+    uploadBoardHandlers: { current: { handleSend: async () => calls.push('attachments') } },
+  });
+  await enabled.send();
+  assert.deepEqual(calls, ['attachments']);
 });

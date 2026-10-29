@@ -1,5 +1,6 @@
 import React, { MouseEventHandler, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
+import { IContent } from 'matrix-js-sdk';
 import {
   Box,
   Icon,
@@ -22,8 +23,16 @@ type AttachMenuProps = {
   roomId: string;
   threadRootId?: string;
   onPickFile: () => void;
+  creatingThread?: boolean;
+  onPollSubmit?: (content: IContent) => Promise<unknown>;
 };
-export function AttachMenu({ roomId, threadRootId, onPickFile }: AttachMenuProps) {
+export function AttachMenu({
+  roomId,
+  threadRootId,
+  onPickFile,
+  creatingThread,
+  onPollSubmit,
+}: AttachMenuProps) {
   const setThreadPanel = useSetAtom(roomIdToThreadPanelAtomFamily(roomId));
   const [anchor, setAnchor] = useState<RectCords>();
   const [pollOpen, setPollOpen] = useState(false);
@@ -66,7 +75,7 @@ export function AttachMenu({ roomId, threadRootId, onPickFile }: AttachMenuProps
                 >
                   <Text size="T300">Файл</Text>
                 </MenuItem>
-                {!threadRootId && (
+                {!threadRootId && !creatingThread && (
                   <MenuItem
                     size="300"
                     radii="300"
@@ -111,6 +120,8 @@ export function AttachMenu({ roomId, threadRootId, onPickFile }: AttachMenuProps
           roomId={roomId}
           threadRootId={threadRootId}
           onClose={() => setPollOpen(false)}
+          onSubmit={onPollSubmit}
+          submitLabel={creatingThread ? 'Создать тред с опросом' : undefined}
         />
       )}
     </>

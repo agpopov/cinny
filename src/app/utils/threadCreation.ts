@@ -1,5 +1,5 @@
-import type { MatrixClient } from 'matrix-js-sdk';
-import { MsgType, RelationType } from 'matrix-js-sdk';
+import type { IContent, MatrixClient } from 'matrix-js-sdk';
+import { EventType, MsgType, RelationType } from 'matrix-js-sdk';
 import { PrivateStorage, privateAccountKey } from './privateStorage';
 
 type MessageContent = Parameters<MatrixClient['sendMessage']>[2];
@@ -7,6 +7,23 @@ type Storage = Pick<PrivateStorage, 'get' | 'set'>;
 
 export const THREAD_NAME_MAX_LENGTH = 100;
 export const getNewThreadDraftKey = (roomId: string) => `${roomId}#new-thread`;
+
+const threadMediaTypes: readonly string[] = [
+  MsgType.File,
+  MsgType.Image,
+  MsgType.Video,
+  MsgType.Audio,
+];
+
+/** Media thumbnails may be regenerated on retry; the uploaded file identifies the event. */
+export const getThreadEventFingerprint = (eventType: string, content: IContent) => {
+  const media =
+    eventType === EventType.RoomMessage && threadMediaTypes.includes(content.msgtype ?? '');
+  const source = content.file?.url ?? content.url;
+  return JSON.stringify(
+    media && source ? [eventType, content.msgtype, source] : [eventType, content]
+  );
+};
 
 export const buildThreadRootContent = (title: string): MessageContent => {
   const name = title.trim();
@@ -17,14 +34,15 @@ export const buildThreadRootContent = (title: string): MessageContent => {
 
 export type ThreadCreationState = {
   title: string;
-  content: MessageContent;
+  content: IContent;
+  eventType?: string;
   rootTxn: string;
   replyTxn: string;
   rootId?: string;
   replyId?: string;
 };
 
-/** Two standard Matrix messages, with durable transaction IDs for both sends. */
+/** A normal title message and a standard m.thread event, both with durable transaction IDs. */
 export class ThreadCreationAttempt {
   private readonly storage: Storage;
 
@@ -44,8 +62,9 @@ export class ThreadCreationAttempt {
   private async sendMessage(
     mx: MatrixClient,
     threadId: string | null,
-    content: MessageContent,
-    txnId: string
+    content: IContent,
+    txnId: string,
+    eventType = EventType.RoomMessage as string
   ) {
     const room = mx.getRoom(this.roomId);
     const pending = room?.getEventForTxnId(txnId);
@@ -77,15 +96,18 @@ export class ThreadCreationAttempt {
     const response =
       pending && room
         ? await mx.resendEvent(pending, room)
-        : await mx.sendMessage(this.roomId, threadId, message, txnId);
+        : await (eventType === EventType.RoomMessage
+            ? mx.sendMessage(this.roomId, threadId, message as MessageContent, txnId)
+            : mx.sendEvent(this.roomId, threadId, eventType as never, message as never, txnId));
     return response.event_id;
   }
 
   async send(
     mx: MatrixClient,
     title: string,
-    content: MessageContent,
-    expectedRootTxn?: string
+    content: IContent,
+    expectedRootTxn?: string,
+    eventType = EventType.RoomMessage as string
   ): Promise<string> {
     if (this.busy) throw new Error('Тред уже создаётся.');
     this.busy = true;
@@ -98,12 +120,15 @@ export class ThreadCreationAttempt {
         throw new Error('Эта попытка уже завершена. Откройте созданный тред в списке обсуждений.');
       if (
         state &&
-        (state.title !== root.body || JSON.stringify(state.content) !== JSON.stringify(content))
+        (state.title !== root.body ||
+          (state.eventType ?? EventType.RoomMessage) !== eventType ||
+          JSON.stringify(state.content) !== JSON.stringify(content))
       )
         throw new Error('Сначала завершите предыдущую попытку создания треда.');
       state ??= {
         title: root.body,
         content: structuredClone(content),
+        eventType,
         rootTxn: mx.makeTxnId(),
         replyTxn: mx.makeTxnId(),
       };
@@ -115,7 +140,13 @@ export class ThreadCreationAttempt {
         await this.storage.set(this.roomId, state);
       }
       if (!state.replyId) {
-        state.replyId = await this.sendMessage(mx, state.rootId, state.content, state.replyTxn);
+        state.replyId = await this.sendMessage(
+          mx,
+          state.rootId,
+          state.content,
+          state.replyTxn,
+          state.eventType
+        );
         await this.storage.set(this.roomId, state);
       }
       return state.rootId;

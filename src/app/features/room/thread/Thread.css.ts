@@ -120,24 +120,13 @@ export const CreateLabel = style({
 });
 export const Required = style({ color: color.Critical.Main });
 export const CreateTitleInput = style({ width: '100%' });
+// Keep Folds' themed focus border instead of the shared keyboard outline.
+globalStyle(`${CreateTitleInput} input:focus`, { outline: 'none !important' });
+export const CreateComposer = style({ border: 0, padding: 0, margin: 0, minWidth: 0 });
 
-export const CreateEditor = style({
-  borderRadius: config.radii.R400,
-  backgroundColor: color.SurfaceVariant.Container,
-  border: `${config.borderWidth.B300} solid ${color.SurfaceVariant.ContainerLine}`,
-  overflow: 'hidden',
-  selectors: {
-    '&:focus-within': {
-      outline: `${toRem(2)} solid ${color.Primary.Main}`,
-      outlineOffset: toRem(1),
-    },
-  },
-});
+// Keep the thread composer roomy without changing the normal room input.
+globalStyle(`${CreateComposer} ${EditorTextarea}`, { minHeight: toRem(136) });
 
-// A roomy first-message field, matching Discord's thread creation panel.
-globalStyle(`${CreateEditor} ${EditorTextarea}`, { minHeight: toRem(136) });
-
-export const CreateEditorBar = style({ padding: `${config.space.S100} ${config.space.S200}` });
 export const CreateError = style({ color: color.Critical.Main, overflowWrap: 'anywhere' });
 export const CreateFooter = style({
   flexShrink: 0,

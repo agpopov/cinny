@@ -1,5 +1,6 @@
-import React, { FormEventHandler, useState } from 'react';
+import React, { FormEventHandler, useMemo, useState } from 'react';
 import FocusTrap from 'focus-trap-react';
+import { IContent } from 'matrix-js-sdk';
 import {
   Box,
   Button,
@@ -35,8 +36,16 @@ type PollDialogProps = {
   roomId: string;
   threadRootId?: string;
   onClose: () => void;
+  onSubmit?: (content: IContent) => Promise<unknown>;
+  submitLabel?: string;
 };
-export function PollDialog({ roomId, threadRootId, onClose }: PollDialogProps) {
+export function PollDialog({
+  roomId,
+  threadRootId,
+  onClose,
+  onSubmit,
+  submitLabel = 'Отправить опрос',
+}: PollDialogProps) {
   const mx = useMatrixClient();
   const [question, setQuestion] = useState('');
   const [answers, setAnswers] = useState(emptyAnswers);
@@ -47,14 +56,20 @@ export function PollDialog({ roomId, threadRootId, onClose }: PollDialogProps) {
   const unique = new Set(filled.map((a) => a.toLowerCase())).size === filled.length;
   const valid = question.trim().length > 0 && filled.length >= POLL_MIN_ANSWERS && unique;
 
-  const [sendState, send] = useAsyncCallback(async () => {
-    const content = buildPollStartContent({
+  // Keep answer IDs stable when a failed HTTP request is retried.
+  const content = useMemo(() => {
+    const values = answers.map((answer) => answer.trim()).filter(Boolean);
+    return buildPollStartContent({
       question: question.trim(),
-      answers: filled,
+      answers: values,
       disclosed: !hidden,
-      maxSelections: multiple ? filled.length : 1,
+      maxSelections: multiple ? values.length : 1,
     });
-    await mx.sendEvent(roomId, threadRootId ?? null, POLL_START_TYPE as never, content as never);
+  }, [question, answers, hidden, multiple]);
+  const [sendState, send] = useAsyncCallback(async () => {
+    if (onSubmit) await onSubmit(content);
+    else
+      await mx.sendEvent(roomId, threadRootId ?? null, POLL_START_TYPE as never, content as never);
     onClose();
   });
   const sending = sendState.status === AsyncStatus.Loading;
@@ -65,7 +80,8 @@ export function PollDialog({ roomId, threadRootId, onClose }: PollDialogProps) {
   const handleSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
     evt.preventDefault();
     if (!valid || sending) return;
-    send();
+    // The hook displays the failure; keep the dialog available for retry.
+    send().catch(() => undefined);
   };
 
   return (
@@ -203,7 +219,7 @@ export function PollDialog({ roomId, threadRootId, onClose }: PollDialogProps) {
                     sending ? <Spinner fill="Solid" variant="Primary" size="200" /> : undefined
                   }
                 >
-                  <Text size="B400">{sending ? 'Отправка…' : 'Отправить опрос'}</Text>
+                  <Text size="B400">{sending ? 'Отправка…' : submitLabel}</Text>
                 </Button>
               </Box>
             </Scroll>

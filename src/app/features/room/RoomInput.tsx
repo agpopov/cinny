@@ -120,6 +120,7 @@ import {
 import { getMemberDisplayName, getMentionContent, trimReplyFromBody } from '../../utils/room';
 import { CommandAutocomplete } from './CommandAutocomplete';
 import { AttachMenu } from './poll/AttachMenu';
+import { POLL_START_TYPE } from '../../utils/poll';
 import { Command, SHRUG, TABLEFLIP, UNFLIP, useCommands } from '../../hooks/useCommands';
 import { mobileOrTablet } from '../../utils/user-agent';
 import { useElementSizeObserver } from '../../hooks/useElementSizeObserver';
@@ -137,10 +138,27 @@ import { usePowerLevelTags } from '../../hooks/usePowerLevelTags';
 import { useComposingCheck } from '../../hooks/useComposingCheck';
 import { IImageInfo } from '../../../types/matrix/common';
 import { resolveSticker } from '../../plugins/custom-emoji/resolveSticker';
+import { PrivateStorage, privateAccountKey } from '../../utils/privateStorage';
 import { usePersistentDraft } from '../../hooks/usePersistentDraft';
 
 const draftScopeUsers = new WeakMap<ReturnType<typeof useStore>, Map<string, number>>();
 type SubmissionDraft = { message: Descendant[]; reply?: IReplyDraft };
+
+export type RoomInputSubmission = {
+  disabled: boolean;
+  sendEvent: (
+    eventType: string,
+    content: IContent,
+    send: (threadId: string) => Promise<unknown>
+  ) => Promise<unknown>;
+  onComplete: () => Promise<void>;
+  onReady: (actions: {
+    submit: () => Promise<void>;
+    clear: (targetDraftKey?: string) => Promise<void>;
+    resumeAttachments: () => Promise<boolean>;
+  }) => void;
+  onChange: (hasContent: boolean) => void;
+};
 
 interface RoomInputProps {
   editor: Editor;
@@ -153,6 +171,8 @@ interface RoomInputProps {
   draftKey?: string;
   editableName?: string;
   placeholder?: string;
+  readOnly?: boolean;
+  submission?: RoomInputSubmission;
 }
 export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
   (
@@ -165,6 +185,8 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       draftKey: draftKeyProp,
       editableName = 'RoomInput',
       placeholder = 'Написать сообщение…',
+      readOnly,
+      submission,
     },
     ref
   ) => {
@@ -430,17 +452,22 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           const metadata = selectedFilesRef.current.find(
             (item) => item.file === upload.file
           )?.metadata;
-          return attempt.send(
-            mx,
-            roomId,
-            threadId ?? null,
-            content as any,
-            JSON.stringify([upload.mxc, metadata])
-          );
+          const dispatch = (targetThread = threadId) =>
+            attempt.send(
+              mx,
+              roomId,
+              targetThread,
+              content as Parameters<typeof mx.sendMessage>[2],
+              JSON.stringify([upload.mxc, metadata])
+            );
+          return submission
+            ? submission.sendEvent(EventType.RoomMessage, content, dispatch)
+            : dispatch();
         },
         isPending: (upload) => selectedFilesRef.current.some((item) => item.file === upload.file),
         onSent: (upload) => handleRemoveUpload(upload.file),
       });
+      if (!failures.length && uploads.length) await submission?.onComplete();
       if (failures.length) {
         const [error] = failures;
         setSendError(
@@ -453,7 +480,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
 
     const send = useCallback(
       async (retryDraft?: SubmissionDraft) => {
-        if (sendingRef.current || !draftReady) return;
+        if (sendingRef.current || !draftReady || submission?.disabled) return;
         if (
           failedDraft &&
           !retryDraft &&
@@ -499,13 +526,14 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           );
           const sendEditor = { ...editor, children: nodes };
           const groupMentions = await resolveGroupMentions(mx, room, nodes);
-          sendUploads?.().catch((cause) => {
-            if (scope === sendScope.current) {
-              setSendError(cause instanceof Error ? cause.message : String(cause));
-            }
-          });
+          if (!submission)
+            sendUploads?.().catch((cause) => {
+              if (scope === sendScope.current) {
+                setSendError(cause instanceof Error ? cause.message : String(cause));
+              }
+            });
 
-          const commandName = getBeginCommand(sendEditor);
+          const commandName = submission ? undefined : getBeginCommand(sendEditor);
           let plainText = toPlainText(nodes, isMarkdown, groupMentions).trim();
           let customHtml = trimCustomHtml(
             toMatrixCustomHTML(nodes, {
@@ -581,15 +609,22 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             content,
             !!room.currentState.getStateEvents('m.room.encryption', '')
           );
-          await messageAttempt.send(
-            mx,
-            roomId,
-            threadId ?? null,
-            content as any,
-            JSON.stringify([original, submittedReply])
-          );
+          const dispatch = (targetThread = threadId) =>
+            messageAttempt.send(
+              mx,
+              roomId,
+              targetThread,
+              content as Parameters<typeof mx.sendMessage>[2],
+              JSON.stringify([original, submittedReply])
+            );
+          if (submission) await submission.sendEvent(EventType.RoomMessage, content, dispatch);
+          else await dispatch();
           if (scope === sendScope.current) setFailedDraft(undefined);
           await flushDraft();
+          if (submission) {
+            if (sendUploads) await sendUploads();
+            else await submission.onComplete();
+          }
         } catch (error) {
           if (scope === sendScope.current) {
             let restored = false;
@@ -633,9 +668,62 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         commands,
         draftReady,
         failedDraft,
+        submission,
       ]
     );
     const submit = useCallback(() => send(), [send]);
+    const onReady = submission?.onReady;
+    const onContentChange = submission?.onChange;
+    useEffect(() => {
+      if (!draftReady) return;
+      onReady?.({
+        submit,
+        clear: async (targetDraftKey) => {
+          if (targetDraftKey) {
+            await preparation.current;
+            const message = structuredClone(editor.children);
+            const storage = new PrivateStorage(
+              privateAccountKey(mx.baseUrl, mx.getSafeUserId(), mx.getDeviceId() ?? ''),
+              'drafts'
+            );
+            await storage.set(targetDraftKey, isEmptyEditor(editor) ? undefined : { message });
+            store.set(
+              roomIdToMsgDraftAtomFamily(targetDraftKey),
+              isEmptyEditor(editor) ? [] : message
+            );
+            const remaining = selectedFilesRef.current;
+            store.set(roomIdToUploadItemsAtomFamily(targetDraftKey), {
+              type: 'PUT',
+              item: remaining,
+            });
+            setSelectedFiles({ type: 'DELETE', item: remaining });
+            selectedFilesRef.current = [];
+          }
+          resetEditor(editor);
+          setReplyDraft(undefined);
+          saveDraft(editor.children);
+          await flushDraft();
+        },
+        resumeAttachments: async () => {
+          await uploadBoardHandlers.current?.handleSend();
+          return selectedFilesRef.current.length === 0;
+        },
+      });
+    }, [
+      draftReady,
+      onReady,
+      submit,
+      editor,
+      setReplyDraft,
+      saveDraft,
+      flushDraft,
+      mx,
+      store,
+      setSelectedFiles,
+    ]);
+    useEffect(() => {
+      if (draftReady) onContentChange?.(!isEmptyEditor(editor) || selectedFiles.length > 0);
+    }, [draftReady, editor, msgDraft, selectedFiles.length, onContentChange]);
 
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
@@ -673,7 +761,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           return;
         }
 
-        if (!hideActivity) {
+        if (!hideActivity && !submission) {
           sendTypingStatus(!isEmptyEditor(editor));
         }
 
@@ -683,7 +771,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           : undefined;
         setAutocompleteQuery(query);
       },
-      [editor, sendTypingStatus, hideActivity]
+      [editor, sendTypingStatus, hideActivity, submission]
     );
 
     const handleCloseAutocomplete = useCallback(() => {
@@ -710,7 +798,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         const stickerMxc = await resolveSticker(mx, url, import.meta.env.BASE_URL);
         // Packs already contain ImageInfo. Fetching the image again before
         // sending made stickers fail on slow networks and authenticated media.
-        await mx.sendEvent(roomId, threadId, EventType.Sticker, {
+        const content = {
           body: label || shortcode,
           url: stickerMxc,
           info: {
@@ -718,7 +806,13 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             w: Number.isFinite(info?.w) && (info?.w ?? 0) > 0 ? info?.w : 256,
             h: Number.isFinite(info?.h) && (info?.h ?? 0) > 0 ? info?.h : 256,
           },
-        });
+        };
+        const dispatch = (targetThread = threadId) =>
+          mx.sendEvent(roomId, targetThread, EventType.Sticker, content);
+        if (submission) {
+          await submission.sendEvent(EventType.Sticker, content, dispatch);
+          await submission.onComplete();
+        } else await dispatch();
       } catch (error) {
         setSendError(
           error instanceof Error ? error.message : 'Не удалось отправить стикер. Повторите попытку.'
@@ -826,7 +920,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             requestClose={handleCloseAutocomplete}
           />
         )}
-        {autocompleteQuery?.prefix === AutocompletePrefix.Command && (
+        {!submission && autocompleteQuery?.prefix === AutocompletePrefix.Command && (
           <CommandAutocomplete
             room={room}
             editor={editor}
@@ -899,8 +993,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
           </Box>
         )}
         <CustomEditor
-          readOnly={!draftReady}
+          readOnly={readOnly || !draftReady || submission?.disabled}
           onChange={() => {
+            onContentChange?.(!isEmptyEditor(editor) || selectedFiles.length > 0);
             if (
               draftReady &&
               editor.operations.some((operation) => operation.type !== 'set_selection')
@@ -963,6 +1058,22 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
               roomId={roomId}
               threadRootId={threadRootId}
               onPickFile={() => pickFile('*')}
+              creatingThread={!!submission}
+              onPollSubmit={
+                submission
+                  ? async (content) => {
+                      await submission.sendEvent(POLL_START_TYPE, content, (targetThread) =>
+                        mx.sendEvent(
+                          roomId,
+                          targetThread,
+                          POLL_START_TYPE as never,
+                          content as never
+                        )
+                      );
+                      await submission.onComplete();
+                    }
+                  : undefined
+              }
             />
           }
           after={
