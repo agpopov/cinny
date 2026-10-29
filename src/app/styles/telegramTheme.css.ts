@@ -16,6 +16,7 @@ import {
 import { NavItemBase, NavItemContent } from '../components/nav/styles.css';
 import { RoomName } from '../features/room-nav/styles.css';
 import { Editor, EditorPlaceholderContainer } from '../components/editor/Editor.css';
+import { AutocompleteMenu } from '../components/editor/autocomplete/AutocompleteMenu.css';
 import { BubbleContent, BubbleLeftArrow } from '../components/message/layout/layout.css';
 import { Reply, ReplyColorVar, ReplyContent } from '../components/message/Reply.css';
 import { Reaction } from '../components/message/Reaction.css';
@@ -226,6 +227,12 @@ globalStyle(`${theme} ${Editor} button`, {
 globalStyle(`${theme} ${EditorPlaceholderContainer}`, {
   color: tg.mutedIcon,
   opacity: 1,
+});
+// Mention and emoji suggestions get the composer color instead of the transparent room surface.
+globalStyle(`${theme} ${AutocompleteMenu}`, {
+  vars: {
+    [color.Surface.Container]: tg.bubble.bg,
+  },
 });
 
 // Wallpaper behind the room timeline. Surfaces inside stay transparent so it shows through.
