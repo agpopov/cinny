@@ -170,7 +170,9 @@ html[data-input-modality='pointer'] :focus-visible {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    /* A non-zero duration would turn every color change into a delayed transition. */
+    transition-delay: 0ms !important;
+    transition-duration: 0ms !important;
     scroll-behavior: auto !important;
   }
 }
