@@ -215,7 +215,10 @@ function ThreadListItem({ room, thread, onOpen }: ThreadListItemProps) {
           </Text>
           <Box alignItems="Center" gap="200">
             <Icon size="50" src={unread.unread ? Icons.ThreadUnread : Icons.Thread} />
-            <Text size="T200" style={{ color: color.Primary.Main }}>
+            <Text
+              size="T200"
+              style={{ color: color.Primary.Main, whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
               <b>{formatReplyCount(thread.length)}</b>
             </Text>
             {lastReply && (
