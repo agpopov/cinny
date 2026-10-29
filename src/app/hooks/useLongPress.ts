@@ -19,7 +19,7 @@ export const useLongPress = (onPress: (x: number, y: number) => void, disabled =
       if (disabled || event.pointerType === 'mouse' || !event.isPrimary) return;
       if (
         (event.target as Element).closest(
-          'button, a, input, textarea, video, audio, [contenteditable]'
+          'button, input, textarea, video, audio, [contenteditable]'
         )
       )
         return;
@@ -28,7 +28,7 @@ export const useLongPress = (onPress: (x: number, y: number) => void, disabled =
         if (!start.current || !window.getSelection()?.isCollapsed) return;
         pressed.current = true;
         callback.current(start.current.x, start.current.y);
-      }, 550);
+      }, 350);
     },
     onPointerMove: (event: ReactPointerEvent<HTMLElement>) => {
       if (

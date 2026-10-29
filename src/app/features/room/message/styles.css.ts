@@ -9,7 +9,7 @@ export const MessageBase = style({
   position: 'relative',
   containerType: 'inline-size',
   '@media': {
-    '(hover: none)': { userSelect: 'none', WebkitTouchCallout: 'none' },
+    '(hover: none)': { userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' },
   },
 });
 export const MessageBaseBubbleCollapsed = style({
@@ -120,7 +120,7 @@ globalStyle(`${MessageOptionsBase} [data-message-actions]`, {
   },
 });
 
-globalStyle(
-  `${MessageBase} a, ${MessageBase} input, ${MessageBase} textarea, ${MessageBase} [contenteditable]`,
-  { userSelect: 'text' }
-);
+globalStyle(`${MessageBase} input, ${MessageBase} textarea, ${MessageBase} [contenteditable]`, {
+  userSelect: 'text',
+  WebkitUserSelect: 'text',
+});

@@ -84,6 +84,10 @@ import { getPowerTagIconSrc } from '../../../hooks/useMemberPowerTag';
 
 export type ReactionHandler = (keyOrMxc: string, shortcode: string) => void;
 
+// Menus opened at a point (long press, right click) have a zero-size anchor and
+// should not reveal the options bar; on touch screens it only shows "⋮" over the text.
+const isBarAnchor = (anchor?: RectCords): boolean => !!anchor && anchor.width > 0;
+
 type MessageQuickReactionsProps = {
   onReaction: ReactionHandler;
 };
@@ -954,7 +958,12 @@ export const Message = as<'div', MessageProps>(
       >
         {!edit && (
           <MessageOptions
-            visible={hover || (focused && isFocusVisible) || !!menuAnchor || !!emojiBoardAnchor}
+            visible={
+              hover ||
+              (focused && isFocusVisible) ||
+              isBarAnchor(menuAnchor) ||
+              isBarAnchor(emojiBoardAnchor)
+            }
           >
             <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
               <Box gap="100">
@@ -1302,7 +1311,7 @@ export const Event = as<'div', EventProps>(
         }}
         ref={ref}
       >
-        <MessageOptions visible={hover || (focused && isFocusVisible) || !!menuAnchor}>
+        <MessageOptions visible={hover || (focused && isFocusVisible) || isBarAnchor(menuAnchor)}>
           <Menu className={css.MessageOptionsBar} variant="SurfaceVariant">
             <Box gap="100">
               <PopOut
