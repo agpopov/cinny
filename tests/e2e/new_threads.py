@@ -9,7 +9,7 @@ from playwright.sync_api import expect
 from session_fixture import ROOM, USER, install_session_fixture, seed_session
 
 
-def assert_new_thread(page, output, fail_first_reply=True, check_mobile=False):
+def assert_new_thread(page, output, fail_first_reply=True, check_mobile=False, theme_id=None):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     origin = page.evaluate('location.origin')
@@ -60,6 +60,8 @@ def assert_new_thread(page, output, fail_first_reply=True, check_mobile=False):
     page.route('**/event/*', get_event)
     page.route('**/threads*', lambda route: route.fulfill(json={'chunk': [root_event()] if '$new-thread-first' in events else []}))
     seed_session(page)
+    if theme_id:
+        page.evaluate('theme => localStorage.setItem("settings", JSON.stringify({...JSON.parse(localStorage.getItem("settings")), themeId: theme, useSystemTheme: false}))', theme_id)
     page.goto(origin + '/#/home/' + ROOM + '/')
     room_input = page.locator('[data-editable-name="RoomInput"]')
     expect(room_input).to_have_attribute('contenteditable', 'true', timeout=60000)

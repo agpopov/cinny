@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import './register-unread-source.mjs';
 
-const { getMessageUrls } = await import('../src/app/utils/messageUrls.ts');
+const { getMessageUrls, getSoleMessageUrl } = await import('../src/app/utils/messageUrls.ts');
 const { linkToPlainText, linkToHtml } = await import('../src/app/components/editor/links.ts');
 const { getProviderMedia } = await import('../src/app/utils/urlPreview.ts');
 const url = 'https://tenor.com/ru/view/craving-break-me-if-you-can-gif-12802980';
@@ -69,4 +69,28 @@ test('plain messages keep ordinary link previews and preserve order', () => {
     'https://example.org/',
   ]);
   assert.deepEqual(getMessageUrls('no link'), []);
+});
+
+test('only a single visible URL may be replaced by its loaded media', () => {
+  assert.equal(getSoleMessageUrl(` \n${url}\n `), url);
+  assert.equal(getSoleMessageUrl('fallback', `<p><a href="${url}">${url}</a></p>`), url);
+  assert.equal(getSoleMessageUrl('fallback', `<p>${url}</p>`), url);
+  for (const body of [
+    `Look ${url}`,
+    `${url} caption`,
+    `${url}\n${url}`,
+    `${url} https://example.org/`,
+    `[${url}](${url})`,
+  ]) {
+    assert.equal(getSoleMessageUrl(body), undefined, body);
+  }
+  for (const html of [
+    `<a href="${url}">Caption</a>`,
+    `<a href="https://example.org/">${url}</a>`,
+    `<p>${url}</p><p>Caption</p>`,
+    `<a href="${url}">${url}</a><img src="https://example.org/image.png">`,
+    `<span data-mx-spoiler>${url}</span>`,
+    `<pre><code>${url}</code></pre>`,
+  ])
+    assert.equal(getSoleMessageUrl(url, html), undefined, html);
 });

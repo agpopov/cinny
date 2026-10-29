@@ -48,7 +48,7 @@ def assert_tenor_preview(page, output):
     expect(image).to_be_visible(timeout=30000)
     image.evaluate('(img) => img.decode()')
     assert image.evaluate('(img) => img.naturalWidth') == 2
-    expect(row.locator('a[href="' + SHARE + '"]').first).to_be_visible()
+    expect(row.locator('a[href="' + SHARE + '"]')).to_have_count(0)
     first = image.screenshot()
     animated = False
     for delay in [170, 310, 530, 790]:

@@ -1,9 +1,9 @@
 import { t } from 'i18next';
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { CSSProperties, ReactNode, useCallback, useState } from 'react';
 import { Box, Chip, Icon, Icons, Text, toRem } from 'folds';
 import { IContent } from 'matrix-js-sdk';
 import { JUMBO_EMOJI_REG } from '../../utils/regex';
-import { getMessageUrls } from '../../utils/messageUrls';
+import { getMessageUrls, getSoleMessageUrl, UrlPreviewOptions } from '../../utils/messageUrls';
 import { trimReplyFromBody } from '../../utils/room';
 import { MessageTextBody } from './layout';
 import {
@@ -75,11 +75,33 @@ type MTextProps = {
   edited?: boolean;
   content: Record<string, unknown>;
   renderBody: (props: RenderBodyProps) => ReactNode;
-  renderUrlsPreview?: (urls: string[]) => ReactNode;
+  renderUrlsPreview?: (urls: string[], options?: UrlPreviewOptions) => ReactNode;
   style?: CSSProperties;
 };
+const useMediaOnlyMessage = (body: unknown, customBody: unknown, enabled: boolean) => {
+  const [readyUrl, setReadyUrl] = useState<string>();
+  const onMediaReady = useCallback((url: string, ready: boolean) => {
+    setReadyUrl((current) => {
+      if (ready) return url;
+      return current === url ? undefined : current;
+    });
+  }, []);
+  const soleUrl =
+    enabled && typeof body === 'string'
+      ? getSoleMessageUrl(
+          trimReplyFromBody(body),
+          typeof customBody === 'string' ? customBody : undefined
+        )
+      : undefined;
+  return {
+    mediaOnly: !!soleUrl && readyUrl === soleUrl,
+    previewOptions: { hideLink: !!soleUrl, onMediaReady },
+  };
+};
+
 export function MText({ edited, content, renderBody, renderUrlsPreview, style }: MTextProps) {
   const { body, formatted_body: customBody } = content;
+  const { mediaOnly, previewOptions } = useMediaOnlyMessage(body, customBody, !!renderUrlsPreview);
 
   if (typeof body !== 'string') return <BrokenContent />;
   const trimmedBody = trimReplyFromBody(body);
@@ -89,18 +111,21 @@ export function MText({ edited, content, renderBody, renderUrlsPreview, style }:
 
   return (
     <>
-      <MessageTextBody
-        preWrap={typeof customBody !== 'string'}
-        jumboEmoji={JUMBO_EMOJI_REG.test(trimmedBody)}
-        style={style}
-      >
-        {renderBody({
-          body: trimmedBody,
-          customBody: typeof customBody === 'string' ? customBody : undefined,
-        })}
-        {edited && <MessageEditedContent />}
-      </MessageTextBody>
-      {renderUrlsPreview && urls.length > 0 && renderUrlsPreview(urls)}
+      {!mediaOnly && (
+        <MessageTextBody
+          preWrap={typeof customBody !== 'string'}
+          jumboEmoji={JUMBO_EMOJI_REG.test(trimmedBody)}
+          style={style}
+        >
+          {renderBody({
+            body: trimmedBody,
+            customBody: typeof customBody === 'string' ? customBody : undefined,
+          })}
+          {edited && <MessageEditedContent />}
+        </MessageTextBody>
+      )}
+      {renderUrlsPreview && urls.length > 0 && renderUrlsPreview(urls, previewOptions)}
+      {mediaOnly && edited && <MessageEditedContent />}
     </>
   );
 }
@@ -150,10 +175,11 @@ type MNoticeProps = {
   edited?: boolean;
   content: Record<string, unknown>;
   renderBody: (props: RenderBodyProps) => ReactNode;
-  renderUrlsPreview?: (urls: string[]) => ReactNode;
+  renderUrlsPreview?: (urls: string[], options?: UrlPreviewOptions) => ReactNode;
 };
 export function MNotice({ edited, content, renderBody, renderUrlsPreview }: MNoticeProps) {
   const { body, formatted_body: customBody } = content;
+  const { mediaOnly, previewOptions } = useMediaOnlyMessage(body, customBody, !!renderUrlsPreview);
 
   if (typeof body !== 'string') return <BrokenContent />;
   const trimmedBody = trimReplyFromBody(body);
@@ -163,18 +189,21 @@ export function MNotice({ edited, content, renderBody, renderUrlsPreview }: MNot
 
   return (
     <>
-      <MessageTextBody
-        notice
-        preWrap={typeof customBody !== 'string'}
-        jumboEmoji={JUMBO_EMOJI_REG.test(trimmedBody)}
-      >
-        {renderBody({
-          body: trimmedBody,
-          customBody: typeof customBody === 'string' ? customBody : undefined,
-        })}
-        {edited && <MessageEditedContent />}
-      </MessageTextBody>
-      {renderUrlsPreview && urls.length > 0 && renderUrlsPreview(urls)}
+      {!mediaOnly && (
+        <MessageTextBody
+          notice
+          preWrap={typeof customBody !== 'string'}
+          jumboEmoji={JUMBO_EMOJI_REG.test(trimmedBody)}
+        >
+          {renderBody({
+            body: trimmedBody,
+            customBody: typeof customBody === 'string' ? customBody : undefined,
+          })}
+          {edited && <MessageEditedContent />}
+        </MessageTextBody>
+      )}
+      {renderUrlsPreview && urls.length > 0 && renderUrlsPreview(urls, previewOptions)}
+      {mediaOnly && edited && <MessageEditedContent />}
     </>
   );
 }

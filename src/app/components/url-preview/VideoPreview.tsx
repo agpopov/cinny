@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Text } from 'folds';
 import { VideoPreview as VideoPreviewData } from '../../utils/videoPreview';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
@@ -7,9 +7,11 @@ import * as css from './UrlPreviewCard.css';
 export function VideoPreview({
   preview,
   autoLoad,
+  onReady,
 }: {
   preview: VideoPreviewData;
   autoLoad: boolean;
+  onReady?: (ready: boolean) => void;
 }) {
   const [load, setLoad] = useState(autoLoad);
   const [failed, setFailed] = useState(false);
@@ -21,6 +23,10 @@ export function VideoPreview({
   );
   const unavailable = preview.requiresHttps && window.location.protocol !== 'https:';
   const tooNarrow = width > 0 && width < preview.minimumWidth;
+  useEffect(() => {
+    if (unavailable || tooNarrow || !load || failed) onReady?.(false);
+    return () => onReady?.(false);
+  }, [unavailable, tooNarrow, load, failed, onReady]);
 
   const renderPreview = () => {
     if (unavailable || tooNarrow)
@@ -45,7 +51,11 @@ export function VideoPreview({
           // YouTube requires the application identity. Send only the origin,
           // never the room/event path or the message's URL query parameters.
           referrerPolicy="strict-origin"
-          onError={() => setFailed(true)}
+          onLoad={() => onReady?.(true)}
+          onError={() => {
+            setFailed(true);
+            onReady?.(false);
+          }}
         />
       );
     return (

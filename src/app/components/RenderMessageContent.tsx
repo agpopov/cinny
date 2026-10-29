@@ -32,6 +32,7 @@ import { TextViewer } from './text-viewer';
 import { testMatrixTo } from '../plugins/matrix-to';
 import { IImageContent } from '../../types/matrix/common';
 import { getBlobSafeMimeType, getMediaMimeType } from '../utils/mimeTypes';
+import { UrlPreviewOptions } from '../utils/messageUrls';
 
 type RenderMessageContentProps = {
   displayName: string;
@@ -65,13 +66,20 @@ export function RenderMessageContent({
         getMediaMimeType(fileContent.filename ?? fileContent.body ?? '', fileContent.info?.mimetype)
       )
     : '';
-  const renderUrlsPreview = (urls: string[]) => {
+  const renderUrlsPreview = (urls: string[], options?: UrlPreviewOptions) => {
     const filteredUrls = urls.filter((url) => !testMatrixTo(url)).slice(0, 5);
     if (filteredUrls.length === 0) return undefined;
     return (
       <UrlPreviewHolder>
         {filteredUrls.map((url) => (
-          <UrlPreviewCard key={url} url={url} ts={ts} mediaAutoLoad={mediaAutoLoad} />
+          <UrlPreviewCard
+            key={url}
+            url={url}
+            ts={ts}
+            mediaAutoLoad={mediaAutoLoad}
+            hideLink={options?.hideLink}
+            onMediaReady={options?.onMediaReady}
+          />
         ))}
       </UrlPreviewHolder>
     );
