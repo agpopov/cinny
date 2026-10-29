@@ -104,6 +104,12 @@ def assert_new_thread(page, output, fail_first_reply=True, check_mobile=False):
     thread_input = page.locator('[data-editable-name="ThreadInput"]')
     expect(thread_input).to_have_attribute('contenteditable', 'true', timeout=30000)
     expect(page.locator('[data-message-id="$new-thread-first"]')).to_contain_text('Первое сообщение без ответа на старое.')
+    page.screenshot(path=str(output / 'new-thread-created.png'))
+    # Narrow native windows show the thread instead of the room. Close it
+    # before checking the independent room draft, as a user would do.
+    if room_input.count() == 0:
+        page.get_by_role('button', name='Закрыть', exact=True).click()
+    expect(room_input).to_have_attribute('contenteditable', 'true', timeout=30000)
     expect(room_input).to_contain_text('Черновик сообщения комнаты')
     roots = [entry for entry in sent if 'm.relates_to' not in entry['content']]
     replies = [entry for entry in sent if 'm.relates_to' in entry['content']]
