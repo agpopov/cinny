@@ -39,6 +39,7 @@ import { useOpenSpaceSettings } from '../../state/hooks/spaceSettings';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { InviteUserPrompt } from '../../components/invite-user-prompt';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 type LobbyMenuProps = {
   powerLevels: IPowerLevels;
@@ -186,7 +187,7 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
             <Box justifyContent="Center" alignItems="Center" gap="300">
               {showProfile && (
                 <>
-                  <Avatar size="300">
+                  <Avatar className={RoundAvatar} size="300">
                     <RoomAvatar
                       roomId={space.roomId}
                       src={avatarUrl}

@@ -41,6 +41,7 @@ import { useFilePicker } from '../../../hooks/useFilePicker';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useAlive } from '../../../hooks/useAlive';
 import { RoomPermissionsAPI } from '../../../hooks/useRoomPermissions';
+import { RoundAvatar } from '../../../styles/telegramTheme.css';
 
 type RoomProfileEditProps = {
   canEditAvatar: boolean;
@@ -193,7 +194,7 @@ export function RoomProfileEdit({
           )}
         </Box>
         <Box shrink="No">
-          <Avatar size="500" radii="300">
+          <Avatar className={RoundAvatar} size="500" radii="300">
             <RoomAvatar
               roomId={room.roomId}
               src={avatarUrl}
@@ -336,7 +337,7 @@ export function RoomProfile({ permissions }: RoomProfileProps) {
               )}
             </Box>
             <Box shrink="No">
-              <Avatar size="500" radii="300">
+              <Avatar className={RoundAvatar} size="500" radii="300">
                 <RoomAvatar
                   roomId={room.roomId}
                   src={avatarUrl}

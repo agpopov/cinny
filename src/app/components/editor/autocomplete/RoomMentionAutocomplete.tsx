@@ -18,6 +18,7 @@ import { mDirectAtom } from '../../../state/mDirectList';
 import { allRoomsAtom } from '../../../state/room-list/roomList';
 import { factoryRoomIdByActivity } from '../../../utils/sort';
 import { RoomAvatar, RoomIcon } from '../../room-avatar';
+import { RoundAvatar } from '../../../styles/telegramTheme.css';
 import { getViaServers } from '../../../plugins/via-servers';
 
 type MentionAutoCompleteHandler = (roomAliasOrId: string, name: string) => void;
@@ -163,7 +164,7 @@ export function RoomMentionAutocomplete({
                 </Text>
               }
               before={
-                <Avatar size="200">
+                <Avatar size="200" className={RoundAvatar}>
                   {dm ? (
                     <RoomAvatar
                       roomId={room.roomId}

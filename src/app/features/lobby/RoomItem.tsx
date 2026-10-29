@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { t } from 'i18next';
 import React, { MouseEventHandler, ReactNode, useCallback, useRef } from 'react';
 import {
@@ -39,6 +40,7 @@ import { getDirectRoomAvatarUrl, getRoomAvatarUrl } from '../../utils/room';
 import { ItemDraggableTarget, useDraggableItem } from './DnD';
 import { mxcUrlToHttp } from '../../utils/matrix';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 type RoomJoinButtonProps = {
   roomId: string;
@@ -101,7 +103,7 @@ function RoomJoinButton({ roomId, via }: RoomJoinButtonProps) {
 function RoomProfileLoading() {
   return (
     <Box grow="Yes" gap="300">
-      <Avatar className={styleCss.AvatarPlaceholder} />
+      <Avatar className={classNames(styleCss.AvatarPlaceholder, RoundAvatar)} />
       <Box grow="Yes" direction="Column" gap="100">
         <Box gap="200" alignItems="Center">
           <Box className={styleCss.LinePlaceholder} shrink="No" style={{ maxWidth: toRem(80) }} />
@@ -130,7 +132,7 @@ type RoomProfileErrorProps = {
 function RoomProfileError({ roomId, suggested, inaccessibleRoom, via }: RoomProfileErrorProps) {
   return (
     <Box grow="Yes" gap="300">
-      <Avatar>
+      <Avatar className={RoundAvatar}>
         <RoomAvatar
           roomId={roomId}
           src={undefined}
@@ -198,7 +200,7 @@ function RoomProfile({
 }: RoomProfileProps) {
   return (
     <Box grow="Yes" gap="300">
-      <Avatar>
+      <Avatar className={RoundAvatar}>
         <RoomAvatar
           roomId={roomId}
           src={avatarUrl}

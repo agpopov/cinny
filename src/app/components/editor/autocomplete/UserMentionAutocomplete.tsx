@@ -23,6 +23,7 @@ import { createMentionElement, moveCursor, replaceWithElement } from '../utils';
 import { getMxIdLocalPart, getMxIdServer, isUserId } from '../../../utils/matrix';
 import { getMemberDisplayName, getMemberSearchStr } from '../../../utils/room';
 import { UserAvatar } from '../../user-avatar';
+import { RoundAvatar } from '../../../styles/telegramTheme.css';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { Membership } from '../../../../types/matrix/room';
 
@@ -51,7 +52,7 @@ function UnknownMentionItem({
       }
       onClick={() => handleAutocomplete(userId, name)}
       before={
-        <Avatar size="200">
+        <Avatar size="200" className={RoundAvatar}>
           <UserAvatar
             userId={userId}
             renderFallback={() => <Icon size="50" src={Icons.User} filled />}
@@ -258,7 +259,7 @@ export function UserMentionAutocomplete({
                 </Text>
               }
               before={
-                <Avatar size="200">
+                <Avatar size="200" className={RoundAvatar}>
                   <UserAvatar
                     userId={roomMember.userId}
                     src={avatarUrl ?? undefined}

@@ -13,6 +13,7 @@ import { PageHero } from '../../components/page';
 import { onEnterOrSpace, stopPropagation } from '../../utils/keyboard';
 import { mxcUrlToHttp } from '../../utils/matrix';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 export function LobbyHero() {
   const mx = useMatrixClient();
@@ -27,7 +28,7 @@ export function LobbyHero() {
   return (
     <PageHero
       icon={
-        <Avatar size="500">
+        <Avatar className={RoundAvatar} size="500">
           <RoomAvatar
             roomId={space.roomId}
             src={avatarUrl}

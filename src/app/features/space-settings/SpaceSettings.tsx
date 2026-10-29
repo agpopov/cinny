@@ -19,6 +19,7 @@ import { DeveloperTools } from '../common-settings/developer-tools';
 import { General } from './general';
 import { Permissions } from './permissions';
 import { MentionGroups } from './MentionGroups';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 type SpaceSettingsMenuItem = {
   page: SpaceSettingsPage;
@@ -99,7 +100,7 @@ export function SpaceSettings({ initialPage, requestClose }: SpaceSettingsProps)
           <PageNav size="300">
             <PageNavHeader outlined={false}>
               <Box grow="Yes" gap="200">
-                <Avatar size="200" radii="300">
+                <Avatar className={RoundAvatar} size="200" radii="300">
                   <RoomAvatar
                     roomId={room.roomId}
                     src={avatarUrl}

@@ -39,12 +39,17 @@ import { useOpenCreateSpaceModal } from '../../state/hooks/createSpaceModal';
 import { AddExistingModal } from '../add-existing';
 import { CreateRoomType } from '../../components/create-room/types';
 import { BetaNoticeBadge } from '../../components/BetaNoticeBadge';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 function SpaceProfileLoading() {
   return (
     <Box gap="200" alignItems="Center">
       <Box grow="Yes" gap="200" alignItems="Center" className={css.HeaderChipPlaceholder}>
-        <Avatar className={styleCss.AvatarPlaceholder} size="200" radii="300" />
+        <Avatar
+          className={classNames(styleCss.AvatarPlaceholder, RoundAvatar)}
+          size="200"
+          radii="300"
+        />
         <Box
           className={styleCss.LinePlaceholder}
           shrink="No"
@@ -67,7 +72,7 @@ function InaccessibleSpaceProfile({ roomId, suggested }: InaccessibleSpaceProfil
       variant="Surface"
       size="500"
       before={
-        <Avatar size="200" radii="300">
+        <Avatar className={RoundAvatar} size="200" radii="300">
           <RoomAvatar
             roomId={roomId}
             renderFallback={() => (
@@ -126,7 +131,7 @@ function UnjoinedSpaceProfile({
       onClick={join}
       disabled={!canJoin}
       before={
-        <Avatar size="200" radii="300">
+        <Avatar className={RoundAvatar} size="200" radii="300">
           <RoomAvatar
             roomId={roomId}
             src={avatarUrl}
@@ -190,7 +195,7 @@ function SpaceProfile({
       variant="Surface"
       size="500"
       before={
-        <Avatar size="200" radii="300">
+        <Avatar className={RoundAvatar} size="200" radii="300">
           <RoomAvatar
             roomId={roomId}
             src={avatarUrl}

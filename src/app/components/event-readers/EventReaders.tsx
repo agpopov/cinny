@@ -25,6 +25,7 @@ import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useOpenUserRoomProfile } from '../../state/hooks/userRoomProfile';
 import { useSpaceOptionally } from '../../hooks/useSpace';
 import { getMouseEventCords } from '../../utils/dom';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 export type EventReadersProps = {
   room: Room;
@@ -90,7 +91,7 @@ export const EventReaders = as<'div', EventReadersProps>(
                       );
                     }}
                     before={
-                      <Avatar size="200">
+                      <Avatar className={RoundAvatar} size="200">
                         <UserAvatar
                           userId={readerId}
                           src={avatarUrl ?? undefined}

@@ -18,6 +18,7 @@ import { Permissions } from './permissions';
 import { RoomSettingsPage } from '../../state/roomSettings';
 import { useRoom } from '../../hooks/useRoom';
 import { DeveloperTools } from '../common-settings/developer-tools';
+import { RoundAvatar } from '../../styles/telegramTheme.css';
 
 type RoomSettingsMenuItem = {
   page: RoomSettingsPage;
@@ -97,7 +98,7 @@ export function RoomSettings({ initialPage, requestClose }: RoomSettingsProps) {
           <PageNav size="300">
             <PageNavHeader outlined={false}>
               <Box grow="Yes" gap="200">
-                <Avatar size="200" radii="300">
+                <Avatar className={RoundAvatar} size="200" radii="300">
                   <RoomAvatar
                     roomId={room.roomId}
                     src={avatarUrl}
