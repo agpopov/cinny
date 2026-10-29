@@ -51,11 +51,16 @@ def assert_tenor_preview(page, output):
     expect(row.locator('a[href="' + SHARE + '"]')).to_have_count(0)
     first = image.screenshot()
     animated = False
-    for delay in [170, 310, 530, 790]:
+    page.bring_to_front()
+    for delay in [73, 137, 211, 269, 331, 389, 443, 503, 571, 641, 719, 797]:
         page.wait_for_timeout(delay)
         if image.screenshot() != first:
             animated = True
             break
+    if not animated:
+        (output / 'tenor-frame-first.png').write_bytes(first)
+        (output / 'tenor-frame-last.png').write_bytes(image.screenshot())
+        (output / 'tenor-animation-failure.json').write_text(json.dumps({'requests': media_requests, 'image': image.evaluate('(img)=>({src:img.src,width:img.naturalWidth,height:img.naturalHeight,rect:img.getBoundingClientRect().toJSON(),visibility:document.visibilityState})')}, indent=2))
     assert animated, 'Tenor preview remained static'
     assert media_requests, 'Provider media was not requested'
     assert not any('preview_url' in item['path'] for item in requests), requests

@@ -101,7 +101,11 @@ const useMediaOnlyMessage = (body: unknown, customBody: unknown, enabled: boolea
 
 export function MText({ edited, content, renderBody, renderUrlsPreview, style }: MTextProps) {
   const { body, formatted_body: customBody } = content;
-  const { mediaOnly, previewOptions } = useMediaOnlyMessage(body, customBody, !!renderUrlsPreview);
+  const { mediaOnly, previewOptions } = useMediaOnlyMessage(
+    body,
+    customBody,
+    !!renderUrlsPreview && content.msgtype === 'm.text'
+  );
 
   if (typeof body !== 'string') return <BrokenContent />;
   const trimmedBody = trimReplyFromBody(body);

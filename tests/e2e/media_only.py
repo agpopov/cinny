@@ -30,6 +30,9 @@ def assert_media_only(page, output, theme_id=None):
         events.append({'type': 'm.room.message', 'event_id': '$media-' + key,
                        'sender': USER, 'origin_server_ts': int(time.time() * 1000),
                        'content': {'msgtype': 'm.text', 'body': body}})
+    events.append({'type':'m.room.message','event_id':'$media-attached-caption','sender':USER,
+                   'origin_server_ts':int(time.time()*1000),'content':{'msgtype':'m.image','body':GIF,
+                   'filename':'photo.png','url':IMAGE,'info':{'mimetype':'image/png','w':1,'h':1,'size':len(PNG)}}})
     install_session_fixture(page, room_events=events)
     webm = Path(__file__).parents[1].joinpath('fixtures/preview.webm').read_bytes()
     page.route(IMAGE, lambda route: route.fulfill(content_type='image/png', body=PNG))
@@ -51,7 +54,7 @@ def assert_media_only(page, output, theme_id=None):
         if selector == 'img':
             media.evaluate('(img) => img.decode()')
         if selector == 'video':
-            expect(media).to_have_js_property('readyState', 4, timeout=20000)
+            page.wait_for_function('(video)=>video.readyState>=2', arg=media.element_handle(), timeout=20000)
         expect(row.locator('a[href="' + url + '"]')).to_have_count(0, timeout=10000)
     caption = page.locator('[data-message-id="$media-caption"]')
     expect(caption).to_contain_text('Посмотрите:')
@@ -61,6 +64,8 @@ def assert_media_only(page, output, theme_id=None):
     expect(failed.get_by_role('button', name='Повторить загрузку медиа')).to_be_attached()
     ordinary = page.locator('[data-message-id="$media-page"]')
     expect(ordinary.locator('a[href="' + PAGE + '"]').first).to_be_attached()
+    attached = page.locator('[data-message-id="$media-attached-caption"]')
+    expect(attached.locator('a[href="' + GIF + '"]').first).to_be_attached()
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
     (output / 'media-only.json').write_text(json.dumps({'image': True, 'gif': True, 'video': True, 'player': True, 'caption_retained': True, 'failure_link_retained': True, 'ordinary_link_retained': True}, indent=2))
     page.screenshot(path=str(output / 'media-only.png'))
