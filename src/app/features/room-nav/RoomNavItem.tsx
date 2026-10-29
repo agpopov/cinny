@@ -346,32 +346,28 @@ export function RoomNavItem({
           <NavItemContent>
             <Box as="span" grow="Yes" alignItems="Center" gap="200">
               <Avatar size="200" radii="400" className={RoundAvatar}>
-                {showAvatar ? (
-                  <RoomAvatar
-                    roomId={room.roomId}
-                    src={
-                      direct
-                        ? getDirectRoomAvatarUrl(mx, room, 96, useAuthentication)
-                        : getRoomAvatarUrl(mx, room, 96, useAuthentication)
-                    }
-                    alt={roomName}
-                    renderFallback={() => (
+                <RoomAvatar
+                  roomId={room.roomId}
+                  src={
+                    direct
+                      ? getDirectRoomAvatarUrl(mx, room, 96, useAuthentication)
+                      : getRoomAvatarUrl(mx, room, 96, useAuthentication)
+                  }
+                  alt={roomName}
+                  renderFallback={() =>
+                    showAvatar ? (
                       <Text as="span" size="H6">
                         {nameInitials(roomName)}
                       </Text>
-                    )}
-                  />
-                ) : (
-                  <RoomIcon
-                    style={{
-                      opacity: unread ? config.opacity.P500 : config.opacity.P300,
-                    }}
-                    filled={selected}
-                    size="100"
-                    joinRule={room.getJoinRule()}
-                    roomType={room.getType()}
-                  />
-                )}
+                    ) : (
+                      <RoomIcon
+                        size="100"
+                        joinRule={room.getJoinRule()}
+                        roomType={room.getType()}
+                      />
+                    )
+                  }
+                />
               </Avatar>
               <Box as="span" grow="Yes">
                 <Text
