@@ -81,7 +81,12 @@ export class ThreadCreationAttempt {
     return response.event_id;
   }
 
-  async send(mx: MatrixClient, title: string, content: MessageContent): Promise<string> {
+  async send(
+    mx: MatrixClient,
+    title: string,
+    content: MessageContent,
+    expectedRootTxn?: string
+  ): Promise<string> {
     if (this.busy) throw new Error('Тред уже создаётся.');
     this.busy = true;
     try {
@@ -89,6 +94,8 @@ export class ThreadCreationAttempt {
       if (!content.body?.trim() || content['m.relates_to'])
         throw new Error('Напишите первое сообщение нового треда.');
       let state = await this.load();
+      if (expectedRootTxn && state?.rootTxn !== expectedRootTxn)
+        throw new Error('Эта попытка уже завершена. Откройте созданный тред в списке обсуждений.');
       if (
         state &&
         (state.title !== root.body || JSON.stringify(state.content) !== JSON.stringify(content))

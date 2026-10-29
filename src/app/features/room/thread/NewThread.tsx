@@ -165,7 +165,7 @@ export function NewThread({ room, onCreated, onCancel }: NewThreadProps) {
         draft.save(nodes);
         await draft.flush();
       }
-      const rootId = await attempt.send(mx, pending?.title ?? title, content);
+      const rootId = await attempt.send(mx, pending?.title ?? title, content, pending?.rootTxn);
       await titles.set(draftKey, undefined);
       resetEditor(editor);
       draft.save(editor.children);

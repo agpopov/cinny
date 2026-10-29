@@ -162,6 +162,19 @@ test('invalid or changed submissions cannot leave extra root messages behind', a
   assert.equal(f.requests.length, 2);
 });
 
+test('a form reopened during a send cannot repeat an attempt that has already completed', async () => {
+  const f = fixture();
+  const attempt = new ThreadCreationAttempt(f.storage, '!room:test');
+  f.failReply();
+  await assert.rejects(attempt.send(f.mx, title, content), /offline/);
+  const staleForm = await attempt.load();
+  await attempt.send(f.mx, title, content);
+  await attempt.clear();
+  await assert.rejects(attempt.send(f.mx, title, content, staleForm.rootTxn), /уже завершена/);
+  assert.equal(f.requests.length, 3);
+  assert.equal(f.accepted.size, 2);
+});
+
 test('storage failure prevents dispatch and parallel submissions cannot create two topics', async () => {
   const f = fixture();
   const { set } = f.storage;
