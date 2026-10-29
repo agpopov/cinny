@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import classNames from 'classnames';
 import { Box, Text, config } from 'folds';
 import { EventType } from 'matrix-js-sdk';
 import { useSetAtom } from 'jotai';
@@ -19,19 +20,20 @@ import { RoomViewFollowing, RoomViewFollowingPlaceholder } from './RoomViewFollo
 import { Page } from '../../components/page';
 import { useKeyDown } from '../../hooks/useKeyDown';
 import { editableActiveElement } from '../../utils/dom';
-import { settingsAtom } from '../../state/settings';
+import { MessageLayout, settingsAtom } from '../../state/settings';
 import { useSetting } from '../../state/hooks/settings';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoom } from '../../hooks/useRoom';
 import { roomIdToThreadPanelAtomFamily } from '../../state/room/threadPanel';
-import { RoomViewRegion } from '../../styles/telegramTheme.css';
+import { PlainBackground, RoomViewRegion } from '../../styles/telegramTheme.css';
 
 export function RoomView({ eventId }: { eventId?: string }) {
   const roomInputRef = useRef<HTMLDivElement>(null);
   const roomViewRef = useRef<HTMLDivElement>(null);
 
   const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
+  const [messageLayout] = useSetting(settingsAtom, 'messageLayout');
 
   const room = useRoom();
   const { roomId } = room;
@@ -74,7 +76,12 @@ export function RoomView({ eventId }: { eventId?: string }) {
   );
 
   return (
-    <Page ref={roomViewRef} className={RoomViewRegion}>
+    <Page
+      ref={roomViewRef}
+      className={classNames(RoomViewRegion, {
+        [PlainBackground]: messageLayout !== MessageLayout.Bubble,
+      })}
+    >
       <Box grow="Yes" direction="Column">
         <RoomTimeline
           key={roomId}

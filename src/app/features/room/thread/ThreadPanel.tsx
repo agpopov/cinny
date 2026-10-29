@@ -25,10 +25,10 @@ import classNames from 'classnames';
 import { ReactEditor } from 'slate-react';
 import * as css from './Thread.css';
 import { ContainerColor } from '../../../styles/ContainerColor.css';
-import { AppHeader, RoomViewRegion } from '../../../styles/telegramTheme.css';
+import { AppHeader, PlainBackground, RoomViewRegion } from '../../../styles/telegramTheme.css';
 import { PanelResizable, PanelResizer } from '../../../components/panel-resizer';
 import { useSetting } from '../../../state/hooks/settings';
-import { settingsAtom } from '../../../state/settings';
+import { MessageLayout, settingsAtom } from '../../../state/settings';
 import { THREAD_PANEL_WIDTH, panelWidthStyle } from '../../../utils/panelWidth';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
@@ -548,6 +548,7 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
   const main = state.view === 'thread' && !!state.main;
   const mobile = screenSize !== ScreenSize.Desktop || main;
   const [panelWidth, setPanelWidth] = useSetting(settingsAtom, 'threadPanelWidth');
+  const [messageLayout] = useSetting(settingsAtom, 'messageLayout');
   const panelRef = useRef<HTMLDivElement>(null);
 
   let content: React.ReactNode;
@@ -597,6 +598,7 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
       className={classNames(css.Panel, ContainerColor({ variant: 'Background' }), {
         [css.PanelMobile]: mobile,
         [RoomViewRegion]: state.view === 'thread',
+        [PlainBackground]: messageLayout !== MessageLayout.Bubble,
         [PanelResizable]: !mobile,
       })}
       direction="Column"

@@ -23,6 +23,7 @@ import { UserAvatarContainer } from '../components/user-profile/styles.css';
 
 // Region hooks restyled by the Telegram themes; they have no styles of their own.
 export const RoomViewRegion = style({});
+export const PlainBackground = style({});
 export const RoundAvatar = style({});
 export const DayDivider = style({});
 export const NewMessagesDivider = style({});
@@ -38,6 +39,7 @@ export const SidebarTooltip = style({});
 export const tg = createThemeContract({
   mutedIcon: null,
   wallpaper: null,
+  plainBackground: null,
   room: { hover: null, active: null, line: null, text: null },
   bubble: { bg: null, hover: null, active: null, line: null, text: null, time: null },
   link: null,
@@ -75,6 +77,7 @@ const lightWallpaper = [
 export const telegramLightVars = createTheme(tg, {
   mutedIcon: '#999999',
   wallpaper: lightWallpaper,
+  plainBackground: '#FFFFFF',
   room: {
     hover: 'rgba(0, 0, 0, 0.05)',
     active: 'rgba(0, 0, 0, 0.08)',
@@ -137,6 +140,7 @@ export const telegramLightVars = createTheme(tg, {
 export const telegramDarkVars = createTheme(tg, {
   mutedIcon: '#6C7883',
   wallpaper: 'var(--telegram-wallpaper-pattern) 0 0 / 600px auto repeat, #0E1621',
+  plainBackground: '#0E1621',
   room: {
     hover: 'rgba(255, 255, 255, 0.04)',
     active: 'rgba(255, 255, 255, 0.07)',
@@ -254,6 +258,10 @@ globalStyle(`${theme} ${RoomViewRegion}`, {
     '--mx-uc-8': tg.peer.p8,
   },
 });
+// Modern and compact layouts have no bubbles, so messages sit on a plain background.
+globalStyle(`${theme} ${RoomViewRegion}${PlainBackground}`, {
+  background: tg.plainBackground,
+});
 
 // Slightly smaller bubble text with wider side padding.
 globalStyle(`${theme} ${BubbleContent}`, {
@@ -329,6 +337,16 @@ globalStyle(`${theme} ${Reaction}[aria-pressed=true]:hover`, {
 // Mentions in messages without an outline.
 globalStyle(`${theme} [data-mention-id], ${theme} [data-mention-group]`, {
   boxShadow: 'none',
+});
+
+// Typing notice over the bubble wallpaper in a translucent pill, like room events.
+globalStyle(`${theme} ${RoomViewRegion}:not(${PlainBackground}) ${RoomViewTyping}`, {
+  width: 'fit-content',
+  maxWidth: `calc(100% - 2 * ${config.space.S400})`,
+  margin: `${config.space.S100} ${config.space.S400} 0`,
+  padding: `${config.space.S100} ${config.space.S300}`,
+  borderRadius: config.radii.Pill,
+  backgroundColor: tg.intro,
 });
 
 // Room greeting at the start of the timeline in a translucent bubble.
