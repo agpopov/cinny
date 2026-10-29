@@ -1962,7 +1962,7 @@ export function RoomTimeline({
           </Chip>
         </TimelineFloat>
       )}
-      <Scroll ref={scrollRef} visibility="Hover" className={css.TimelineScroll}>
+      <Scroll ref={scrollRef} visibility="Hover">
         <Box
           direction="Column"
           justifyContent="End"

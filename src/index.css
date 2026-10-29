@@ -155,6 +155,23 @@ html[data-input-modality='pointer'] :focus-visible {
   outline: none !important;
 }
 
+/* On touch screens a long press opens menus. Android starts its own selection a bit later,
+   under the finger, on whatever has appeared there (menu items, the room list), so only
+   text fields stay selectable. */
+@media (hover: none) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  input,
+  textarea,
+  [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
 @media (pointer: coarse) {
   button[data-message-actions] {
     min-width: 44px;
