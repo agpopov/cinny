@@ -272,10 +272,10 @@ globalStyle(`${theme} ${RoomViewRegion}${PlainBackground}`, {
 
 // Slightly smaller bubble text with wider side padding.
 globalStyle(`${theme} ${BubbleContent}`, {
-  padding: `${toRem(6)} ${toRem(12)}`,
+  padding: `${toRem(7)} ${toRem(14)}`,
   vars: {
     [config.fontSize.T400]: toRem(14),
-    [config.lineHeight.T400]: toRem(20),
+    [config.lineHeight.T400]: toRem(18),
     // Headings of formatted messages scale down with the text.
     [config.fontSize.H2]: toRem(18),
     [config.fontSize.H3]: toRem(17),
