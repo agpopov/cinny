@@ -1,4 +1,4 @@
-import { createVar, keyframes, style, styleVariants } from '@vanilla-extract/css';
+import { createVar, style, styleVariants } from '@vanilla-extract/css';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 import { DefaultReset, color, config, toRem } from 'folds';
 
@@ -41,27 +41,10 @@ const SpacingVariant = styleVariants({
   },
 });
 
-const highlightAnime = keyframes({
-  '0%': {
-    backgroundColor: color.Primary.Container,
-  },
-  '25%': {
-    backgroundColor: color.Primary.ContainerActive,
-  },
-  '50%': {
-    backgroundColor: color.Primary.Container,
-  },
-  '75%': {
-    backgroundColor: color.Primary.ContainerActive,
-  },
-  '100%': {
-    backgroundColor: color.Primary.Container,
-  },
-});
+// A static translucent highlight: the pulsing animation looked jumpy after jumping to a message.
 const HighlightVariant = styleVariants({
   true: {
-    animation: `${highlightAnime} 2000ms ease-in-out`,
-    animationIterationCount: 'infinite',
+    backgroundColor: `color-mix(in srgb, ${color.Primary.Container} 50%, transparent)`,
   },
 });
 

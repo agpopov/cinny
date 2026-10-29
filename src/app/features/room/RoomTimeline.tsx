@@ -744,7 +744,7 @@ export function RoomTimeline({
 
       if (typeof absoluteIndex === 'number') {
         const scrolled = scrollToItem(absoluteIndex, {
-          behavior: 'smooth',
+          behavior: 'instant',
           align: 'center',
           stopInView: true,
         });
