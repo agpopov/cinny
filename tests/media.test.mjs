@@ -324,6 +324,23 @@ test('localized Tenor share links resolve without Matrix preview metadata', () =
     );
   }
 });
+test('Tenor titles support Unicode and URL encoding without rounding the reported ID', () => {
+  const share =
+    'https://tenor.com/ru/view/ну-и-пожалуйста-ну-и-не-нужно-котёнок-gif-9559614367641425665';
+  for (const url of [
+    share,
+    encodeURI(share),
+    `${encodeURI(share)}.gif?utm_source=share`,
+    'https://tenor.com/ja/view/お願い-gif-9559614367641425665',
+    'https://tenor.com/view/cafe%CC%81-gif-9559614367641425665',
+  ]) {
+    assert.deepEqual(
+      getProviderMedia(url),
+      { url: 'https://tenor.com/view/9559614367641425665.gif', kind: 'image' },
+      url
+    );
+  }
+});
 test('provider media rejects spoofed hosts, HTML pages, collections and arbitrary players', () => {
   for (const url of [
     'https://tenor.com.evil.example/view/cat-18240062',
@@ -338,6 +355,9 @@ test('provider media rejects spoofed hosts, HTML pages, collections and arbitrar
     'https://tenor.com/ru/ru/view/cat-18240062',
     'https://tenor.com/arbitrary/view/cat-18240062',
     'https://tenor.com.evil.example/ru/view/cat-18240062',
+    'https://tenor.com/ru/view/cat%2Fextra-18240062',
+    'https://tenor.com/ru/view/cat%ZZ-18240062',
+    'https://tenor.com/ru/view/cat-123456789012345678901',
     'https://giphy.com/explore/cat-typing',
     'https://giphy.com/gifs/cat-123<script>',
     'https://giphy.com/gifs/cat-123456/extra',

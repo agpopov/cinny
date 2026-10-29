@@ -50,10 +50,17 @@ export const getProviderMedia = (value: unknown): PreviewMedia | undefined => {
     if (match) return { url: `https://i.giphy.com/media/${match[1]}/giphy.gif`, kind: 'image' };
   }
   if (['tenor.com', 'www.tenor.com'].includes(url.hostname)) {
+    let pathname: string;
+    try {
+      // URL.pathname percent-encodes non-ASCII titles, including Russian share links.
+      pathname = decodeURIComponent(url.pathname);
+    } catch {
+      return undefined;
+    }
     // Shared pages may include a locale (e.g. /ru/view/ or /pt-BR/view/).
     const match =
-      /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?(?:view|embed)\/(?:[a-zA-Z0-9-]+-)?([0-9]{1,20})(?:\.gif)?\/?$/.exec(
-        url.pathname
+      /^\/(?:[a-z]{2}(?:-[A-Za-z]{2})?\/)?(?:view|embed)\/(?:[\p{L}\p{M}\p{N}-]+-)?([0-9]{1,20})(?:\.gif)?\/?$/u.exec(
+        pathname
       );
     let id = match?.[1];
     const short = /^\/([a-zA-Z0-9]{2,11})\.gif\/?$/.exec(url.pathname);

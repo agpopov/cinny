@@ -17,6 +17,22 @@ test('a link serialized by the actual editor retains its preview address', () =>
   });
 });
 
+test('the reported Cyrillic Tenor link resolves from plain and formatted messages', () => {
+  const share =
+    'https://tenor.com/ru/view/ну-и-пожалуйста-ну-и-не-нужно-котёнок-gif-9559614367641425665';
+  const encoded = encodeURI(share);
+  for (const urls of [
+    getMessageUrls(share),
+    getMessageUrls(linkToPlainText(encoded, share), linkToHtml(encoded, share)),
+  ]) {
+    assert.deepEqual(urls, [encoded]);
+    assert.deepEqual(getProviderMedia(urls[0]), {
+      url: 'https://tenor.com/view/9559614367641425665.gif',
+      kind: 'image',
+    });
+  }
+});
+
 test('formatted links use their destination, not the label or plaintext fallback', () => {
   assert.deepEqual(getMessageUrls('GIF', `<p><a href="${url}">GIF</a></p>`), [url]);
   assert.deepEqual(getMessageUrls(url, '<a href="https://example.org/">' + url + '</a>'), [

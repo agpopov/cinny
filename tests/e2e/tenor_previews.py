@@ -3,12 +3,14 @@ import json
 import struct
 import time
 from pathlib import Path
+from urllib.parse import quote
 
 from playwright.sync_api import expect
 from session_fixture import ROOM, USER, install_session_fixture, seed_session, assert_session_ready
 
-SHARE = 'https://tenor.com/ru/view/craving-break-me-if-you-can-gif-12802980'
-MEDIA = 'https://tenor.com/view/12802980.gif'
+SHARE = 'https://tenor.com/ru/view/ну-и-пожалуйста-ну-и-не-нужно-котёнок-gif-9559614367641425665'
+ENCODED_SHARE = quote(SHARE, safe=':/')
+MEDIA = 'https://tenor.com/view/9559614367641425665.gif'
 
 
 def assert_tenor_preview(page, output):
@@ -88,14 +90,14 @@ def assert_tenor_preview(page, output):
         const event = new ClipboardEvent('paste', {bubbles:true, cancelable:true});
         Object.defineProperty(event, 'clipboardData', {value:data}); node.dispatchEvent(event);
     }''', SHARE)
-    expect(editor.locator('a')).to_have_attribute('href', SHARE)
+    expect(editor.locator('a')).to_have_attribute('href', ENCODED_SHARE)
     editor.press('Enter')
     sent_row = page.locator('[data-message-id="$tenor-editor-sent"]')
     sent_image = sent_row.locator('img[src="' + MEDIA + '"]')
     expect(sent_image).to_be_visible(timeout=30000)
     sent_image.evaluate('(img) => img.decode()')
-    assert sent[0]['content']['body'] == '[' + SHARE + '](' + SHARE + ')', sent
-    assert SHARE in sent[0]['content']['formatted_body'], sent
+    assert sent[0]['content']['body'] == '[' + SHARE + '](' + ENCODED_SHARE + ')', sent
+    assert ENCODED_SHARE in sent[0]['content']['formatted_body'], sent
     assert not any('preview_url' in item['path'] for item in requests), requests
     (output / 'tenor-editor-message.json').write_text(json.dumps(sent[0]['content'], ensure_ascii=False, indent=2), encoding='utf-8')
     page.screenshot(path=str(output / 'tenor-editor-sent.png'))
