@@ -1,5 +1,6 @@
-import { style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 import { color, config, toRem } from 'folds';
+import { EditorTextarea } from '../../../components/editor/Editor.css';
 
 export const Summary = style({
   marginTop: config.space.S200,
@@ -87,4 +88,70 @@ export const ListItemRootText = style({
 export const FilterBar = style({
   padding: `${config.space.S200} ${config.space.S300}`,
   flexShrink: 0,
+});
+
+export const NewThreadButton = style({ marginLeft: 'auto' });
+
+export const CreateBody = style({ minHeight: 0 });
+
+export const CreateContent = style({
+  padding: `${config.space.S600} ${config.space.S400} ${config.space.S500}`,
+  gap: config.space.S300,
+  minWidth: 0,
+});
+
+export const CreateIcon = style({
+  display: 'grid',
+  placeItems: 'center',
+  width: toRem(72),
+  height: toRem(72),
+  marginBottom: config.space.S200,
+  borderRadius: '50%',
+  background: color.SurfaceVariant.Container,
+  color: color.SurfaceVariant.OnContainer,
+});
+
+export const CreateDescription = style({ lineHeight: 1.5, overflowWrap: 'anywhere' });
+export const CreateField = style({ marginTop: config.space.S400, minWidth: 0 });
+export const CreateLabel = style({
+  textTransform: 'uppercase',
+  letterSpacing: '0.025em',
+  fontWeight: 700,
+});
+export const Required = style({ color: color.Critical.Main });
+export const CreateTitleInput = style({ width: '100%' });
+
+export const CreateEditor = style({
+  borderRadius: config.radii.R400,
+  backgroundColor: color.SurfaceVariant.Container,
+  border: `${config.borderWidth.B300} solid ${color.SurfaceVariant.ContainerLine}`,
+  overflow: 'hidden',
+  selectors: {
+    '&:focus-within': {
+      outline: `${toRem(2)} solid ${color.Primary.Main}`,
+      outlineOffset: toRem(1),
+    },
+  },
+});
+
+// A roomy first-message field, matching Discord's thread creation panel.
+globalStyle(`${CreateEditor} ${EditorTextarea}`, { minHeight: toRem(136) });
+
+export const CreateEditorBar = style({ padding: `${config.space.S100} ${config.space.S200}` });
+export const CreateError = style({ color: color.Critical.Main, overflowWrap: 'anywhere' });
+export const CreateFooter = style({
+  flexShrink: 0,
+  marginTop: 'auto',
+  padding: config.space.S400,
+  borderTop: `${config.borderWidth.B300} solid ${color.Background.ContainerLine}`,
+  backgroundColor: color.Background.Container,
+});
+export const CreateButton = style({
+  backgroundColor: '#5865f2',
+  color: '#fff',
+  selectors: {
+    '&:enabled:hover': { backgroundColor: '#4752c4' },
+    '&:enabled:active': { backgroundColor: '#3c45a5' },
+    '&:disabled': { opacity: 0.5 },
+  },
 });

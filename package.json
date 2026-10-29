@@ -1,6 +1,6 @@
 {
   "name": "cinny",
-  "version": "4.14.2",
+  "version": "4.14.3",
   "description": "Yet another matrix client",
   "main": "index.js",
   "type": "module",
@@ -24,6 +24,7 @@
     "test:mobile-media": "node tests/mobile-media.test.mjs",
     "test:editor-links": "node tests/editor-links.test.mjs",
     "test:composer": "node tests/composer.test.mjs",
+    "test:threads": "node tests/thread-creation.test.mjs",
     "test:audit:source": "node tests/platform-audit.test.mjs",
     "test:stickers": "node tests/stickers.test.mjs",
     "test:mentions": "node --import ./tests/register-unread-source.mjs tests/mention-groups.test.ts",

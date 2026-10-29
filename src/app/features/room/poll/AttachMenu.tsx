@@ -12,6 +12,8 @@ import {
   Text,
   config,
 } from 'folds';
+import { useSetAtom } from 'jotai';
+import { roomIdToThreadPanelAtomFamily } from '../../../state/room/threadPanel';
 import { useBackDismiss } from '../../../hooks/useBackDismiss';
 import { PollDialog } from './PollDialog';
 import { stopPropagation } from '../../../utils/keyboard';
@@ -22,6 +24,7 @@ type AttachMenuProps = {
   onPickFile: () => void;
 };
 export function AttachMenu({ roomId, threadRootId, onPickFile }: AttachMenuProps) {
+  const setThreadPanel = useSetAtom(roomIdToThreadPanelAtomFamily(roomId));
   const [anchor, setAnchor] = useState<RectCords>();
   const [pollOpen, setPollOpen] = useState(false);
 
@@ -63,6 +66,19 @@ export function AttachMenu({ roomId, threadRootId, onPickFile }: AttachMenuProps
                 >
                   <Text size="T300">Файл</Text>
                 </MenuItem>
+                {!threadRootId && (
+                  <MenuItem
+                    size="300"
+                    radii="300"
+                    before={<Icon size="100" src={Icons.Thread} />}
+                    onClick={() => {
+                      close();
+                      setThreadPanel({ view: 'create' });
+                    }}
+                  >
+                    <Text size="T300">Создать тред</Text>
+                  </MenuItem>
+                )}
                 <MenuItem
                   size="300"
                   radii="300"

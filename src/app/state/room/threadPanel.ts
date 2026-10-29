@@ -4,6 +4,7 @@ import { atomFamily } from 'jotai/utils';
 /** Что открыто в боковой панели тредов комнаты. */
 export type ThreadPanelState =
   | { view: 'list' }
+  | { view: 'create' }
   | {
       view: 'thread';
       rootId: string;

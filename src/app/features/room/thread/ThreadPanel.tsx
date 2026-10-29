@@ -64,6 +64,7 @@ import { useRoomPermissions } from '../../../hooks/useRoomPermissions';
 import { useRoomEvent } from '../../../hooks/useRoomEvent';
 import { ScreenSize, useScreenSizeContext } from '../../../hooks/useScreenSize';
 import { editableActiveElement } from '../../../utils/dom';
+import { NewThread } from './NewThread';
 
 type PanelHeaderProps = {
   title: string;
@@ -180,7 +181,12 @@ function ThreadListItem({ room, thread, onOpen }: ThreadListItemProps) {
   const unread = getThreadUnread(mx, room, thread);
 
   return (
-    <button type="button" className={css.ListItem} onClick={() => onOpen(thread)}>
+    <button
+      type="button"
+      className={css.ListItem}
+      data-thread-id={thread.id}
+      onClick={() => onOpen(thread)}
+    >
       <Box gap="300">
         <Avatar size="300" radii="Pill">
           <UserAvatar
@@ -193,18 +199,19 @@ function ThreadListItem({ room, thread, onOpen }: ThreadListItemProps) {
         <Box grow="Yes" direction="Column" gap="100" style={{ minWidth: 0 }}>
           <Box alignItems="Center" gap="200">
             <Text size="T300" truncate style={{ flexGrow: 1 }}>
-              <b>{rootName}</b>
+              <b>{root.isRedacted() ? 'Сообщение удалено' : getEventPreviewText(root, room)}</b>
             </Text>
             <Text size="T200" priority="300" style={{ flexShrink: 0 }}>
               {formatRelativeTime(getThreadLastActivity(thread))}
             </Text>
           </Box>
           <Text
-            size="T300"
+            size="T200"
+            priority="300"
             className={css.ListItemRootText}
             style={{ fontWeight: unread.unread ? 600 : undefined }}
           >
-            {root.isRedacted() ? 'Сообщение удалено' : getEventPreviewText(root, room)}
+            Начал(а) {rootName}
           </Text>
           <Box alignItems="Center" gap="200">
             <Icon size="50" src={unread.unread ? Icons.ThreadUnread : Icons.Thread} />
@@ -239,20 +246,25 @@ function ThreadListItem({ room, thread, onOpen }: ThreadListItemProps) {
 type ThreadListProps = {
   room: Room;
   onOpenThread: (rootId: string) => void;
+  onCreate: () => void;
   onClose: () => void;
 };
-function ThreadList({ room, onOpenThread, onClose }: ThreadListProps) {
+function ThreadList({ room, onOpenThread, onCreate, onClose }: ThreadListProps) {
   const mx = useMatrixClient();
   const [filter, setFilter] = useAtom(threadListFilterAtom);
   const threads = useRoomThreads(room);
   const { state, reload, loadMore, canLoadMore } = useFetchRoomThreads(mx, room);
+  const powerLevels = usePowerLevelsContext();
+  const creators = useRoomCreators(room);
+  const permissions = useRoomPermissions(creators, powerLevels);
+  const canCreate = permissions.event(EventType.RoomMessage, mx.getSafeUserId());
 
   const visible = filter === 'mine' ? threads.filter((t) => isFollowedThread(room, t)) : threads;
 
   return (
     <>
       <PanelHeader title="Треды" subtitle={room.name} onClose={onClose} />
-      <Box className={css.FilterBar} gap="200">
+      <Box className={css.FilterBar} gap="200" alignItems="Center" wrap="Wrap">
         <Chip
           variant={filter === 'all' ? 'Primary' : 'SurfaceVariant'}
           radii="Pill"
@@ -269,6 +281,17 @@ function ThreadList({ room, onOpenThread, onClose }: ThreadListProps) {
         >
           <Text size="T200">Мои</Text>
         </Chip>
+        {canCreate && (
+          <Button
+            className={css.NewThreadButton}
+            size="300"
+            radii="300"
+            before={<Icon size="100" src={Icons.Plus} />}
+            onClick={onCreate}
+          >
+            <Text size="B300">Создать тред</Text>
+          </Button>
+        )}
       </Box>
       <Line variant="Background" size="300" />
       <Box grow="Yes" direction="Column" style={{ minHeight: 0 }}>
@@ -296,7 +319,7 @@ function ThreadList({ room, onOpenThread, onClose }: ThreadListProps) {
                 <Text align="Center" size="T300" priority="300">
                   {filter === 'mine'
                     ? 'Здесь появятся треды, которые вы начали или в которых отвечали.'
-                    : 'Наведите на сообщение и нажмите значок треда, чтобы начать обсуждение.'}
+                    : 'Создайте новый тред или начните обсуждение из сообщения в комнате.'}
                 </Text>
               </Box>
             )}
@@ -408,10 +431,6 @@ function ThreadView({
   }, [editor, rootId]);
 
   const rootSender = rootEvent?.getSender();
-  const rootPreview = rootEvent
-    ? `${getSenderName(room, rootSender ?? '')}: ${getEventPreviewText(rootEvent, room)}`
-    : undefined;
-  const subtitle = main ? [room.name, rootPreview].filter(Boolean).join(' · ') : rootPreview;
   const ready = !!thread && thread.initialEventsFetched;
   const rootMoved = ready && !!thread && ensureThreadRootFirst(thread);
   useEffect(() => {
@@ -422,8 +441,10 @@ function ThreadView({
   return (
     <>
       <PanelHeader
-        title={thread ? `Тред · ${formatReplyCount(thread.length)}` : 'Новый тред'}
-        subtitle={subtitle}
+        title={rootEvent ? getEventPreviewText(rootEvent, room) : 'Тред'}
+        subtitle={[room.name, thread && formatReplyCount(thread.length)]
+          .filter(Boolean)
+          .join(' · ')}
         onBack={onBack}
         expanded={main}
         onToggleExpanded={onToggleMain}
@@ -529,6 +550,47 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
   const [panelWidth, setPanelWidth] = useSetting(settingsAtom, 'threadPanelWidth');
   const panelRef = useRef<HTMLDivElement>(null);
 
+  let content: React.ReactNode;
+  if (state.view === 'list') {
+    content = (
+      <ThreadList
+        room={room}
+        onClose={close}
+        onCreate={() => setPanel({ view: 'create' })}
+        onOpenThread={(rootId) => setPanel({ view: 'thread', rootId, fromList: true })}
+      />
+    );
+  } else if (state.view === 'create') {
+    content = (
+      <>
+        <PanelHeader
+          title="Создать тред"
+          subtitle={room.name}
+          onBack={() => setPanel({ view: 'list' })}
+          onClose={close}
+        />
+        <NewThread
+          room={room}
+          onCancel={() => setPanel({ view: 'list' })}
+          onCreated={(rootId) => setPanel({ view: 'thread', rootId, fromList: true })}
+        />
+      </>
+    );
+  } else {
+    content = (
+      <ThreadView
+        key={state.rootId}
+        room={room}
+        rootId={state.rootId}
+        eventId={state.eventId}
+        main={main}
+        onBack={main ? undefined : () => setPanel({ view: 'list' })}
+        onToggleMain={() => setPanel({ ...state, main: !main })}
+        onClose={close}
+      />
+    );
+  }
+
   return (
     <Box
       ref={panelRef}
@@ -544,24 +606,7 @@ export function ThreadPanel({ room, state }: ThreadPanelProps) {
           : panelWidthStyle(panelWidth, THREAD_PANEL_WIDTH) ?? { maxWidth: toRem(560) }
       }
     >
-      {state.view === 'list' ? (
-        <ThreadList
-          room={room}
-          onClose={close}
-          onOpenThread={(rootId) => setPanel({ view: 'thread', rootId, fromList: true })}
-        />
-      ) : (
-        <ThreadView
-          key={state.rootId}
-          room={room}
-          rootId={state.rootId}
-          eventId={state.eventId}
-          main={main}
-          onBack={main ? undefined : () => setPanel({ view: 'list' })}
-          onToggleMain={() => setPanel({ ...state, main: !main })}
-          onClose={close}
-        />
-      )}
+      {content}
       {!mobile && (
         <PanelResizer
           panelRef={panelRef}
