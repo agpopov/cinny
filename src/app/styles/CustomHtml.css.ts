@@ -160,7 +160,6 @@ export const Mention = recipe({
     {
       backgroundColor: color.SurfaceVariant.Container,
       color: color.SurfaceVariant.OnContainer,
-      boxShadow: `0 0 0 ${config.borderWidth.B300} ${color.SurfaceVariant.ContainerLine}`,
       padding: `0 ${toRem(2)}`,
       borderRadius: config.radii.R300,
       fontWeight: config.fontWeight.W500,
@@ -171,7 +170,6 @@ export const Mention = recipe({
       true: {
         backgroundColor: color.Success.Container,
         color: color.Success.OnContainer,
-        boxShadow: `0 0 0 ${config.borderWidth.B300} ${color.Success.ContainerLine}`,
       },
     },
     focus: {
