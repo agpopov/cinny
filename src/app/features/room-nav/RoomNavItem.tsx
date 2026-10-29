@@ -360,8 +360,12 @@ export function RoomNavItem({
                         {nameInitials(roomName)}
                       </Text>
                     ) : (
+                      // Fill the avatar and shrink the glyph via viewBox: WebKitGTK snaps a
+                      // smaller, flex-centered svg to the pixel grid off the avatar center.
                       <RoomIcon
-                        size="100"
+                        size="Inherit"
+                        style={{ width: '100%', height: '100%' }}
+                        viewBox="-4 -4 32 32"
                         joinRule={room.getJoinRule()}
                         roomType={room.getType()}
                       />
