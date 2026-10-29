@@ -12,7 +12,6 @@ import {
   HomeTab,
   SpaceTabs,
   InboxTab,
-  ExploreTab,
   SettingsTab,
   UnverifiedTab,
   SearchTab,
@@ -34,7 +33,6 @@ export function SidebarNav() {
             <SpaceTabs scrollRef={scrollRef} />
             <SidebarStackSeparator />
             <SidebarStack>
-              <ExploreTab />
               <CreateTab />
             </SidebarStack>
           </Scroll>
