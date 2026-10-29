@@ -54,8 +54,23 @@ def assert_new_thread_content(page, output, kinds=None):
             route.fulfill(json={'content_uri': 'mxc://session.cinny.test/thread-upload-' + str(len(uploads))})
 
         page.route('**/send/*/*', send)
-        page.route('**/relations/**', lambda route: route.fulfill(json={'chunk': [event for event_id, event in events.items() if event_id != root_id]}))
-        page.route('**/event/*', lambda route: route.fulfill(json=root() if unquote(route.request.url).endswith(root_id) else events.get(unquote(urlsplit(route.request.url).path).rsplit('/', 1)[-1], {})))
+        def relations(route):
+            path = unquote(urlsplit(route.request.url).path).split('/')
+            chunk = [event for event_id, event in events.items() if event_id != root_id] if root_id in path and 'm.thread' in path else []
+            route.fulfill(json={'chunk': chunk})
+
+        def get_event(route):
+            event_id = unquote(urlsplit(route.request.url).path).rsplit('/', 1)[-1]
+            event = root() if event_id == root_id else events.get(event_id)
+            if not event or not event.get('type'):
+                # Older fixture rooms can still have pending background reads.
+                # A missing event is a Matrix 404, never an untyped timeline event.
+                route.fulfill(status=404, json={'errcode': 'M_NOT_FOUND', 'error': 'Event not in this fixture'})
+            else:
+                route.fulfill(json=event)
+
+        page.route('**/relations/**', relations)
+        page.route('**/event/*', get_event)
         page.route('**/threads*', lambda route: route.fulfill(json={'chunk': [root()] if len(events) > 1 else []}))
         page.route('**/_matrix/media/**/upload*', upload)
         page.route('**/_matrix/client/v1/media/upload*', upload)
@@ -134,8 +149,11 @@ if __name__ == '__main__':
         browser = p.chromium.launch(args=['--no-sandbox'])
         page = browser.new_page(viewport={'width': 1400, 'height': 950}, service_workers='block')
         page.goto(os.environ.get('APP_URL', 'http://127.0.0.1:18085') + '/config.json')
+        errors = []
+        page.on('pageerror', lambda error: errors.append(str(error)))
         try:
             assert_new_thread_content(page, os.environ.get('TEST_OUTPUT', 'artifacts/thread-content-windows-20261029/local/content'), os.environ.get('THREAD_CONTENT_CASES', 'poll,files,emoji,sticker').split(','))
+            assert not errors, errors
         except Exception:
             page.screenshot(path='/tmp/thread-content-failure.png', full_page=True)
             raise
