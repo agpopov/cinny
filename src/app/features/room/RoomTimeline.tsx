@@ -105,6 +105,7 @@ import {
   RoomIntroBubble,
 } from '../../styles/telegramTheme.css';
 import { RoomIntro } from '../../components/room-intro';
+import { RoomViewTyping } from './RoomViewTyping';
 import {
   getIntersectionObserverEntry,
   useIntersectionObserver,
@@ -793,6 +794,16 @@ export function RoomTimeline({
       };
     }, [getScrollElement, roomInputRef]),
     useCallback(() => roomInputRef.current, [roomInputRef])
+  );
+
+  // The typing notice sits after the last message; keep it in view when it appears.
+  const typingRef = useRef<HTMLDivElement>(null);
+  useResizeObserver(
+    useCallback(() => {
+      const scrollElement = getScrollElement();
+      if (scrollElement && atBottomRef.current) scrollToBottom(scrollElement);
+    }, [getScrollElement]),
+    useCallback(() => typingRef.current, [])
   );
 
   const tryAutoMarkAsRead = useCallback(() => {
@@ -2035,6 +2046,9 @@ export function RoomTimeline({
                 </MessageBase>
               </>
             ))}
+          <div ref={typingRef}>
+            {!thread && liveTimelineLinked && rangeAtEnd && <RoomViewTyping room={room} />}
+          </div>
           <span ref={atBottomAnchorRef} />
         </Box>
       </Scroll>

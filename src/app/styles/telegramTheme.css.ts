@@ -21,6 +21,7 @@ import { BubbleContent, BubbleLeftArrow } from '../components/message/layout/lay
 import { Reply, ReplyColorVar, ReplyContent } from '../components/message/Reply.css';
 import { Reaction } from '../components/message/Reaction.css';
 import { UserAvatarContainer } from '../components/user-profile/styles.css';
+import { RoomViewTyping } from '../features/room/RoomViewTyping.css';
 
 // Region hooks restyled by the Telegram themes; they have no styles of their own.
 export const RoomViewRegion = style({});

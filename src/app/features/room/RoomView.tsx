@@ -13,7 +13,6 @@ import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useEditor } from '../../components/editor';
 import { RoomInputPlaceholder } from './RoomInputPlaceholder';
 import { RoomTimeline } from './RoomTimeline';
-import { RoomViewTyping } from './RoomViewTyping';
 import { RoomTombstone } from './RoomTombstone';
 import { RoomInput } from './RoomInput';
 import { RoomViewFollowing, RoomViewFollowingPlaceholder } from './RoomViewFollowing';
@@ -91,7 +90,6 @@ export function RoomView({ eventId }: { eventId?: string }) {
           editor={editor}
           onOpenThread={handleOpenThread}
         />
-        <RoomViewTyping room={room} />
       </Box>
       <Box shrink="No" direction="Column">
         <div style={{ padding: `0 ${config.space.S400}` }}>

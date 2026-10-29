@@ -1,25 +1,12 @@
-import { keyframes, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { DefaultReset, color, config } from 'folds';
 
-const SlideUpAnime = keyframes({
-  from: {
-    transform: 'translateY(100%)',
-  },
-  to: {
-    transform: 'translateY(0)',
-  },
-});
-
+// Informational line after the last message, in the timeline flow.
 export const RoomViewTyping = style([
   DefaultReset,
   {
-    padding: `0 ${config.space.S500}`,
-    width: '100%',
-    backgroundColor: color.Surface.Container,
+    padding: `${config.space.S100} ${config.space.S500}`,
     color: color.Surface.OnContainer,
-    position: 'absolute',
-    bottom: 0,
-    animation: `${SlideUpAnime} 100ms ease-in-out`,
   },
 ]);
 export const TypingText = style({
