@@ -6,6 +6,11 @@ type RecordRow = { id: string; scope: string; iv: Uint8Array; data: ArrayBuffer 
 let database: Promise<IDBDatabase> | undefined;
 let generation = 0;
 const scopeGenerations = new Map<string, number>();
+// Deserializing a CryptoKey from IndexedDB makes macOS WebKit access Keychain.
+// Share the pending load across rooms and storage kinds for this page session.
+// Keep rejections too: denying access must not trigger a prompt in every room.
+// Reloading the page or clearing private storage allows another attempt.
+const encryptionKeys = new Map<string, Promise<CryptoKey>>();
 
 const openDatabase = (): Promise<IDBDatabase> => {
   if (!database) {
@@ -54,6 +59,7 @@ export const privateAccountKey = (baseUrl: string, userId: string, deviceId: str
   JSON.stringify([baseUrl.replace(/\/+$/, ''), userId, deviceId]);
 
 const encryptionKey = async (db: IDBDatabase, account: string): Promise<CryptoKey> => {
+  const keyGeneration = generation;
   const read = db.transaction('keys', 'readonly');
   const existing = await requestValue<CryptoKey | undefined>(read.objectStore('keys').get(account));
   if (existing) return existing;
@@ -61,12 +67,13 @@ const encryptionKey = async (db: IDBDatabase, account: string): Promise<CryptoKe
     'encrypt',
     'decrypt',
   ]);
+  if (keyGeneration !== generation) throw new Error('Локальное хранилище очищено');
   // A single read/write transaction prevents two tabs replacing each other's key.
   const tx = db.transaction('keys', 'readwrite');
   const done = finished(tx);
   const store = tx.objectStore('keys');
   const current = await requestValue<CryptoKey | undefined>(store.get(account));
-  if (!current) store.put(candidate, account);
+  if (!current && keyGeneration === generation) store.put(candidate, account);
   await done;
   return current ?? candidate;
 };
@@ -82,14 +89,13 @@ export class PrivateStorage {
 
   private queue: Promise<unknown> = Promise.resolve();
 
-  private cachedKey?: Promise<CryptoKey>;
-
   private key(db: IDBDatabase): Promise<CryptoKey> {
-    this.cachedKey ??= encryptionKey(db, this.account).catch((error) => {
-      this.cachedKey = undefined;
-      throw error;
-    });
-    return this.cachedKey;
+    let key = encryptionKeys.get(this.account);
+    if (!key) {
+      key = encryptionKey(db, this.account);
+      encryptionKeys.set(this.account, key);
+    }
+    return key;
   }
 
   constructor(account: string, kind: string) {
@@ -153,21 +159,24 @@ export class PrivateStorage {
       .then(async () => {
         if (!this.isCurrent()) return;
         const db = await openDatabase();
+        if (!this.isCurrent()) return;
         const recordId = this.recordId(id);
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const key = await this.key(db);
-        const data =
-          value === undefined
-            ? undefined
-            : await crypto.subtle.encrypt(
-                { name: 'AES-GCM', iv, additionalData: new TextEncoder().encode(recordId) },
-                key,
-                new TextEncoder().encode(JSON.stringify(value))
-              );
+        let row: RecordRow | undefined;
+        // Deleting a draft needs neither a crypto key nor Keychain access.
+        if (value !== undefined) {
+          const iv = crypto.getRandomValues(new Uint8Array(12));
+          const key = await this.key(db);
+          const data = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv, additionalData: new TextEncoder().encode(recordId) },
+            key,
+            new TextEncoder().encode(JSON.stringify(value))
+          );
+          row = { id: recordId, scope: this.scope, iv, data };
+        }
         if (!this.isCurrent()) return;
         const tx = db.transaction('records', 'readwrite');
         const done = finished(tx);
-        if (data) tx.objectStore('records').put({ id: recordId, scope: this.scope, iv, data });
+        if (row) tx.objectStore('records').put(row);
         else tx.objectStore('records').delete(recordId);
         await done;
       });
@@ -178,6 +187,7 @@ export class PrivateStorage {
 
 export const clearPrivateStorage = async (): Promise<void> => {
   generation += 1;
+  encryptionKeys.clear();
   scopeGenerations.clear();
   if (typeof indexedDB === 'undefined') return;
   const db = await openDatabase();

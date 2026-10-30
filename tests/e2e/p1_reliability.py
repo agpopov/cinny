@@ -76,7 +76,45 @@ try:
    if engine=='webkit' and os.environ.get('AUDIT_WEBKIT_EXECUTABLE'):options['executable_path']=os.environ['AUDIT_WEBKIT_EXECUTABLE']
    browser=getattr(p,engine).launch(**options)
    page=browser.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
+   page.add_init_script("""(() => {
+    const get=IDBObjectStore.prototype.get,put=IDBObjectStore.prototype.put;
+    window.keyAccess={reads:0,writes:0,deny:false};
+    IDBObjectStore.prototype.get=function(...args){
+     if(this.name==='keys'){
+      keyAccess.reads++;
+      if(keyAccess.deny)throw new DOMException('Keychain access denied','UnknownError');
+     }
+     return get.apply(this,args);
+    };
+    IDBObjectStore.prototype.put=function(...args){
+     if(this.name==='keys')keyAccess.writes++;
+     return put.apply(this,args);
+    };
+   })();""")
    page.goto(origin);page.wait_for_function('window.ready')
+   check(page,engine+' navigating empty rooms and removing drafts never accesses a crypto key',"""async()=>{
+    const before={...keyAccess};
+    await Promise.all(['!room-a','!room-b','!room#thread'].map(async room=>{
+     const storage=new PrivateStorage(account,'drafts');
+     if(await storage.get(room))throw Error('Unexpected draft');
+     await storage.set(room,undefined);
+    }));
+    return keyAccess.reads===before.reads && keyAccess.writes===before.writes;
+   }""")
+   check(page,engine+' concurrent room, thread and search stores load one key per account',"""async()=>{
+    const key=privateAccountKey(mx.baseUrl,'@shared:test','DEVICE');
+    const kinds=['drafts','search','send-attempts','thread-creation'];
+    const before={...keyAccess};
+    await Promise.all(kinds.map(kind=>new PrivateStorage(key,kind).set('!room-a',{text:kind})));
+    const reads=keyAccess.reads,writes=keyAccess.writes;
+    for(const kind of kinds){
+     const storage=new PrivateStorage(key,kind);
+     if((await storage.get('!room-a')).text!==kind)return false;
+     await storage.set('!room-b',{text:kind});
+     if((await new PrivateStorage(key,kind).values()).length!==2)return false;
+    }
+    return reads-before.reads===2 && writes-before.writes===1 && keyAccess.reads===reads && keyAccess.writes===writes;
+   }""")
    check(page,engine+' encrypts records and isolates account/device/thread',"""async()=>{
     const a=new PrivateStorage(account,'drafts');
     await a.set('!room',{message:'PRIVATE E2EE SECRET'});
@@ -90,9 +128,16 @@ try:
     const key=privateAccountKey(mx.baseUrl,'@concurrent:test','DEVICE');
     const a=new PrivateStorage(key,'drafts'),b=new PrivateStorage(key,'drafts');
     await Promise.all([a.set('a',{text:'first'}),b.set('b',{text:'second'})]);
-    return (await b.get('a')).text==='first' && (await a.get('b')).text==='second';
+    const stored=await new Promise((resolve,reject)=>{const r=indexedDB.open('cinny-private-v1');r.onsuccess=()=>{const db=r.result;const request=db.transaction('keys').objectStore('keys').get(key);request.onsuccess=()=>{db.close();resolve(request.result);};};r.onerror=()=>reject(r.error);});
+    return stored instanceof CryptoKey && !stored.extractable && (await b.get('a')).text==='first' && (await a.get('b')).text==='second';
    }""")
    page.reload();page.wait_for_function('window.ready')
+   check(page,engine+' after restart all rooms share one persisted key load',"""async()=>{
+    const before={...keyAccess};
+    const values=await Promise.all(['!room','!room#thread#root'].map(room=>new PrivateStorage(account,'drafts').get(room)));
+    await new PrivateStorage(account,'search').set('event',{body:'search text'});
+    return values.every(Boolean) && keyAccess.reads-before.reads===1 && keyAccess.writes===before.writes;
+   }""")
    check(page,engine+' encrypted records survive a process/page restart',"""async()=> (await new PrivateStorage(account,'drafts').get('!room')).message==='PRIVATE E2EE SECRET'""")
    page.evaluate("""async()=>{
     await new PrivateStorage(account,'drafts').set('draft-room',{message:[{type:'paragraph',children:[{text:'Сохранённый текст',bold:true}]}],reply:{eventId:'$reply',userId:'@author:test',body:'Ответ'}});
@@ -132,6 +177,38 @@ try:
     mountSearch({source:'server',term:'ordinary',rooms:['!plain','!encrypted']});await search();
     if(requests.length!==1 || requests[0].body.search_categories.room_events.filter.rooms.join()!=='!plain')throw Error(JSON.stringify({step:'server',requests}));
     mountSearch({source:'server',term:'secret phrase',rooms:['!encrypted']});await search();return requests.length===1;
+   }""")
+   check(page,engine+' logout during key generation cannot recreate an old key or private records',"""async()=>{
+    const original=crypto.subtle.generateKey;
+    let release,started;
+    const gate=new Promise(resolve=>release=resolve),ready=new Promise(resolve=>started=resolve);
+    crypto.subtle.generateKey=async function(...args){
+     const key=await original.apply(this,args);started();await gate;return key;
+    };
+    try{
+     const key=privateAccountKey(mx.baseUrl,'@logout-race:test','DEVICE');
+     const pending=new PrivateStorage(key,'drafts').set('!room',{text:'old session'});
+     await ready;await clearPrivateStorage();release();await Promise.allSettled([pending]);
+     const rows=await new Promise((resolve,reject)=>{const r=indexedDB.open('cinny-private-v1');r.onsuccess=()=>{const db=r.result;const request=db.transaction('keys').objectStore('keys').getAllKeys();request.onsuccess=()=>{db.close();resolve(request.result);};};r.onerror=()=>reject(r.error);});
+     return !rows.length && !(await new PrivateStorage(key,'drafts').get('!room'));
+    }finally{release();crypto.subtle.generateKey=original;}
+   }""")
+   check(page,engine+' denied key access is not retried on each room and logout resets the key cache',"""async()=>{
+    const key=privateAccountKey(mx.baseUrl,'@denied:test','DEVICE');
+    const before={...keyAccess};
+    keyAccess.deny=true;
+    try{
+     const results=await Promise.allSettled(['drafts','search','send-attempts'].map(kind=>new PrivateStorage(key,kind).set('!room',{text:'secret'})));
+     const later=await Promise.allSettled([new PrivateStorage(key,'drafts').set('!other',{text:'later'})]);
+     if(![...results,...later].every(result=>result.status==='rejected') || keyAccess.reads-before.reads!==1)return false;
+    }finally{keyAccess.deny=false;}
+    await clearPrivateStorage();
+    await new PrivateStorage(key,'drafts').set('!room',{text:'after logout'});
+    const reads=keyAccess.reads;
+    const saved=await new PrivateStorage(key,'drafts').get('!room');
+    await clearPrivateStorage();
+    await new PrivateStorage(key,'drafts').set('!room',{text:'new session'});
+    return saved.text==='after logout' && keyAccess.reads===reads+2 && (await new PrivateStorage(key,'drafts').get('!room')).text==='new session';
    }""")
    check(page,engine+' logout blocks old queued writes and clears private history',"""async()=>{
     const old=new PrivateStorage(account,'drafts');
